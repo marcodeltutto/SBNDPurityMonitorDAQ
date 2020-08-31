@@ -22,7 +22,7 @@ class Communicator():
         self._port = parallel.ParallelPort(address=port)
 
     def start_prm(self):
-        self._port.setPin(6, 1)
+        self._port.setPin(2, 1)
 
     def stop_prm(self):
-        self._port.setPin(6, 0)
+        self._port.setPin(2, 0)
