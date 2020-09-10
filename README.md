@@ -1,1 +1,1 @@
-# SBNDPurityMonitor
+# SBNDPurityMonitorDAQ
