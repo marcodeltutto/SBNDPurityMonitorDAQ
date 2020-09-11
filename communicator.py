@@ -20,6 +20,7 @@ class Communicator():
     def __init__(self, port=0x0):
 
         self._port = parallel.ParallelPort(address=port)
+        self._port.setData(0)
 
     def start_prm(self):
         self._port.setPin(2, 1)
