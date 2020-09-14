@@ -12,19 +12,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._comm = comm
 
-        self._start_btn.clicked.connect(self._start_prm)
-        self._stop_btn.clicked.connect(self._stop_prm)
+        self._start_stop_btn.clicked.connect(self._start_stop_prm)
+        self._running = False
 
+        self._hv_toggle.clicked.connect(self._set_hv)
+
+
+    def _start_stop_prm(self):
+
+        self._running = not self._running
+
+        if self._running:
+            self._start_prm()
+        else:
+            self._stop_prm()
 
 
     def _start_prm(self):
         self._comm.start_prm()
+        self._start_stop_btn.setText("Stop")
         self._run_status_label.setText('Running')
         self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
         self.repaint()
 
+
     def _stop_prm(self):
         self._comm.stop_prm()
+        self._start_stop_btn.setText("Start")
         self._run_status_label.setText('Not Running')
        	self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
         self.repaint()
+
+
+    def _set_hv(self):
+        if self._hv_toggle.isChecked():
+            self._comm.hv_on()
+        else:
+            self._comm.hv_off()
