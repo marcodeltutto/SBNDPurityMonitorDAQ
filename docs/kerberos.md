@@ -1,5 +1,8 @@
 # Fermilab Kerberos on Ubuntu 20.04.1 LTS
 
+General instructions:
+https://fermi.servicenowservices.com/kb_view.do?sys_kb_id=443f19716fa4ed0032544d1fde3ee4fb.
+
 From a freash Ubuntu installation.
 
 Synch time using internet:
