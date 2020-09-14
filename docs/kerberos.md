@@ -31,6 +31,13 @@ GSSAPIKeyExchange yes
 GSSAPICleanupCredentials yes
 X11Forwarding yes
 ```
+
+In `/etc/hosts` add:
+```
+131.225.179.214 puritymondaq1.fnal.gov puritymondaq1
+```
+or similar, and replace and line with `puritymondaq1` if already there.
+
 Restart the ssh service:
 ```
 sudo systemctl restart sshd.service
