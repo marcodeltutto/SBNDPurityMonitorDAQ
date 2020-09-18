@@ -16,6 +16,7 @@ class ats310():
         Constructor
         '''
         self._board = ats.Board(systemId = 1, boardId = 1)
+        print('fisrt ======= handle',self._board.handle)
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 1024
@@ -38,6 +39,8 @@ class ats310():
         self._data = {ats.CHANNEL_A: [], ats.CHANNEL_B: []}
 
         self._calculate_bytes()
+        print('=======',self._board)
+        print('======= handle',self._board.handle)
 
         self._configure_board()
 
@@ -64,6 +67,8 @@ class ats310():
         #    SAMPLE_RATE_USER_DEF, and connect a 100MHz signal to the
         #    EXT CLK BNC connector
         samplesPerSec = 20000000.0
+        print('=======',self._board)
+        print('======= handle',self._board.handle)
         self._board.setCaptureClock(ats.INTERNAL_CLOCK,
                                     ats.SAMPLE_RATE_20MSPS,
                                     ats.CLOCK_EDGE_RISING,
@@ -144,8 +149,8 @@ class ats310():
         # Compute the number of bytes per record and per buffer
         memory_size_samples, bits_per_sample = self._board.getChannelInfo()
         self._bytes_per_sample = (bits_per_sample.value + 7) // 8
-        self._samples_per_record = pre_trigger_samples + post_trigger_samples
-        self._bytes_per_record = bytes_per_sample * samples_per_record
+        self._samples_per_record = self._pre_trigger_samples + self._post_trigger_samples
+        self._bytes_per_record = self._bytes_per_sample * self._samples_per_record
 
         # Calculate the size of a record buffer in bytes. Note that the
         # buffer must be at least 16 bytes larger than the transfer size.

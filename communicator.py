@@ -1,41 +1,3 @@
-# import pyfirmata
-# import time
-
-# class Communicator():
-
-#     def __init__(self, port):
-
-#         self._board = pyfirmata.Arduino(port)
-
-#     def start_prm(self):
-#         self._board.digital[8].write(1)
-
-#     def stop_prm(self):
-#         self._board.digital[8].write(0)
-
-# from psychopy import parallel
-
-# class Communicator():
-
-#     def __init__(self, port=0x0):
-
-#         self._port = parallel.ParallelPort(address=port)
-#         self._port.setData(0)
-
-#     def start_prm(self):
-#         self._port.setPin(2, 1)
-
-#     def stop_prm(self):
-#         self._port.setPin(2, 0)
-
-#     def hv_on(self):
-#         self._port.setPin(5, 1)
-
-#     def hv_off(self):
-#         self._port.setPin(5, 0)
-
-
-
 import parallel as pyp
 
 class Communicator():
@@ -43,9 +5,7 @@ class Communicator():
     def __init__(self, port='/dev/parport0'):
 
         self._port = pyp.Parallel(port)
-
-        self._port = parallel.ParallelPort(address=port)
-        self._set_data(0)
+        self._port.setData(0)
 
     def _set_data(self, data):
         '''
@@ -59,7 +19,7 @@ class Communicator():
             _set_data(int("00000011", 2))  # pins 2 and 3 high
             _set_data(int("00000101", 2))  # pins 2 and 4 high
         '''
-        self.port.setData(data)
+        self._port.setData(data)
 
 
     def _read_data(self):
@@ -80,7 +40,6 @@ class Communicator():
             self._port.setData(self._port.PPRDATA() | (2**(pin_number - 2)))
         else:
             self._port.setData(self._port.PPRDATA() & (255 ^ 2**(pin_number - 2)))
-
 
     def _read_pin(self, pin_number):
         '''
