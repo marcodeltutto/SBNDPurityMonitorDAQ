@@ -1,12 +1,10 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph
-
+import qdarkstyle
 from mainwindow import MainWindow
-from communicator import Communicator
-from mock_communicator import MockCommunicator
-
 import argparse
+
 parser = argparse.ArgumentParser(description='SBND Purity Monitor DAQ')
 parser.add_argument('--mock', action='store_true',
                     default=False,
@@ -15,11 +13,14 @@ parser.add_argument('--mock', action='store_true',
 args = parser.parse_args()
 
 if args.mock:
+	from mock_communicator import MockCommunicator
 	comm = MockCommunicator()
 else:
+	from communicator import Communicator
 	comm = Communicator()
 
 app = QtWidgets.QApplication(sys.argv)
 window = MainWindow(comm)
+app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 window.show()
 app.exec_()

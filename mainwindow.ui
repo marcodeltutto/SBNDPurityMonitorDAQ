@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>SBND Purity Monitor DAQ</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="_start_stop_btn">
@@ -30,10 +30,10 @@
    <widget class="QLabel" name="_run_status_label">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>50</y>
+      <x>90</x>
+      <y>120</y>
       <width>101</width>
-      <height>16</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -43,10 +43,10 @@
    <widget class="QLabel" name="_run_label">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>50</y>
+      <x>90</x>
+      <y>100</y>
       <width>51</width>
-      <height>16</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -56,8 +56,8 @@
    <widget class="QLabel" name="_status_led">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>80</y>
+      <x>30</x>
+      <y>100</y>
       <width>40</width>
       <height>40</height>
      </rect>
@@ -80,8 +80,8 @@
    <widget class="Toggle" name="_hv_toggle" native="true">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>220</y>
+      <x>280</x>
+      <y>60</y>
       <width>131</width>
       <height>41</height>
      </rect>
@@ -90,10 +90,10 @@
    <widget class="QLabel" name="_hv_toggle_label">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>230</y>
+      <x>310</x>
+      <y>40</y>
       <width>81</width>
-      <height>16</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">

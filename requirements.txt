@@ -2,3 +2,4 @@ pyparallel
 PyQt5
 PyQtGraph
 argparse
+qdarkstyle

@@ -14,7 +14,7 @@ class Toggle(QtWidgets.QPushButton):
 
     valueChanged = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, name=''):
         """
         Constructor
         arguments:
@@ -25,6 +25,10 @@ class Toggle(QtWidgets.QPushButton):
         self.setCheckable(True)
         self.setMinimumWidth(66)
         self.setMinimumHeight(22)
+        self._name = name
+
+    def setName(self, name):
+        self._name = name
 
     def paintEvent(self, event):
         #pylint: disable=invalid-name
@@ -35,7 +39,11 @@ class Toggle(QtWidgets.QPushButton):
         - event: the event
         """
 
-        label = "ON" if self.isChecked() else "OFF"
+        if self._name:
+            label = f'{self._name} ON' if self.isChecked() else f'{self._name} OFF'
+        else:
+            label = 'ON' if self.isChecked() else 'OFF'
+
         if self.isEnabled():
             bg_color = Qt.green if self.isChecked() else Qt.red
         else:

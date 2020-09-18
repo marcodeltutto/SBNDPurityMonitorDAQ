@@ -15,6 +15,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._start_stop_btn.clicked.connect(self._start_stop_prm)
         self._running = False
 
+        self._hv_toggle.setName('HV')
         self._hv_toggle.clicked.connect(self._set_hv)
 
 
