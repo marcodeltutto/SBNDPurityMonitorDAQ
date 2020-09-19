@@ -6,7 +6,7 @@ import pyqtgraph
 import qdarkstyle
 from mainwindow import MainWindow
 import argparse
-from prmlogger import get_logging
+from prmlogger import get_logging, PrMLogWidget
 
 parser = argparse.ArgumentParser(description='SBND Purity Monitor DAQ')
 parser.add_argument('--mock', action='store_true',
@@ -29,8 +29,10 @@ else:
 	from communicator import Communicator
 	comm = Communicator()
 
+
 app = QtWidgets.QApplication(sys.argv)
-window = MainWindow(comm)
+logs = PrMLogWidget()
+window = MainWindow(comm=comm, logs=logs)
 app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 window.show()
 app.exec_()

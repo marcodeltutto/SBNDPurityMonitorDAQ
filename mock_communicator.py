@@ -4,18 +4,18 @@ class MockCommunicator():
 
     def __init__(self, port=0x0):
 
-        logger = logging.getLogger(__name__)
-        logger.info('Fake parallel communicator created.')
+        self._logger = logging.getLogger(__name__)
+        self._logger.info('Fake parallel communicator created.')
         return
 
     def start_prm(self):
-        print('PrM started')
+        self._logger.info('Starting purity monitor.')
 
     def stop_prm(self):
-        print('PrM stopped')
+        self._logger.info('Stopping purity monitor.')
 
     def hv_on(self):
-        print('HV ON')
+        self._logger.info('HV set to ON.')
 
     def hv_off(self):
-        print('HV OFF')
+        self._logger.info('HV set to OFF.')
