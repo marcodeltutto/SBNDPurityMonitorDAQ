@@ -1,4 +1,18 @@
 import parallel as pyp
+import logging
+
+class ParallelException(Exception):
+    """
+    Exception class for ATS310.
+    """
+
+    def __init__(self, message):
+        '''
+        Contructor
+        '''
+        self._message
+        super(ParallelException, self).__init__(self._message)
+
 
 class Communicator():
 
@@ -6,6 +20,11 @@ class Communicator():
 
         self._port = pyp.Parallel(port)
         self._port.setData(0)
+
+        if self._port.PPRDATA() != 0:
+            raise ParallelException(f'Cannot set data to parallel port. Tried to send: {data}.')
+
+        logging.info('Parallel communicator created.')
 
     def _set_data(self, data):
         '''
@@ -21,12 +40,26 @@ class Communicator():
         '''
         self._port.setData(data)
 
+        if not self._check_data(data_sent=data):
+            raise ParallelException(f'Cannot set data to parallel port. Tried to send: {data}.')
+
 
     def _read_data(self):
         '''
         Returns the value currently set on the data pins (2-9)
         '''
         return self._port.PPRDATA()
+
+
+    def _check_data(self, data_sent=None):
+        '''
+        Checks if the data sent is correct
+        '''
+        if data_sent is None:
+            raise ParallelException('Wrong use of _check_data method. Cannot pass None.')
+
+        return data == self._read_data()
+
 
 
     def _set_pin(self, pin_number, state):
@@ -37,9 +70,9 @@ class Communicator():
             _set_pin(3, 0)  # sets pin 3 low
         '''
         if state:
-            self._port.setData(self._port.PPRDATA() | (2**(pin_number - 2)))
+            self._set_data(self._port.PPRDATA() | (2**(pin_number - 2)))
         else:
-            self._port.setData(self._port.PPRDATA() & (255 ^ 2**(pin_number - 2)))
+            self._set_data(self._port.PPRDATA() & (255 ^ 2**(pin_number - 2)))
 
     def _read_pin(self, pin_number):
         '''

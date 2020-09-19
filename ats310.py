@@ -1,22 +1,30 @@
-# from __future__ import division
 import ctypes
-# import numpy as np
 import os
-# import signal
-# import sys
 import time
-
 import atsapi as ats
 
+class ATS310Exception(Exception):
+    """
+    Exception class for ATS310.
+    """
 
-class ats310():
+    def __init__(self, message):
+        '''
+        Contructor
+        '''
+        self._message
+        super(ESP32Exception, self).__init__(self._message)
+
+class ATS310():
 
     def __init__(self):
         '''
         Constructor
         '''
         self._board = ats.Board(systemId = 1, boardId = 1)
-        print('fisrt ======= handle',self._board.handle)
+
+        if self._board.handle is None or self._board.handle == 0:
+            raise ESP32Exception('Board handle is None or zero.')
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 1024
@@ -39,8 +47,6 @@ class ats310():
         self._data = {ats.CHANNEL_A: [], ats.CHANNEL_B: []}
 
         self._calculate_bytes()
-        print('=======',self._board)
-        print('======= handle',self._board.handle)
 
         self._configure_board()
 
@@ -366,7 +372,7 @@ class ats310():
     #       (bytesTransferred, bytesPerSec))
 
 if __name__ == "__main__":
-    my_ats310 = ats310()
+    my_ats310 = ATS310()
     my_ats310.acquire_data()
 
     while True:

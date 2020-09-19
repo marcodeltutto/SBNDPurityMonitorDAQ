@@ -1,9 +1,11 @@
-
+import logging
 
 class MockCommunicator():
 
     def __init__(self, port=0x0):
 
+        logger = logging.getLogger(__name__)
+        logger.info('Fake parallel communicator created.')
         return
 
     def start_prm(self):
