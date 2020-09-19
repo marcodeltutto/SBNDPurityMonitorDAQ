@@ -63,7 +63,7 @@ class Communicator():
             raise ParallelException(self._logger,
                 'Wrong use of _check_data method. Cannot pass None.')
 
-        return data == self._read_data()
+        return data_sent == self._read_data()
 
 
 
