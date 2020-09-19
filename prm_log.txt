@@ -1,2 +1,0 @@
-2020-09-18 19:40:04,502 INFO     SBND Purity Monitor starts.
-2020-09-18 19:40:04,502 INFO     Fake parallel communicator created.
