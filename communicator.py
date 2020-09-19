@@ -6,7 +6,7 @@ class ParallelException(Exception):
     Exception class for ATS310.
     """
 
-    def __init__(self, logger message):
+    def __init__(self, logger, message):
         '''
         Contructor
         '''
