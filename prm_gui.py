@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import sys
+import argparse
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph
 import qdarkstyle
-from mainwindow import MainWindow
-import argparse
-from prmlogger import get_logging, PrMLogWidget
+
+from sbndprmdaq.mainwindow import MainWindow
+from sbndprmdaq.prmlogger import get_logging, PrMLogWidget
 
 parser = argparse.ArgumentParser(description='SBND Purity Monitor DAQ')
 parser.add_argument('--mock', action='store_true',
@@ -29,10 +30,10 @@ logger.info('SBND Purity Monitor starts.')
 # Get the parallel port comm
 #
 if args.mock:
-	from parallel_communication.mock_communicator import MockCommunicator
+	from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
 	comm = MockCommunicator()
 else:
-	from parallel_communication.communicator import Communicator
+	from sbndprmdaq.parallel_communication.communicator import Communicator
 	comm = Communicator()
 
 #

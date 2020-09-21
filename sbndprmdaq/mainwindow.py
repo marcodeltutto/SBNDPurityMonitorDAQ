@@ -1,3 +1,4 @@
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
 
@@ -8,7 +9,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, comm, logs):
         super().__init__()
-        uic.loadUi("mainwindow.ui", self)
+
+        uifile = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            "mainwindow.ui")
+
+        uic.loadUi(uifile, self)
 
         self._comm = comm
         self._logs = logs

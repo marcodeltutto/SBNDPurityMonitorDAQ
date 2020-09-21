@@ -152,7 +152,7 @@
   <customwidget>
    <class>Toggle</class>
    <extends>QWidget</extends>
-   <header>tools/toggle</header>
+   <header>sbndprmdaq.tools/toggle</header>
    <container>1</container>
   </customwidget>
   <customwidget>
