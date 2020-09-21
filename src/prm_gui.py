@@ -29,10 +29,10 @@ logger.info('SBND Purity Monitor starts.')
 # Get the parallel port comm
 #
 if args.mock:
-	from mock_communicator import MockCommunicator
+	from parallel_communication.mock_communicator import MockCommunicator
 	comm = MockCommunicator()
 else:
-	from communicator import Communicator
+	from parallel_communication.communicator import Communicator
 	comm = Communicator()
 
 #
