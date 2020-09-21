@@ -2,8 +2,12 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
 
-ICON_RED_LED='icons/led-red-on.png'
-ICON_GREEN_LED='icons/green-led-on.png'
+ICON_RED_LED = os.path.join(os.path.dirname(
+               os.path.realpath(__file__)),
+               'icons/led-red-on.png')
+ICON_GREEN_LED = os.path.join(os.path.dirname(
+                 os.path.realpath(__file__)),
+                 'icons/green-led-on.png')
 
 class MainWindow(QtWidgets.QMainWindow):
 
