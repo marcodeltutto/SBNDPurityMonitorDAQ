@@ -8,11 +8,12 @@ class ATS310Exception(Exception):
     Exception class for ATS310.
     """
 
-    def __init__(self, message):
+    def __init__(self, logger, message):
         '''
         Contructor
         '''
-        self._message
+        self._message = message
+        logger.critical(self._message)
         super(ESP32Exception, self).__init__(self._message)
 
 class ATS310():
@@ -21,10 +22,12 @@ class ATS310():
         '''
         Constructor
         '''
-        self._board = ats.Board(systemId = 1, boardId = 1)
+        self._logger = logging.getLogger(__name__)
+
+        self._board = ats.Board(systemId=1, boardId=1)
 
         if self._board.handle is None or self._board.handle == 0:
-            raise ESP32Exception('Board handle is None or zero.')
+            raise ATS310Exception(self._logger, 'Board handle is None or zero.')
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 1024
@@ -73,8 +76,7 @@ class ATS310():
         #    SAMPLE_RATE_USER_DEF, and connect a 100MHz signal to the
         #    EXT CLK BNC connector
         samplesPerSec = 20000000.0
-        print('=======',self._board)
-        print('======= handle',self._board.handle)
+
         self._board.setCaptureClock(ats.INTERNAL_CLOCK,
                                     ats.SAMPLE_RATE_20MSPS,
                                     ats.CLOCK_EDGE_RISING,

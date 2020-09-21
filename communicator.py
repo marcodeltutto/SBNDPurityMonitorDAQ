@@ -10,7 +10,7 @@ class ParallelException(Exception):
         '''
         Contructor
         '''
-        self._message
+        self._message = message
         logger.critical(self._message)
         super(ParallelException, self).__init__(self._message)
 
@@ -19,13 +19,14 @@ class Communicator():
 
     def __init__(self, port='/dev/parport0'):
 
-        self._port = pyp.Parallel(port)
-        self._port.setData(0)
         self._logger = logging.getLogger(__name__)
 
-        if self._port.PPRDATA() != 0:
+        self._port = pyp.Parallel(port)
+        self._port.setData(0)
+
+        if not self._check_data(data_sent=0):
             raise ParallelException(self._logger,
-                f'Cannot set data to parallel port. Tried to send: {data}.')
+                f'Cannot set data to parallel port in constructor. Tried to send: {data}.')
 
         self._logger.info('Parallel communicator created.')
 

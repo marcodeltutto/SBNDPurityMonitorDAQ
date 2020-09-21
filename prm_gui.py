@@ -18,10 +18,16 @@ parser.add_argument('--logfile',
 
 args = parser.parse_args()
 
+#
+# Start the logger
+#
 logging = get_logging(args.logfile)
 logger = logging.getLogger(__name__)
 logger.info('SBND Purity Monitor starts.')
 
+#
+# Get the parallel port comm
+#
 if args.mock:
 	from mock_communicator import MockCommunicator
 	comm = MockCommunicator()
@@ -29,7 +35,13 @@ else:
 	from communicator import Communicator
 	comm = Communicator()
 
+#
+# Get the ATS digitizer
+#
 
+#
+# Construct the GUI
+#
 app = QtWidgets.QApplication(sys.argv)
 logs = PrMLogWidget()
 window = MainWindow(comm=comm, logs=logs)
