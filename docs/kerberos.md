@@ -14,6 +14,7 @@ Install Kerberos:
 ```
 sudo apt-get install krb5-user
 ```
+Enter `FNAL.GOV` when prompted.
 
 Get `krb5.conf` from https://authentication.fnal.gov/krb5conf/
 and placed it in `/etc/krb5.conf`.
