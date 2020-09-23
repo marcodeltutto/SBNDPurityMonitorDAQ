@@ -122,7 +122,7 @@ class Communicator():
         Sets the parallel port pin that turns the HV ON
         '''
         self._logger.info('HV set to ON.')
-        self._set_pin(5, 1)
+        self._set_pin(6, 1)
 
 
     def hv_off(self):
@@ -130,4 +130,4 @@ class Communicator():
         Sets the parallel port pin that turns the HV OFF
         '''
         self._logger.info('HV set to OFF.')
-        self._set_pin(5, 0)
+        self._set_pin(6, 0)
