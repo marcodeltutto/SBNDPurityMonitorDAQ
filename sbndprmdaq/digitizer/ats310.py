@@ -2,6 +2,7 @@ import ctypes
 import os
 import time
 import atsapi as ats
+import logging
 
 class ATS310Exception(Exception):
     """
@@ -135,8 +136,7 @@ class ATS310():
         self._board.setTriggerTimeOut(0)
 
         # Configure AUX I/O connector as required
-        self._board.configureAuxIO(ats.AUX_OUT_TRIGGER,
-                                   0)
+        self._board.configureAuxIO(ats.AUX_OUT_TRIGGER, 0)
 
         # Set the record size
         self._board.setRecordSize(self._pre_trigger_samples, self._post_trigger_samples)
@@ -375,6 +375,7 @@ class ATS310():
 
 if __name__ == "__main__":
     my_ats310 = ATS310()
+    my_ats310._board.setTriggerTimeOut(2)
     my_ats310.acquire_data()
 
     while True:
