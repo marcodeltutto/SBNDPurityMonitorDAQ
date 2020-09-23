@@ -19,6 +19,11 @@ Enter `FNAL.GOV` when prompted.
 Get `krb5.conf` from https://authentication.fnal.gov/krb5conf/
 and placed it in `/etc/krb5.conf`.
 
+Install openssh:
+```
+sudo apt-get install openssh-client openssh-server
+```
+
 In `/etc/ssh/sshd_config` add:
 ```
 Protocol 2
@@ -40,7 +45,7 @@ In `/etc/hosts` add:
 ```
 131.225.179.214 puritymondaq1.fnal.gov puritymondaq1
 ```
-or similar, and replace and line with `puritymondaq1` if already there.
+or similar, and replace any line with `puritymondaq1` if already there.
 
 Restart the ssh service:
 ```
@@ -54,4 +59,7 @@ kadmin -p host/puritymondaq1.fnal.gov -q "ktadd -k krb5.keytab host/puritymondaq
 and place it in `/etc/krb5.keytab`.
 
 Add a `.k5login` file to the home directory of any account to which you want to be able to log in remotely, 
-and include the appropriate principals which are allowed to log into the account. 
+and include the appropriate principals which are allowed to log into the account. Ex, put:
+```
+mdeltutt@FNAL.GOV
+```
