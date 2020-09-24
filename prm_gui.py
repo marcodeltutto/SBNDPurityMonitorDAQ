@@ -19,6 +19,7 @@ parser.add_argument('--logfile',
 
 args = parser.parse_args()
 
+
 #
 # Start the logger
 #
@@ -26,26 +27,37 @@ logging = get_logging(args.logfile)
 logger = logging.getLogger(__name__)
 logger.info('SBND Purity Monitor starts.')
 
-#
-# Get the parallel port comm
-#
-if args.mock:
-	from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
-	comm = MockCommunicator()
-else:
-	from sbndprmdaq.parallel_communication.communicator import Communicator
-	comm = Communicator()
-
-#
-# Get the ATS digitizer
-#
 
 #
 # Construct the GUI
 #
 app = QtWidgets.QApplication(sys.argv)
 logs = PrMLogWidget()
-window = MainWindow(comm=comm, logs=logs)
+window = MainWindow(logs=logs)
 app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 window.show()
+
+
+#
+# Construct the parallel communicator and the digitizer
+#
+if args.mock:
+    from sbndprmdaq.mock_manager import MockPrMManager
+    manager = MockPrMManager()
+else:
+    from sbndprmdaq.manager import PrMManager
+    manager = PrMManager()
+
+manager.test()
+
+
+#
+# Pass the manager to the mainwindow
+#
+window.set_manager(manager)
+
+
+#
+# Take it away
+#
 app.exec_()

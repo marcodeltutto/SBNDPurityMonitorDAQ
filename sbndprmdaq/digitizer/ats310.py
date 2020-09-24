@@ -1,8 +1,15 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import ctypes
 import os
 import time
-import atsapi as ats
+try:
+    from . import atsapi as ats
+except:
+    import atsapi as ats
 import logging
+
+samplesPerSec = None
 
 class ATS310Exception(Exception):
     """
@@ -48,11 +55,12 @@ class ATS310():
 
         self._channel_map = {ats.CHANNEL_A: 'A', ats.CHANNEL_B: 'B'}
 
-        self._data = {ats.CHANNEL_A: [], ats.CHANNEL_B: []}
+        # self._data = {ats.CHANNEL_A: [], ats.CHANNEL_B: []}
+        self._data = {'A': [], 'B': []}
 
-        self._calculate_bytes()
 
         self._configure_board()
+        self._calculate_bytes()
 
 
     def __del__(self):
@@ -76,6 +84,7 @@ class ATS310():
         #  - or select clock source FAST_EXTERNAL_CLOCK, sample rate
         #    SAMPLE_RATE_USER_DEF, and connect a 100MHz signal to the
         #    EXT CLK BNC connector
+        global samplesPerSec
         samplesPerSec = 20000000.0
 
         self._board.setCaptureClock(ats.INTERNAL_CLOCK,
@@ -87,6 +96,7 @@ class ATS310():
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
                                    ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_4_V,
                                    ats.IMPEDANCE_50_OHM)
 
         # TODO: Select channel A bandwidth limit as required.
@@ -97,6 +107,7 @@ class ATS310():
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
                                    ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_4_V,
                                    ats.IMPEDANCE_50_OHM)
 
         # TODO: Select channel B bandwidth limit as required.
@@ -148,6 +159,8 @@ class ATS310():
         for c in ats.channels:
             self._channel_count += (c & self._channels == c)
 
+        self._logger.critical('ATS board configured.')
+
 
     def _calculate_bytes(self):
         '''
@@ -167,22 +180,14 @@ class ATS310():
 
     def acquire_data(self):
         '''
+        Starts the acquisition
         '''
 
         self._start_time = time.time()
 
-        self._board.startCapture() # Start the acquisition
+        self._board.startCapture()
 
-        # while not ats.enter_pressed():
-        #     if not board.busy():
-        #         # Acquisition is done
-        #         break
-        #     if time.time() - start > acquisition_timeout_sec:
-        #         board.abortCapture()
-        #         raise Exception("Error: Capture timeout. Verify trigger")
-        #     time.sleep(10e-3)
-
-        # captureTime_sec = time.time() - start
+        self._logger.critical('Data acquisition started.')
 
 
     def abort_capture(self):
@@ -191,7 +196,7 @@ class ATS310():
         '''
         self._board.abortCapture()
 
-        print('Data captured for seconds:', time.time() - self._start_time)
+        self._logger.critical(f'Data captured for seconds: {time.time() - self._start_time}')
 
 
     def busy(self):
@@ -199,7 +204,7 @@ class ATS310():
         Returns true if the board is busy
         '''
 
-        return self._board.busy
+        return self._board.busy()
 
 
     def get_data(self):
@@ -210,6 +215,8 @@ class ATS310():
         Returns:
         - a dictionaty with the data per channel
         '''
+
+        self._logger.critical('Prepare to read the data.')
 
         start = time.time()
 
@@ -222,6 +229,8 @@ class ATS310():
             d = []
 
         for record in range(self._records_per_capture):
+
+            self._logger.critical(f'Reading record {record}/{self._records_per_capture}.')
 
             for channel in range(self._channel_count):
 
@@ -250,139 +259,51 @@ class ATS310():
                 # - 0xFFFF represents a positive full scale input signal.
 
                 ch_name = self._channel_map[channel_id]
+                print('ch_name', ch_name)
                 self._data[ch_name].append(self._buffer.buffer[:self._samples_per_record])
+                plt.plot(self._buffer.buffer[:self._samples_per_record])
+                plt.ylabel('some numbers')
+                plt.show()
 
-        print('Data read from ATS onboard memory in', time.time() - start, 'seconds.')
-        print('Bytes transferred:', bytes_transferred)
+        self._logger.critical(f'Data read from ATS onboard memory in {time.time() - start} seconds.')
+        self._logger.critical(f'DBytes transferred: {bytes_transferred}.')
 
         return self._data
 
 
-# def AcquireData(board):
-    # # TODO: Select the number of pre-trigger samples
-    # preTriggerSamples = 1024
+    def set_pre_trigger_samples(self, pre_trigger_samples):
+        '''
+        Sets the number of pre-trigger samples
+        '''
+        self._pre_trigger_samples = pre_trigger_samples
 
-    # # TODO: Select the number of samples per record.
-    # postTriggerSamples = 1024
+    def set_post_trigger_samples(self, post_trigger_samples):
+        '''
+        Sets the number of samples per record.
+        '''
+        self._post_trigger_samples = post_trigger_samples
 
-    # # TODO: Select the number of records in the acquisition.
-    # recordsPerCapture = 100
+    def set_records_per_capture(self, records_per_capture):
+        '''
+        Sets the number of records in the acquisition.
+        '''
+        self._records_per_capture = records_per_capture
 
-    # # TODO: Select the amount of time to wait for the acquisition to
-    # # complete to on-board memory.
-    # acquisition_timeout_sec = 10
 
-    # # TODO: Select the active channels.
-    # channels = ats.CHANNEL_A | ats.CHANNEL_B
-    # channelCount = 0
-    # for c in ats.channels:
-    #     channelCount += (c & channels == c)
 
-    # # TODO: Should data be saved to file?
-    # saveData = False
-    # dataFile = None
-    # if saveData:
-    #     dataFile = open(os.path.join(os.path.dirname(__file__),
-    #                                  "data.bin"), 'wb')
-
-    # # Compute the number of bytes per record and per buffer
-    # memorySize_samples, bitsPerSample = board.getChannelInfo()
-    # bytesPerSample = (bitsPerSample.value + 7) // 8
-    # samplesPerRecord = preTriggerSamples + postTriggerSamples
-    # bytesPerRecord = bytesPerSample * samplesPerRecord
-
-    # # Calculate the size of a record buffer in bytes. Note that the
-    # # buffer must be at least 16 bytes larger than the transfer size.
-    # bytesPerBuffer = (bytesPerSample *
-    #                   (samplesPerRecord + 0))
-
-    # # Set the record size
-    # board.setRecordSize(preTriggerSamples, postTriggerSamples)
-
-    # # Configure the number of records in the acquisition
-    # board.setRecordCount(recordsPerCapture)
-
-    # start = time.time() # Keep track of when acquisition started
-    # board.startCapture() # Start the acquisition
-    # print("Capturing %d record. Press <enter> to abort" % recordsPerCapture)
-    # buffersCompleted = 0
-    # bytesTransferred = 0
-    # while not ats.enter_pressed():
-    #     if not board.busy():
-    #         # Acquisition is done
-    #         break
-    #     if time.time() - start > acquisition_timeout_sec:
-    #         board.abortCapture()
-    #         raise Exception("Error: Capture timeout. Verify trigger")
-    #     time.sleep(10e-3)
-
-    # captureTime_sec = time.time() - start
-    # recordsPerSec = 0
-    # if captureTime_sec > 0:
-    #     recordsPerSec = recordsPerCapture / captureTime_sec
-    # print("Captured %d records in %f rec (%f records/sec)" %
-    #       (recordsPerCapture, captureTime_sec, recordsPerSec))
-
-    # sample_type = ctypes.c_uint8
-    # if bytesPerSample > 1:
-    #     sample_type = ctypes.c_uint16
-
-    # buffer = ats.DMABuffer(board.handle, sample_type, bytesPerBuffer + 16)
-
-    # # Transfer the records from on-board memory to our buffer
-    # print("Transferring %d records..." % recordsPerCapture)
-
-    # for record in range(recordsPerCapture):
-    #     if ats.enter_pressed():
-    #         break
-    #     for channel in range(channelCount):
-    #         channelId = ats.channels[channel]
-    #         if channelId & channels == 0:
-    #             continue
-    #         board.read(channelId,             # Channel identifier
-    #                    buffer.addr,           # Memory address of buffer
-    #                    bytesPerSample,        # Bytes per sample
-    #                    record + 1,            # Record (1-indexed)
-    #                    -preTriggerSamples,    # Pre-trigger samples
-    #                    samplesPerRecord)      # Samples per record
-    #         bytesTransferred += bytesPerRecord;
-
-    #         # Records are arranged in the buffer as follows:
-    #         # R0A, R1A, R2A ... RnA, R0B, R1B, R2B ...
-    #         #
-    #         # A 12-bit sample code is stored in the most significant bits of
-    #         # in each 16-bit sample value.
-    #         #
-    #         # Sample codes are unsigned by default. As a result:
-    #         # - 0x0000 represents a negative full scale input signal.
-    #         # - 0x8000 represents a ~0V signal.
-    #         # - 0xFFFF represents a positive full scale input signal.
-
-    #         # Optionaly save data to file
-    #         if dataFile:
-    #             buffer.buffer[:samplesPerRecord].tofile(dataFile)
-
-    #         if ats.enter_pressed():
-    #             break
-
-    # # Compute the total transfer time, and display performance information.
-    # transferTime_sec = time.time() - start
-    # bytesPerSec = 0
-    # if transferTime_sec > 0:
-    #     bytesPerSec = bytesTransferred / transferTime_sec
-    # print("Transferred %d bytes (%f bytes per sec)" %
-    #       (bytesTransferred, bytesPerSec))
 
 if __name__ == "__main__":
     my_ats310 = ATS310()
-    my_ats310._board.setTriggerTimeOut(2)
+    # my_ats310._board.setTriggerTimeOut(2)
+    my_ats310.set_records_per_capture(1)
+    my_ats310.set_post_trigger_samples(50000)
     my_ats310.acquire_data()
 
-    while True:
-        if not my_ats310.busy():
-            # Acquisition is done
-            break
+    while not my_ats310.busy():
         time.sleep(10e-3)
 
     data = my_ats310.get_data()
-    print(data)
+    data = data['A'][0]
+    # plt.plot(np.arange(len(data)), data)
+    # plt.ylabel('some numbers')
+    # plt.show()
