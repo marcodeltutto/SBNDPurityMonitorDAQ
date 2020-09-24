@@ -48,7 +48,7 @@ else:
     from sbndprmdaq.manager import PrMManager
     manager = PrMManager()
 
-manager.test()
+# manager.test()
 
 
 #
