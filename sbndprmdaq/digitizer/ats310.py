@@ -8,6 +8,11 @@ import sys
 import time
 import logging
 
+try:
+    from . import atsapi as ats
+except:
+    import atsapi as ats
+
 from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 
 class ATS310Exception(Exception):
