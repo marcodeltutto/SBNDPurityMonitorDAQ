@@ -1,4 +1,4 @@
-from sbndprmdaq.digitizer import ATS310
+from sbndprmdaq.digitizer.ats310 import ATS310
 from sbndprmdaq.parallel_communication.communicator import Communicator
 
 class PrMManager():
@@ -19,11 +19,18 @@ class PrMManager():
         data = self._ats310.get_data()
         print(data)
 
+    def digitizer_busy(self):
+        '''
+        Returns the digitizers status
+        (if it is busy or now)
+        '''
+        return self._ats310.busy()
 
     def start_prm(self):
         '''
         Sets the parallel port pin that turns the PrM ON
         '''
+        self._ats310.start_capture()
         self._comm.start_prm()
 
 

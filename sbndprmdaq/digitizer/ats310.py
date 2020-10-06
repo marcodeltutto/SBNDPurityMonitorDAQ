@@ -10,8 +10,10 @@ import logging
 
 try:
     from . import atsapi as ats
+    from . import BoardWrapper
 except:
     import atsapi as ats
+    import BoardWrapper
 
 class ATS310Exception(Exception):
     """
@@ -36,6 +38,7 @@ class ATS310():
         self._logger = logging.getLogger(__name__)
 
         self._board = ats.Board(systemId=1, boardId=1)
+        self._board = BoardWrapper(self._board, ATS310Exception)
 
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
@@ -77,16 +80,20 @@ class ATS310():
         #    EXT CLK BNC connector
         # global self._samples_per_sec
         self._samples_per_sec = 20000000.0
+        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
+
         self._board.setCaptureClock(ats.INTERNAL_CLOCK,
-                                    ats.SAMPLE_RATE_20MSPS,
+                                    self._samples_per_sec_id,
                                     ats.CLOCK_EDGE_RISING,
                                     0)
 
         # TODO: Select channel A input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_400_MV,
-                                   ats.IMPEDANCE_50_OHM)
+                                   # ats.INPUT_RANGE_PM_400_MV,
+                                   ats.INPUT_RANGE_PM_40_MV,
+                                   # ats.IMPEDANCE_50_OHM)
+                                   ats.IMPEDANCE_1M_OHM)
 
         # TODO: Select channel A bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_A, 0)
@@ -95,8 +102,10 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_400_MV,
-                                   ats.IMPEDANCE_50_OHM)
+                                   # ats.INPUT_RANGE_PM_400_MV,
+                                   ats.INPUT_RANGE_PM_40_MV,
+                                   # ats.IMPEDANCE_50_OHM)
+                                   ats.IMPEDANCE_1M_OHM)
 
         # TODO: Select channel B bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_B, 0)
@@ -104,17 +113,18 @@ class ATS310():
         # TODO: Select trigger inputs and levels as required.
         self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
                                         ats.TRIG_ENGINE_J,
-                                        ats.TRIG_CHAN_A,
+                                        # ats.TRIG_CHAN_A,
+                                        ats.TRIG_EXTERNAL,
                                         ats.TRIGGER_SLOPE_POSITIVE,
-                                        150,
+                                        # 150,
+                                        200,
                                         ats.TRIG_ENGINE_K,
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         128)
 
         # TODO: Select external trigger parameters as required.
-        self._board.setExternalTrigger(ats.DC_COUPLING,
-                                       ats.ETR_TTL)
+        self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_TTL) # could be ETR_5V
 
         # TODO: Set trigger delay as required.
         self._trigger_delay_sec = 0
@@ -233,6 +243,13 @@ class ATS310():
             bytesPerSec = bytesTransferred / transferTime_sec
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
+
+    def busy(self):
+        '''
+        Returns if the ats310 board is busy or not
+        '''
+        self._board.busy()
+
 
 if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)

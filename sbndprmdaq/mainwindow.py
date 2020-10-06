@@ -1,6 +1,7 @@
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
+from PyQt5.QtCore import QTimer
 
 ICON_RED_LED = os.path.join(os.path.dirname(
                os.path.realpath(__file__)),
@@ -31,14 +32,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._logs_btn.clicked.connect(self._logs.show)
 
         self._prm_manager = None
-    #     self._comm = None
 
-
-    # def set_communicator(self, comm):
-    #     '''
-    #     Sets the parallel communicator
-    #     '''
-    #     self._comm = comm
+        self._status_timer = QTimer()
+        self._status_timer.timeout.connect(self._check_status)
+        self._status_timer.start(1000)
 
 
     def set_manager(self, manager):
@@ -79,3 +76,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self._prm_manager.hv_on()
         else:
             self._prm_manager.hv_off()
+
+    def _check_status(self):
+        '''
+        Callback that checks the status
+        '''
+        if self._prm_manager.digitizer_busy():
+            self._digi_status_label.setText('Busy')
+            self._digi_status_label.setStyleSheet("color: red;")
+            self.repaint()
+        else:
+            self._digi_status_label.setText('Ready')
+            self._digi_status_label.setStyleSheet("color: green;")
+            self.repaint()
+
