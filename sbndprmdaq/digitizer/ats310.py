@@ -8,12 +8,7 @@ import sys
 import time
 import logging
 
-try:
-    from . import atsapi as ats
-    from . import BoardWrapper
-except:
-    import atsapi as ats
-    import BoardWrapper
+from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 
 class ATS310Exception(Exception):
     """
@@ -38,11 +33,11 @@ class ATS310():
         self._logger = logging.getLogger(__name__)
 
         self._board = ats.Board(systemId=1, boardId=1)
-        self._board = BoardWrapper(self._board, ATS310Exception)
 
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
 
+        self._board = BoardWrapper(self._board, ATS310Exception)
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 1024

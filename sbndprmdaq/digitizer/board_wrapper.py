@@ -27,16 +27,16 @@ class BoardWrapper:
         try:
             ret = func(*args, **kwargs)
 
-            if ret == ats.ApiSuccess:
-                pass
-            elif ret == ats.ApiFailed:
-                pass
-            elif ret == ats.ApiAccessDenied:
-                pass
-            elif ret == ats.ApiDmaChannelUnavailable:
-                pass
-            else:
-                pass
+            # if ret == ats.ApiSuccess:
+            #     pass
+            # elif ret == ats.ApiFailed:
+            #     pass
+            # elif ret == ats.ApiAccessDenied:
+            #     pass
+            # elif ret == ats.ApiDmaChannelUnavailable:
+            #     pass
+            # else:
+            #     pass
 
             return ret
         except self.ExceptionType as error:
