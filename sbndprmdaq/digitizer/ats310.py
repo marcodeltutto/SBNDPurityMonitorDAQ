@@ -7,6 +7,7 @@ import signal
 import sys
 import time
 import logging
+import copy
 
 try:
     from . import atsapi as ats
@@ -26,7 +27,7 @@ class ATS310Exception(Exception):
         '''
         self._message = message
         logger.critical(self._message)
-        super(ESP32Exception, self).__init__(self._message)
+        super(ATS310Exception, self).__init__(self._message)
 
 
 class ATS310():
@@ -42,7 +43,7 @@ class ATS310():
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
 
-        self._board = BoardWrapper(self._board, ATS310Exception)
+        # self._board = BoardWrapper(self._board, ATS310Exception)
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 1024
@@ -55,7 +56,7 @@ class ATS310():
 
         # TODO: Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
-        self._acquisition_timeout_sec = 10
+        self._acquisition_timeout_sec = 5
 
         # TODO: Select the active channels.
         self._channels = ats.CHANNEL_A | ats.CHANNEL_B
@@ -117,14 +118,16 @@ class ATS310():
                                         ats.TRIG_EXTERNAL,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         # 150,
-                                        200,
+                                        129, #200,
                                         ats.TRIG_ENGINE_K,
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         128)
 
         # TODO: Select external trigger parameters as required.
-        self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_TTL) # could be ETR_5V
+        # For a 1 V range, 0 is 0 V, 255 is 1 V
+        # 0 is -1 V, 128 is 0 V, 255 is 1 V
+        self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_1V) #ats.ETR_TTL) # could be ETR_5V
 
         # TODO: Set trigger delay as required.
         self._trigger_delay_sec = 0
@@ -167,26 +170,39 @@ class ATS310():
         self._board.setRecordCount(self._records_per_capture)
 
     def start_capture(self):
-        start = time.time() # Keep track of when acquisition started
+        self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
-        buffersCompleted = 0
-        bytesTransferred = 0
+
+    def check_capture(self):
         while not ats.enter_pressed():
             if not self._board.busy():
                 # Acquisition is done
                 break
-            if time.time() - start > self._acquisition_timeout_sec:
+            if time.time() - self._start > self._acquisition_timeout_sec:
                 self._board.abortCapture()
-                raise Exception("Error: Capture timeout. Verify trigger")
+                self._logger.critical("Error: Capture timeout. Verify trigger")
+                # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
+                return
             time.sleep(10e-3)
 
-        captureTime_sec = time.time() - start
+        captureTime_sec = time.time() - self._start
         recordsPerSec = 0
         if captureTime_sec > 0:
             recordsPerSec = self._records_per_capture / captureTime_sec
         print("Captured %d records in %f rec (%f records/sec)" %
               (self._records_per_capture, captureTime_sec, recordsPerSec))
+
+    def get_data(self):
+
+        start = time.time() # Keep track of when acquisition started
+
+        self._data = {
+        'A': None,
+        'B': None
+        }
+        buffersCompleted = 0
+        bytesTransferred = 0
 
         sample_type = ctypes.c_uint8
         if self._bytes_per_sample > 1:
@@ -227,11 +243,18 @@ class ATS310():
                 # if dataFile:
                 #     buffer.buffer[:self._samples_per_record].tofile(dataFile)
 
-                print(buffer.buffer[:self._samples_per_record])
+                if channel_id == ats.CHANNEL_A:
+                    self._data['A'] = copy.copy(buffer.buffer[:self._samples_per_record])
+                elif channel_id == ats.CHANNEL_B:
+                    self._data['B'] = copy.copy(buffer.buffer[:self._samples_per_record])
+                else:
+                    raise ATS310Exception(self._logger, f'Unkown channel {channel_id}')
 
-                plt.plot(buffer.buffer[:self._samples_per_record])
-                plt.ylabel('some numbers')
-                plt.show()
+                print(channel_id, buffer.buffer[:self._samples_per_record])
+
+                # plt.plot(buffer.buffer[:self._samples_per_record])
+                # plt.ylabel('some numbers')
+                # plt.show()
 
                 if ats.enter_pressed():
                     break
@@ -243,6 +266,9 @@ class ATS310():
             bytesPerSec = bytesTransferred / transferTime_sec
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
+
+        print('Returning data, self._samples_per_record', self._samples_per_record)
+        return self._data
 
     def busy(self):
         '''

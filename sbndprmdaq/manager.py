@@ -1,3 +1,5 @@
+import time, copy
+
 from sbndprmdaq.digitizer.ats310 import ATS310
 from sbndprmdaq.parallel_communication.communicator import Communicator
 
@@ -6,6 +8,8 @@ class PrMManager():
     def __init__(self):
         self._ats310 = ATS310()
         self._comm = Communicator()
+
+        self._data = None
 
 
     def test(self):
@@ -32,6 +36,12 @@ class PrMManager():
         '''
         self._ats310.start_capture()
         self._comm.start_prm()
+        time.sleep(0.2)
+        self._comm.stop_prm()
+        self._ats310.check_capture()
+        self._data = self._ats310.get_data()
+        print('From manager:', self._data)
+        print('From manager len A:', len(self._data['A']))
 
 
     def stop_prm(self):
@@ -53,3 +63,8 @@ class PrMManager():
         Sets the parallel port pin that turns the HV OFF
         '''
         self._comm.hv_off()
+
+    def get_data(self):
+        '''
+        '''
+        return self._data

@@ -41,6 +41,8 @@ class BoardWrapper:
             return ret
         except self.ExceptionType as error:
             logging.error(self._last_error_str)
+            print('Here')
+            pass
 
 
     def __init__(self, instance, ExceptionType):
@@ -65,3 +67,4 @@ class BoardWrapper:
                 replacement = lambda *args, __method=__method, **kwargs: self._wrap(
                     getattr(instance, __method), *args, **kwargs)
                 setattr(self, __method, replacement)
+                # print('Replaced ', __method)

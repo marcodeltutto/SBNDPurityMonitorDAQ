@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
@@ -36,6 +37,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer = QTimer()
         self._status_timer.timeout.connect(self._check_status)
         self._status_timer.start(1000)
+
+        self._graph = self._plot.plot()
+        self._plot.setLabel(axis='left', text='ADC')
+        self._plot.setLabel(axis='bottom', text='Time Ticks')
 
 
     def set_manager(self, manager):
@@ -81,6 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Callback that checks the status
         '''
+        print('_check_status')
         if self._prm_manager.digitizer_busy():
             self._digi_status_label.setText('Busy')
             self._digi_status_label.setStyleSheet("color: red;")
@@ -89,4 +95,25 @@ class MainWindow(QtWidgets.QMainWindow):
             self._digi_status_label.setText('Ready')
             self._digi_status_label.setStyleSheet("color: green;")
             self.repaint()
+
+        data = self._prm_manager.get_data()
+        print('From mainwindow', data)
+
+        if data is None:
+            return
+
+        # if 'A' in data and data['A'] is not None:
+        #     print('--------------')
+        #     x = np.arange(len(data['A']))
+        #     y = data['A']
+        #     self._graph.setData(x, y)
+
+        if 'B' in data and data['B'] is not None:
+            print('--------------')
+            x = np.arange(len(data['B']))
+            y = data['B']
+            self._graph.setData(x, y)
+
+
+
 
