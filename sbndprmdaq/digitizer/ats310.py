@@ -91,12 +91,13 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
+        self._input_range_volts = 400.e-3 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
                                    ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_40_MV,
-                                   # ats.IMPEDANCE_50_OHM)
-                                   ats.IMPEDANCE_1M_OHM)
+                                   ats.IMPEDANCE_50_OHM)
+                                   # ats.IMPEDANCE_1M_OHM)
 
         # TODO: Select channel A bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_A, 0)
@@ -275,8 +276,36 @@ class ATS310():
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
 
+        self.convert_to_volts()
+
         print('Returning data, self._samples_per_record', self._samples_per_record)
         return self._data
+
+
+    def convert_to_volts(self):
+        '''
+        Converts self._data from ADC to volts
+        '''
+
+        bit_shift = int(4)
+        bits_per_sample = int(12)
+        code_zero = float(1 << (bits_per_sample - 1)) - 0.5
+        code_range = float(1 << (bits_per_sample - 1)) - 0.5
+
+        if self._data['A'] is not None:
+            sample_code = np.right_shift(self._data['A'], bit_shift)
+            self._data['A'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+
+        if self._data['B'] is not None:
+            sample_code = np.right_shift(self._data['B'], bit_shift)
+            self._data['B'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+
+        # sample_value = self._data['A'][0]
+        # sample_code = sample_value >> bit_shift
+        # sampleVolts = self._input_range_volts * (float(sample_code - code_zero) / code_range)
+        # print('from', sample_value, 'to', sampleVolts)
+
+
 
     def busy(self):
         '''

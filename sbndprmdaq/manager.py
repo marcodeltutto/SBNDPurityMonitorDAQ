@@ -42,6 +42,7 @@ class PrMManager():
         self._data = self._ats310.get_data()
         print('From manager:', self._data)
         # print('From manager len A:', len(self._data['A']))
+        print('----------------------', type(self._data['A'][0]))
 
 
     def stop_prm(self):

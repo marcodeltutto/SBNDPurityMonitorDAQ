@@ -39,8 +39,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer.start(1000)
 
         self._graph = self._plot.plot()
-        self._plot.setLabel(axis='left', text='ADC')
-        self._plot.setLabel(axis='bottom', text='Time Ticks')
+        self._plot.setLabel(axis='left', text='Signal [V]')
+        self._plot.setLabel(axis='bottom', text='Time [ms]')
 
 
     def set_manager(self, manager):
@@ -101,15 +101,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if data is None:
             return
 
-        if 'A' in data and data['A'] is not None:
-            x = np.arange(len(data['A']))
-            y = data['A']
-            self._graph.setData(x, y)
-
-        # if 'B' in data and data['B'] is not None:
-        #     x = np.arange(len(data['B']))
-        #     y = data['B']
+        # if 'A' in data and data['A'] is not None:
+        #     x = np.arange(len(data['A'])) * 50/1e3
+        #     y = data['A']
         #     self._graph.setData(x, y)
+
+        if 'B' in data and data['B'] is not None:
+            x = np.arange(len(data['B']))
+            y = data['B']
+            self._graph.setData(x, y)
 
 
 
