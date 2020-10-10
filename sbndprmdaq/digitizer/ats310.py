@@ -43,6 +43,8 @@ class ATS310():
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
 
+        self._capture_success = False
+
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
         # TODO: Select the number of pre-trigger samples
@@ -91,8 +93,8 @@ class ATS310():
         # TODO: Select channel A input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   # ats.INPUT_RANGE_PM_400_MV,
-                                   ats.INPUT_RANGE_PM_40_MV,
+                                   ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_40_MV,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -118,7 +120,7 @@ class ATS310():
                                         ats.TRIG_EXTERNAL,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         # 150,
-                                        129, #200,
+                                        140, #200,
                                         ats.TRIG_ENGINE_K,
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
@@ -175,6 +177,7 @@ class ATS310():
         print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
 
     def check_capture(self):
+        self._capture_success = False
         while not ats.enter_pressed():
             if not self._board.busy():
                 # Acquisition is done
@@ -192,6 +195,7 @@ class ATS310():
             recordsPerSec = self._records_per_capture / captureTime_sec
         print("Captured %d records in %f rec (%f records/sec)" %
               (self._records_per_capture, captureTime_sec, recordsPerSec))
+        self._capture_success = True
 
     def get_data(self):
 
@@ -201,6 +205,10 @@ class ATS310():
         'A': None,
         'B': None
         }
+
+        if not self._capture_success:
+            return self._data
+
         buffersCompleted = 0
         bytesTransferred = 0
 

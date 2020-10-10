@@ -36,12 +36,12 @@ class PrMManager():
         '''
         self._ats310.start_capture()
         self._comm.start_prm()
-        time.sleep(0.2)
-        self._comm.stop_prm()
+        # time.sleep(0.2)
+        # self._comm.stop_prm()
         self._ats310.check_capture()
         self._data = self._ats310.get_data()
         print('From manager:', self._data)
-        print('From manager len A:', len(self._data['A']))
+        # print('From manager len A:', len(self._data['A']))
 
 
     def stop_prm(self):

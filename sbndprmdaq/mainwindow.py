@@ -86,7 +86,6 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Callback that checks the status
         '''
-        print('_check_status')
         if self._prm_manager.digitizer_busy():
             self._digi_status_label.setText('Busy')
             self._digi_status_label.setStyleSheet("color: red;")
@@ -97,22 +96,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.repaint()
 
         data = self._prm_manager.get_data()
-        print('From mainwindow', data)
+        # print('From mainwindow', data)
 
         if data is None:
             return
 
-        # if 'A' in data and data['A'] is not None:
-        #     print('--------------')
-        #     x = np.arange(len(data['A']))
-        #     y = data['A']
-        #     self._graph.setData(x, y)
-
-        if 'B' in data and data['B'] is not None:
-            print('--------------')
-            x = np.arange(len(data['B']))
-            y = data['B']
+        if 'A' in data and data['A'] is not None:
+            x = np.arange(len(data['A']))
+            y = data['A']
             self._graph.setData(x, y)
+
+        # if 'B' in data and data['B'] is not None:
+        #     x = np.arange(len(data['B']))
+        #     y = data['B']
+        #     self._graph.setData(x, y)
 
 
 
