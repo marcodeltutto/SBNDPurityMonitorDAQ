@@ -91,13 +91,13 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
-        self._input_range_volts = 400.e-3 # volts
+        self._input_range_volts = 40.e-3 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_400_MV,
-                                   # ats.INPUT_RANGE_PM_40_MV,
-                                   ats.IMPEDANCE_50_OHM)
-                                   # ats.IMPEDANCE_1M_OHM)
+                                   # ats.INPUT_RANGE_PM_400_MV,
+                                   ats.INPUT_RANGE_PM_40_MV,
+                                   # ats.IMPEDANCE_50_OHM)
+                                   ats.IMPEDANCE_1M_OHM)
 
         # TODO: Select channel A bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_A, 0)

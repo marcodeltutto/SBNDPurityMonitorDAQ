@@ -3,6 +3,7 @@ import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
+import pyqtgraph as pg
 
 ICON_RED_LED = os.path.join(os.path.dirname(
                os.path.realpath(__file__)),
@@ -38,7 +39,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer.timeout.connect(self._check_status)
         self._status_timer.start(1000)
 
-        self._graph = self._plot.plot()
+        self._graph_a = self._plot.plot()
+        self._graph_b = self._plot.plot()
         self._plot.setLabel(axis='left', text='Signal [V]')
         self._plot.setLabel(axis='bottom', text='Time [ms]')
 
@@ -101,15 +103,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if data is None:
             return
 
-        # if 'A' in data and data['A'] is not None:
-        #     x = np.arange(len(data['A'])) * 50/1e3
-        #     y = data['A']
-        #     self._graph.setData(x, y)
+        if 'A' in data and data['A'] is not None:
+            x = np.arange(len(data['A'])) * 50/1e3
+            y = data['A']
+            self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
         if 'B' in data and data['B'] is not None:
-            x = np.arange(len(data['B']))
+            x = np.arange(len(data['B'])) * 50/1e3
             y = data['B']
-            self._graph.setData(x, y)
+            self._graph_b.setData(x, y, pen=pg.mkPen('r'))
 
 
 
