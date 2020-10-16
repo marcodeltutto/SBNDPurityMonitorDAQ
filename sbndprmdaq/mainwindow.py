@@ -106,12 +106,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if 'A' in data and data['A'] is not None:
             x = np.arange(len(data['A'])) * 50/1e3
             y = data['A']
-            self._graph_a.setData(x, y, pen=pg.mkPen('b'))
+            self._graph_a.setData(x, y, pen=pg.mkPen('r'))
 
         if 'B' in data and data['B'] is not None:
             x = np.arange(len(data['B'])) * 50/1e3
             y = data['B']
-            self._graph_b.setData(x, y, pen=pg.mkPen('r'))
+            self._graph_b.setData(x, y, pen=pg.mkPen('b'))
 
 
 
