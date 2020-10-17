@@ -1,12 +1,16 @@
 import time, copy
+import logging
 
-from sbndprmdaq.digitizer.ats310 import ATS310
+from sbndprmdaq.digitizer.ats310 import ATS310, ATS310Exception
+from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.parallel_communication.communicator import Communicator
 
 class PrMManager():
 
     def __init__(self):
+        self._logger = logging.getLogger(__name__)
         self._ats310 = ATS310()
+        self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
         self._comm = Communicator()
 
         self._data = None
@@ -36,13 +40,9 @@ class PrMManager():
         '''
         self._ats310.start_capture()
         self._comm.start_prm()
-        # time.sleep(0.2)
-        # self._comm.stop_prm()
         self._ats310.check_capture()
         self._data = self._ats310.get_data()
         print('From manager:', self._data)
-        # print('From manager len A:', len(self._data['A']))
-        print('----------------------', type(self._data['A'][0]))
 
 
     def stop_prm(self):

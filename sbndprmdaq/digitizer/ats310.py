@@ -14,7 +14,7 @@ try:
 except:
     import atsapi as ats
 
-from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
+# from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 
 class ATS310Exception(Exception):
     """
@@ -153,6 +153,8 @@ class ATS310():
         # Configure AUX I/O connector as required
         self._board.configureAuxIO(ats.AUX_OUT_TRIGGER, 0)
 
+        return True
+
     def prepare_acquisition(self):
 
         # Compute the number of bytes per record and per buffer
@@ -172,10 +174,16 @@ class ATS310():
         # Configure the number of records in the acquisition
         self._board.setRecordCount(self._records_per_capture)
 
+        return True
+
+
     def start_capture(self):
         self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
+
+        return True
+
 
     def check_capture(self):
         self._capture_success = False
@@ -197,6 +205,9 @@ class ATS310():
         print("Captured %d records in %f rec (%f records/sec)" %
               (self._records_per_capture, captureTime_sec, recordsPerSec))
         self._capture_success = True
+
+        return True
+
 
     def get_data(self):
 
@@ -276,13 +287,13 @@ class ATS310():
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
 
-        self.convert_to_volts()
+        self._convert_to_volts()
 
         print('Returning data, self._samples_per_record', self._samples_per_record)
         return self._data
 
 
-    def convert_to_volts(self):
+    def _convert_to_volts(self):
         '''
         Converts self._data from ADC to volts
         '''
@@ -311,7 +322,7 @@ class ATS310():
         '''
         Returns if the ats310 board is busy or not
         '''
-        self._board.busy()
+        return self._board.busy()
 
 
 if __name__ == "__main__":
