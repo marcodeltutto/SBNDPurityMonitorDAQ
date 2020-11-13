@@ -42,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._graph_a = self._plot.plot()
         self._graph_b = self._plot.plot()
         self._plot.setLabel(axis='left', text='Signal [V]')
-        self._plot.setLabel(axis='bottom', text='Time [ms]')
+        self._plot.setLabel(axis='bottom', text='Time [s]')
 
 
     def set_manager(self, manager):
@@ -103,15 +103,25 @@ class MainWindow(QtWidgets.QMainWindow):
         if data is None:
             return
 
+        for el in data['A']:
+            print('av of el in data A', np.mean(el))
+
+        for el in data['B']:
+            print('av of el in data B', np.mean(el))
+
         if 'A' in data and data['A'] is not None:
-            x = np.arange(len(data['A'])) * 50/1e3
-            y = data['A']
-            self._graph_a.setData(x, y, pen=pg.mkPen('r'))
+            print('------------------------------ len data', len(data['A']))
+            av_waveform = data['A'][2] #np.mean(data['A'], axis=0)
+            print('------------------------------ len av_waveform', len(av_waveform))
+            x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
+            y = av_waveform
+            self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
         if 'B' in data and data['B'] is not None:
-            x = np.arange(len(data['B'])) * 50/1e3
-            y = data['B']
-            self._graph_b.setData(x, y, pen=pg.mkPen('b'))
+            av_waveform = data['B'][2] #np.mean(data['B'], axis=0)
+            x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
+            y = av_waveform
+            self._graph_b.setData(x, y, pen=pg.mkPen('r'))
 
 
 
