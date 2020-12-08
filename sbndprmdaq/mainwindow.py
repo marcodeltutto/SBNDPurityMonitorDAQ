@@ -25,6 +25,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._logs = logs
 
+        self._prm_id = 2
+
         self._start_stop_btn.clicked.connect(self._start_stop_prm)
         self._running = False
 
@@ -63,7 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def _start_prm(self):
-        self._prm_manager.start_prm()
+        self._prm_manager.start_prm(self._prm_id)
         self._start_stop_btn.setText("Stop")
         self._run_status_label.setText('Running')
         self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
@@ -71,7 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def _stop_prm(self):
-        self._prm_manager.stop_prm()
+        self._prm_manager.stop_prm(self._prm_id)
         self._start_stop_btn.setText("Start")
         self._run_status_label.setText('Not Running')
        	self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
@@ -97,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._digi_status_label.setStyleSheet("color: green;")
             self.repaint()
 
-        data = self._prm_manager.get_data()
+        data = self._prm_manager.get_data(self._prm_id)
         # print('From mainwindow', data)
 
         if data is None:

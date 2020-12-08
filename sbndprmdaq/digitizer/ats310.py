@@ -29,16 +29,31 @@ class ATS310Exception(Exception):
         logger.critical(self._message)
         super(ATS310Exception, self).__init__(self._message)
 
+def get_digitizers():
+    n_systems = ats.numOfSystems()
+    n_boards = ats.boardsFound()
+
+    boards_per_system = []
+    for i in range(n_systems):
+        boards_per_system.append(ats.boardsInSystemBySystemID(i+1))
+
+    digitizers = []
+    for i in range(n_systems):
+        d = ATS310(systemId=i+1, boardId=1)
+        digitizers.append(d)
+
+    return digitizers
+
 
 class ATS310():
 
-    def __init__(self):
+    def __init__(self, systemId=1, boardId=1):
         '''
         Constructor
         '''
         self._logger = logging.getLogger(__name__)
 
-        self._board = ats.Board(systemId=1, boardId=1)
+        self._board = ats.Board(systemId, boardId)
 
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
@@ -329,6 +344,8 @@ if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)
     # ConfigureBoard(board)
     # AcquireData(board)
+
+    digitizers = get_digitizers()
 
     my_ats310 = ATS310()
     my_ats310.start_capture()

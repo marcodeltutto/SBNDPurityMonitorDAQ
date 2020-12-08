@@ -39,7 +39,7 @@ window.show()
 
 
 #
-# Construct the parallel communicator and the digitizer
+# Construct the manager
 #
 if args.mock:
     from sbndprmdaq.mock_manager import MockPrMManager
