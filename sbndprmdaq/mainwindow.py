@@ -10,9 +10,9 @@ ICON_GREEN_LED = os.path.join(os.path.dirname(
                  os.path.realpath(__file__)),
                  'icons/green-led-on.png')
 
-class Controls(QtWidgets.QMainWindow):
+class Control(QtWidgets.QMainWindow):
 
-    def __init__(self, name='PrM 0'):
+    def __init__(self, prm_id=0, name='PrM 0'):
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
@@ -21,10 +21,14 @@ class Controls(QtWidgets.QMainWindow):
 
         uic.loadUi(uifile, self)
 
+        self._id = prm_id
         self._name = name
         self._name_label.setText(self._name)
         self._mode_toggle.setNames('Auto', 'Manual')
         self._mode_toggle.isSimpleOption()
+
+    def get_id(self):
+        return self._id
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -39,11 +43,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._logs = logs
 
-        self._start_stop_btn.clicked.connect(self._start_stop_prm)
-        self._running = False
+        # self._start_stop_btn.clicked.connect(self._start_stop_prm)
+        self._running = [False, False, False]
 
-        self._hv_toggle.setName('HV')
-        self._hv_toggle.clicked.connect(self._set_hv)
+        # self._hv_toggle.setName('HV')
+        # self._hv_toggle.clicked.connect(self._set_hv)
 
         self._logs_btn.clicked.connect(self._logs.show)
 
@@ -53,11 +57,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer.timeout.connect(self._check_status)
         self._status_timer.start(1000)
 
-        # self._temp = Controls()
-        self._prm_0_controls = Controls()
-        self._prm_0_controls.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        self._prm_controls = []
+        self._prm_controls.append(Control(prm_id=0, name='PrM 0'))
+        self._prm_controls.append(Control(prm_id=1, name='PrM 1'))
+        self._prm_controls.append(Control(prm_id=2, name='PrM 2'))
+        # self._prm_controls[0].setStyleSheet("background-color: rgba(0,0,0,0.1);")
 
-        self._vertical_layout.addWidget(self._prm_0_controls)
+        for control in self._prm_controls:
+            self.setup_control(control)
+            self._vertical_layout.addWidget(control)
+
+    def setup_control(self, control):
+        prm_id = control.get_id()
+        control.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        control._start_stop_btn.clicked.connect(lambda: self._start_stop_prm(prm_id=prm_id))
+        control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
 
 
     def set_manager(self, manager):
@@ -67,29 +81,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self._prm_manager = manager
 
 
-    def _start_stop_prm(self):
+    def _start_stop_prm(self, prm_id):
 
-        self._running = not self._running
+        self._running[prm_id] = not self._running[prm_id]
 
-        if self._running:
-            self._start_prm()
+        if self._running[prm_id]:
+            self._start_prm(prm_id)
         else:
-            self._stop_prm()
+            self._stop_prm(prm_id)
 
 
-    def _start_prm(self):
-        self._prm_manager.start_prm()
-        self._start_stop_btn.setText("Stop")
-        self._run_status_label.setText('Running')
-        self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+    def _start_prm(self, prm_id):
+        self._prm_manager.start_prm(prm_id)
+        self._prm_controls[prm_id]._start_stop_btn.setText("Stop")
+        self._prm_controls[prm_id]._run_status_label.setText('Running')
+        self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
         self.repaint()
 
 
-    def _stop_prm(self):
-        self._prm_manager.stop_prm()
-        self._start_stop_btn.setText("Start")
-        self._run_status_label.setText('Not Running')
-       	self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+    def _stop_prm(self, prm_id):
+        self._prm_manager.stop_prm(prm_id)
+        self._prm_controls[prm_id]._start_stop_btn.setText("Start")
+        self._prm_controls[prm_id]._run_status_label.setText('Not Running')
+       	self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
         self.repaint()
 
 
@@ -99,16 +113,24 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._prm_manager.hv_off()
 
+    def _set_mode(self, prm_id):
+        control = self._prm_controls[prm_id]
+        if control._mode_toggle.isChecked():
+            self._prm_manager.set_mode(prm_id, 'auto')
+        else:
+            self._prm_manager.set_mode(prm_id, 'manual')
+
     def _check_status(self):
         '''
         Callback that checks the status
         '''
-        if self._prm_manager.digitizer_busy():
-            self._digi_status_label.setText('Busy')
-            self._digi_status_label.setStyleSheet("color: red;")
-            self.repaint()
-        else:
-            self._digi_status_label.setText('Ready')
-            self._digi_status_label.setStyleSheet("color: green;")
-            self.repaint()
+        for i, control in enumerate(self._prm_controls):
+            if self._prm_manager.digitizer_busy(i):
+                control._digi_status_label.setText('Busy')
+                control._digi_status_label.setStyleSheet("color: red;")
+                self.repaint()
+            else:
+                control._digi_status_label.setText('Ready')
+                control._digi_status_label.setStyleSheet("color: green;")
+                self.repaint()
 

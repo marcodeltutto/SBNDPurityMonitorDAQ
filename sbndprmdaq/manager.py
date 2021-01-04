@@ -19,14 +19,14 @@ class PrMManager():
         data = self._ats310.get_data()
         print(data)
 
-    def digitizer_busy(self):
+    def digitizer_busy(self, prm_id):
         '''
         Returns the digitizers status
         (if it is busy or now)
         '''
         return self._ats310.busy()
 
-    def start_prm(self):
+    def start_prm(self, prm_id):
         '''
         Sets the parallel port pin that turns the PrM ON
         '''
@@ -34,7 +34,7 @@ class PrMManager():
         self._comm.start_prm()
 
 
-    def stop_prm(self):
+    def stop_prm(self, prm_id):
         '''
         Sets the parallel port pin that turns the PrM OFF
         '''
@@ -53,3 +53,7 @@ class PrMManager():
         Sets the parallel port pin that turns the HV OFF
         '''
         self._comm.hv_off()
+
+    def set_mode(self, prm_id, mode):
+        return
+
