@@ -1,7 +1,9 @@
 import os
+import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
+import pyqtgraph as pg
 
 ICON_RED_LED = os.path.join(os.path.dirname(
                os.path.realpath(__file__)),
@@ -45,6 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # self._start_stop_btn.clicked.connect(self._start_stop_prm)
         self._running = [False, False, False]
+        self._prm_id = 2
 
         # self._hv_toggle.setName('HV')
         # self._hv_toggle.clicked.connect(self._set_hv)
@@ -66,6 +69,11 @@ class MainWindow(QtWidgets.QMainWindow):
         for control in self._prm_controls:
             self.setup_control(control)
             self._vertical_layout.addWidget(control)
+
+        self._graph_a = self._plot.plot()
+        self._graph_b = self._plot.plot()
+        self._plot.setLabel(axis='left', text='Signal [V]')
+        self._plot.setLabel(axis='bottom', text='Time [s]')
 
     def setup_control(self, control):
         prm_id = control.get_id()
@@ -133,4 +141,33 @@ class MainWindow(QtWidgets.QMainWindow):
                 control._digi_status_label.setText('Ready')
                 control._digi_status_label.setStyleSheet("color: green;")
                 self.repaint()
+
+        data = self._prm_manager.get_data(self._prm_id)
+        # print('From mainwindow', data)
+
+        if data is None:
+            return
+
+        for el in data['A']:
+            print('av of el in data A', np.mean(el))
+
+        for el in data['B']:
+            print('av of el in data B', np.mean(el))
+
+        if 'A' in data and data['A'] is not None:
+            print('------------------------------ len data', len(data['A']))
+            av_waveform = data['A'][2] #np.mean(data['A'], axis=0)
+            print('------------------------------ len av_waveform', len(av_waveform))
+            x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
+            y = av_waveform
+            self._graph_a.setData(x, y, pen=pg.mkPen('b'))
+
+        if 'B' in data and data['B'] is not None:
+            av_waveform = data['B'][2] #np.mean(data['B'], axis=0)
+            x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
+            y = av_waveform
+            self._graph_b.setData(x, y, pen=pg.mkPen('r'))
+
+
+
 

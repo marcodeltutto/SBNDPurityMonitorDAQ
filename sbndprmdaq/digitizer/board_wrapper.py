@@ -1,8 +1,87 @@
 
-try:
-    from . import atsapi as ats
-except:
-    import atsapi as ats
+return_statues = {
+    512: "ApiSuccess",
+    513: "ApiFailed",
+    514: "ApiAccessDenied",
+    515: "ApiDmaChannelUnavailable",
+    516: "ApiDmaChannelInvalid",
+    517: "ApiDmaChannelTypeError",
+    518: "ApiDmaInProgress",
+    519: "ApiDmaDone",
+    520: "ApiDmaPaused",
+    521: "ApiDmaNotPaused",
+    522: "ApiDmaCommandInvalid",
+    523: "ApiDmaManReady",
+    524: "ApiDmaManNotReady",
+    525: "ApiDmaInvalidChannelPriority",
+    526: "ApiDmaManCorrupted",
+    527: "ApiDmaInvalidElementIndex",
+    528: "ApiDmaNoMoreElements",
+    529: "ApiDmaSglInvalid",
+    530: "ApiDmaSglQueueFull",
+    531: "ApiNullParam",
+    532: "ApiInvalidBusIndex",
+    533: "ApiUnsupportedFunction",
+    534: "ApiInvalidPciSpace",
+    535: "ApiInvalidIopSpace",
+    536: "ApiInvalidSize",
+    537: "ApiInvalidAddress",
+    538: "ApiInvalidAccessType",
+    539: "ApiInvalidIndex",
+    540: "ApiMuNotReady",
+    541: "ApiMuFifoEmpty",
+    542: "ApiMuFifoFull",
+    543: "ApiInvalidRegister",
+    544: "ApiDoorbellClearFailed",
+    545: "ApiInvalidUserPin",
+    546: "ApiInvalidUserState",
+    547: "ApiEepromNotPresent",
+    548: "ApiEepromTypeNotSupported",
+    549: "ApiEepromBlank",
+    550: "ApiConfigAccessFailed",
+    551: "ApiInvalidDeviceInfo",
+    552: "ApiNoActiveDriver",
+    553: "ApiInsufficientResources",
+    554: "ApiObjectAlreadyAllocated",
+    555: "ApiAlreadyInitialized",
+    556: "ApiNotInitialized",
+    557: "ApiBadConfigRegEndianMode",
+    558: "ApiInvalidPowerState",
+    559: "ApiPowerDown",
+    560: "ApiFlybyNotSupported",
+    561: "ApiNotSupportThisChannel",
+    562: "ApiNoAction",
+    563: "ApiHSNotSupported",
+    564: "ApiVPDNotSupported",
+    565: "ApiVpdNotEnabled",
+    566: "ApiNoMoreCap",
+    567: "ApiInvalidOffset",
+    568: "ApiBadPinDirection",
+    569: "ApiPciTimeout",
+    570: "ApiDmaChannelClosed",
+    571: "ApiDmaChannelError",
+    572: "ApiInvalidHandle",
+    573: "ApiBufferNotReady",
+    574: "ApiInvalidData",
+    575: "ApiDoNothing",
+    576: "ApiDmaSglBuildFailed",
+    577: "ApiPMNotSupported",
+    578: "ApiInvalidDriverVersion",
+    579: "ApiWaitTimeout",
+    580: "ApiWaitCanceled",
+    581: "ApiBufferTooSmall",
+    582: "ApiBufferOverflow",
+    583: "ApiInvalidBuffer",
+    584: "ApiInvalidRecordsPerBuffer",
+    585: "ApiDmaPending",
+    586: "ApiLockAndProbePagesFailed",
+    587: "ApiWaitAbandoned",
+    588: "ApiWaitFailed",
+    589: "ApiTransferComplete",
+    590: "ApiPllNotLocked",
+    591: "ApiNotSupportedInDualChannelMode",
+}
+
 
 
 class BoardWrapper:
@@ -27,23 +106,28 @@ class BoardWrapper:
         try:
             ret = func(*args, **kwargs)
 
-            if ret == ats.ApiSuccess:
-                pass
-            elif ret == ats.ApiFailed:
-                pass
-            elif ret == ats.ApiAccessDenied:
-                pass
-            elif ret == ats.ApiDmaChannelUnavailable:
-                pass
+            if isinstance(ret, bool):
+                return ret
+
+            if not isinstance(ret, int):
+                return ret
+
+
+            if ret in return_statues:
+                if return_statues[ret] == "ApiSuccess":
+                    return ret
+                else:
+                    raise self.ExceptionType(self._logger, 'ATS310 Failed: ' + return_statues[ret])
+
             else:
-                pass
+                raise self.ExceptionType(self._logger, f'Unkown return code {ret}')
 
-            return ret
         except self.ExceptionType as error:
-            logging.error(self._last_error_str)
+            self._logger.error(error)
+            raise Exception() # FIXME
 
 
-    def __init__(self, instance, ExceptionType):
+    def __init__(self, instance, logger, ExceptionType):
         #pylint: disable=invalid-name
         """
         Constructor.
@@ -58,6 +142,7 @@ class BoardWrapper:
 
         methods = dir(instance)
         self.ExceptionType = ExceptionType
+        self._logger = logger
         self._last_error_str = None
 
         for __method in methods:

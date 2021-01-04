@@ -7,13 +7,14 @@ import signal
 import sys
 import time
 import logging
+import copy
 
 try:
     from . import atsapi as ats
-    from . import BoardWrapper
 except:
     import atsapi as ats
-    import BoardWrapper
+
+# from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 
 class ATS310Exception(Exception):
     """
@@ -26,36 +27,56 @@ class ATS310Exception(Exception):
         '''
         self._message = message
         logger.critical(self._message)
-        super(ESP32Exception, self).__init__(self._message)
+        super(ATS310Exception, self).__init__(self._message)
+
+def get_digitizers():
+    n_systems = ats.numOfSystems()
+    n_boards = ats.boardsFound()
+
+    boards_per_system = []
+    for i in range(n_systems):
+        boards_per_system.append(ats.boardsInSystemBySystemID(i+1))
+
+    digitizers = []
+    for i in range(n_systems):
+        d = ATS310(systemId=i+1, boardId=1)
+        digitizers.append(d)
+
+    return digitizers
 
 
 class ATS310():
 
-    def __init__(self):
+    def __init__(self, systemId=1, boardId=1):
         '''
         Constructor
         '''
         self._logger = logging.getLogger(__name__)
 
-        self._board = ats.Board(systemId=1, boardId=1)
-        self._board = BoardWrapper(self._board, ATS310Exception)
+        self._board = ats.Board(systemId, boardId)
 
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
 
+        self._capture_success = False
+
+        # self._board = BoardWrapper(self._board, ATS310Exception)
+
+        self._samples_per_sec = 20000000.0
+        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
 
         # TODO: Select the number of pre-trigger samples
-        self._pre_trigger_samples = 1024
+        self._pre_trigger_samples = 512 #1024
 
         # TODO: Select the number of samples per record.
-        self._post_trigger_samples = 1024
+        self._post_trigger_samples = 10240 #1024
 
         # TODO: Select the number of records in the acquisition.
-        self._records_per_capture = 1
+        self._records_per_capture = 10
 
         # TODO: Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
-        self._acquisition_timeout_sec = 10
+        self._acquisition_timeout_sec = 30
 
         # TODO: Select the active channels.
         self._channels = ats.CHANNEL_A | ats.CHANNEL_B
@@ -65,6 +86,9 @@ class ATS310():
 
         self.configure_board()
         self.prepare_acquisition()
+
+    def get_samples_per_second(self):
+        return self._samples_per_sec
 
     # Configures a board for acquisition
     def configure_board(self):
@@ -79,8 +103,6 @@ class ATS310():
         #    SAMPLE_RATE_USER_DEF, and connect a 100MHz signal to the
         #    EXT CLK BNC connector
         # global self._samples_per_sec
-        self._samples_per_sec = 20000000.0
-        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
 
         self._board.setCaptureClock(ats.INTERNAL_CLOCK,
                                     self._samples_per_sec_id,
@@ -88,10 +110,11 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
+        self._input_range_volts = 400.e-3 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   # ats.INPUT_RANGE_PM_400_MV,
-                                   ats.INPUT_RANGE_PM_40_MV,
+                                   ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_40_MV,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -102,8 +125,8 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
-                                   # ats.INPUT_RANGE_PM_400_MV,
-                                   ats.INPUT_RANGE_PM_40_MV,
+                                   ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_40_MV,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -117,14 +140,16 @@ class ATS310():
                                         ats.TRIG_EXTERNAL,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         # 150,
-                                        200,
+                                        140, #200,
                                         ats.TRIG_ENGINE_K,
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         128)
 
         # TODO: Select external trigger parameters as required.
-        self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_TTL) # could be ETR_5V
+        # For a 1 V range, 0 is 0 V, 255 is 1 V
+        # 0 is -1 V, 128 is 0 V, 255 is 1 V
+        self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_1V) #ats.ETR_TTL) # could be ETR_5V
 
         # TODO: Set trigger delay as required.
         self._trigger_delay_sec = 0
@@ -147,6 +172,8 @@ class ATS310():
         # Configure AUX I/O connector as required
         self._board.configureAuxIO(ats.AUX_OUT_TRIGGER, 0)
 
+        return True
+
     def prepare_acquisition(self):
 
         # Compute the number of bytes per record and per buffer
@@ -166,27 +193,55 @@ class ATS310():
         # Configure the number of records in the acquisition
         self._board.setRecordCount(self._records_per_capture)
 
+        return True
+
+
     def start_capture(self):
-        start = time.time() # Keep track of when acquisition started
+        self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
-        buffersCompleted = 0
-        bytesTransferred = 0
+
+        return True
+
+
+    def check_capture(self):
+        self._capture_success = False
         while not ats.enter_pressed():
             if not self._board.busy():
                 # Acquisition is done
                 break
-            if time.time() - start > self._acquisition_timeout_sec:
+            if time.time() - self._start > self._acquisition_timeout_sec:
                 self._board.abortCapture()
-                raise Exception("Error: Capture timeout. Verify trigger")
+                self._logger.critical("Error: Capture timeout. Verify trigger")
+                # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
+                return
             time.sleep(10e-3)
 
-        captureTime_sec = time.time() - start
+        captureTime_sec = time.time() - self._start
         recordsPerSec = 0
         if captureTime_sec > 0:
             recordsPerSec = self._records_per_capture / captureTime_sec
         print("Captured %d records in %f rec (%f records/sec)" %
               (self._records_per_capture, captureTime_sec, recordsPerSec))
+        self._capture_success = True
+
+        return True
+
+
+    def get_data(self):
+
+        start = time.time() # Keep track of when acquisition started
+
+        self._data = {
+        'A': [],
+        'B': []
+        }
+
+        if not self._capture_success:
+            return self._data
+
+        buffersCompleted = 0
+        bytesTransferred = 0
 
         sample_type = ctypes.c_uint8
         if self._bytes_per_sample > 1:
@@ -204,12 +259,12 @@ class ATS310():
                 channel_id = ats.channels[channel]
                 if channel_id & self._channels == 0:
                     continue
-                self._board.read(channel_id,             # Channel identifier
-                           buffer.addr,           # Memory address of buffer
-                           self._bytes_per_sample,        # Bytes per sample
-                           record + 1,            # Record (1-indexed)
-                           -self._pre_trigger_samples,    # Pre-trigger samples
-                           self._samples_per_record)      # Samples per record
+                self._board.read(channel_id,                    # Channel identifier
+                                 buffer.addr,                   # Memory address of buffer
+                                 self._bytes_per_sample,        # Bytes per sample
+                                 record + 1,                    # Record (1-indexed)
+                                 -self._pre_trigger_samples,    # Pre-trigger samples
+                                 self._samples_per_record)      # Samples per record
                 bytesTransferred += self._bytes_per_record;
 
                 # Records are arranged in the buffer as follows:
@@ -227,11 +282,18 @@ class ATS310():
                 # if dataFile:
                 #     buffer.buffer[:self._samples_per_record].tofile(dataFile)
 
-                print(buffer.buffer[:self._samples_per_record])
+                if channel_id == ats.CHANNEL_A:
+                    self._data['A'].append(copy.copy(buffer.buffer[:self._samples_per_record]))
+                elif channel_id == ats.CHANNEL_B:
+                    self._data['B'].append(copy.copy(buffer.buffer[:self._samples_per_record]))
+                else:
+                    raise ATS310Exception(self._logger, f'Unkown channel {channel_id}')
 
-                plt.plot(buffer.buffer[:self._samples_per_record])
-                plt.ylabel('some numbers')
-                plt.show()
+                print(channel_id, buffer.buffer[:self._samples_per_record])
+
+                # plt.plot(buffer.buffer[:self._samples_per_record])
+                # plt.ylabel('some numbers')
+                # plt.show()
 
                 if ats.enter_pressed():
                     break
@@ -244,17 +306,50 @@ class ATS310():
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
 
+        # self._convert_to_volts()
+
+        print('Returning data, self._samples_per_record', self._samples_per_record)
+        return self._data
+
+
+    def _convert_to_volts(self):
+        '''
+        Converts self._data from ADC to volts
+        '''
+
+        bit_shift = int(4)
+        bits_per_sample = int(12)
+        code_zero = float(1 << (bits_per_sample - 1)) - 0.5
+        code_range = float(1 << (bits_per_sample - 1)) - 0.5
+
+        if self._data['A'] is not None:
+            sample_code = np.right_shift(self._data['A'], bit_shift)
+            self._data['A'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+
+        if self._data['B'] is not None:
+            sample_code = np.right_shift(self._data['B'], bit_shift)
+            self._data['B'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+
+        # sample_value = self._data['A'][0]
+        # sample_code = sample_value >> bit_shift
+        # sampleVolts = self._input_range_volts * (float(sample_code - code_zero) / code_range)
+        # print('from', sample_value, 'to', sampleVolts)
+
+
+
     def busy(self):
         '''
         Returns if the ats310 board is busy or not
         '''
-        self._board.busy()
+        return self._board.busy()
 
 
 if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)
     # ConfigureBoard(board)
     # AcquireData(board)
+
+    digitizers = get_digitizers()
 
     my_ats310 = ATS310()
     my_ats310.start_capture()

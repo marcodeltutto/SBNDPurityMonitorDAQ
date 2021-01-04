@@ -13,6 +13,9 @@ parser = argparse.ArgumentParser(description='SBND Purity Monitor DAQ')
 parser.add_argument('--mock', action='store_true',
                     default=False,
                     help='If true, runs a mock application for debugging purposes.')
+parser.add_argument('--datafiles',
+                    default='/home/mdeltutt/prm_data',
+                    help='Path where data files will be saved.')
 parser.add_argument('--logfile',
                     default='prm_log.txt',
                     help='File name where logs will be saved.')
@@ -39,14 +42,14 @@ window.show()
 
 
 #
-# Construct the parallel communicator and the digitizer
+# Construct the manager
 #
 if args.mock:
     from sbndprmdaq.mock_manager import MockPrMManager
     manager = MockPrMManager()
 else:
     from sbndprmdaq.manager import PrMManager
-    manager = PrMManager()
+    manager = PrMManager(args.datafiles)
 
 # manager.test()
 
