@@ -2,7 +2,7 @@ import time, copy
 import logging
 import numpy as np
 
-from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310, 
+from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
 from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.parallel_communication.communicator import Communicator
 

@@ -46,6 +46,8 @@ class MockATS310():
         self._board = MockBoard()
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
+        self._samples_per_sec = 20000000.0
+
 
     def start_capture(self):
         start = time.time() # Keep track of when acquisition started
@@ -57,3 +59,7 @@ class MockATS310():
         Returns if the ats310 board is busy or not
         '''
         return self._board.busy()
+
+    def get_samples_per_second(self):
+        return self._samples_per_sec
+

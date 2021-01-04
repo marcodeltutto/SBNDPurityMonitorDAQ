@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>800</height>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>460</y>
+      <y>560</y>
       <width>921</width>
       <height>211</height>
      </rect>
@@ -27,8 +27,8 @@
    <widget class="QPushButton" name="_logs_btn">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>700</y>
+      <x>850</x>
+      <y>800</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -46,19 +46,103 @@
       <height>321</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="_vertical_layout"/>
+    <layout class="QVBoxLayout" name="_controls_layout"/>
    </widget>
    <widget class="QPushButton" name="_settings_btn">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>700</y>
+      <x>30</x>
+      <y>800</y>
       <width>121</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
      <string>Settings</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>530</y>
+      <width>351</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Show:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prmall_checkbox">
+       <property name="text">
+        <string>All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm1_checkbox">
+       <property name="text">
+        <string>PrM 1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm2_checkbox">
+       <property name="text">
+        <string>PrM 2</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm3_checkbox">
+       <property name="text">
+        <string>PrM 3</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>400</y>
+      <width>701</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="_latest_data_layout"/>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>440</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Latest data:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

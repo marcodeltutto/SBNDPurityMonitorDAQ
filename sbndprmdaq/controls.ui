@@ -17,7 +17,7 @@
    <widget class="QPushButton" name="_start_stop_btn">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>240</x>
       <y>30</y>
       <width>141</width>
       <height>51</height>
@@ -30,8 +30,8 @@
    <widget class="QLabel" name="_run_status_label">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>70</y>
+      <x>110</x>
+      <y>60</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -46,8 +46,8 @@
    <widget class="QLabel" name="_status_led">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>30</y>
+      <x>140</x>
+      <y>20</y>
       <width>40</width>
       <height>40</height>
      </rect>
@@ -70,7 +70,7 @@
    <widget class="Toggle" name="_mode_toggle" native="true">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>430</x>
       <y>40</y>
       <width>131</width>
       <height>41</height>
@@ -80,7 +80,7 @@
    <widget class="QLabel" name="_mode_toggle_label">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>440</x>
       <y>10</y>
       <width>101</width>
       <height>21</height>
@@ -96,7 +96,7 @@
    <widget class="QLabel" name="_digi_label">
     <property name="geometry">
      <rect>
-      <x>870</x>
+      <x>860</x>
       <y>10</y>
       <width>101</width>
       <height>21</height>
@@ -109,7 +109,7 @@
    <widget class="QLabel" name="_digitizer_image">
     <property name="geometry">
      <rect>
-      <x>870</x>
+      <x>860</x>
       <y>50</y>
       <width>51</width>
       <height>40</height>
@@ -133,7 +133,7 @@
    <widget class="QLabel" name="_digi_status_label">
     <property name="geometry">
      <rect>
-      <x>940</x>
+      <x>930</x>
       <y>60</y>
       <width>51</width>
       <height>21</height>
@@ -176,8 +176,8 @@ Number of acquisitions: 1</string>
    <widget class="QLabel" name="_name_label">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>50</y>
+      <x>30</x>
+      <y>30</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -193,7 +193,31 @@ Number of acquisitions: 1</string>
      <string>Name</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="_description_label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>true</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Name</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
