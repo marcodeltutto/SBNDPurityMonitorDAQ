@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>600</height>
+    <height>120</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="_start_stop_btn">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>40</y>
+      <x>230</x>
+      <y>30</y>
       <width>141</width>
       <height>51</height>
      </rect>
@@ -31,7 +31,7 @@
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>120</y>
+      <y>70</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -39,25 +39,15 @@
     <property name="text">
      <string>Not Running</string>
     </property>
-   </widget>
-   <widget class="QLabel" name="_run_label">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>100</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Status:</string>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="_status_led">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>100</y>
+      <x>110</x>
+      <y>30</y>
       <width>40</width>
       <height>40</height>
      </rect>
@@ -77,57 +67,34 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="Toggle" name="_hv_toggle" native="true">
+   <widget class="Toggle" name="_mode_toggle" native="true">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>60</y>
+      <x>410</x>
+      <y>40</y>
       <width>131</width>
       <height>41</height>
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="_hv_toggle_label">
+   <widget class="QLabel" name="_mode_toggle_label">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>40</y>
-      <width>81</width>
+      <x>440</x>
+      <y>10</y>
+      <width>101</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Toggle HV:</string>
-    </property>
-   </widget>
-   <widget class="PlotWidget" name="_plot" native="true">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>320</y>
-      <width>711</width>
-      <height>171</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="_logs_btn">
-    <property name="geometry">
-     <rect>
-      <x>670</x>
-      <y>500</y>
-      <width>121</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Show Logs</string>
+     <string>Toggle Mode:</string>
     </property>
    </widget>
    <widget class="QLabel" name="_digi_label">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>30</y>
+      <x>870</x>
+      <y>10</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -136,10 +103,10 @@
      <string>Digitizer Status:</string>
     </property>
    </widget>
-   <widget class="QLabel" name="_status_led_2">
+   <widget class="QLabel" name="_digitizer_image">
     <property name="geometry">
      <rect>
-      <x>620</x>
+      <x>870</x>
       <y>60</y>
       <width>51</width>
       <height>40</height>
@@ -163,7 +130,7 @@
    <widget class="QLabel" name="_digi_status_label">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>940</x>
       <y>70</y>
       <width>51</width>
       <height>21</height>
@@ -173,36 +140,56 @@
      <string>Busy</string>
     </property>
    </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
+   <widget class="QLabel" name="_settings_title_label">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>160</y>
-      <width>1001</width>
-      <height>141</height>
+      <x>620</x>
+      <y>10</y>
+      <width>141</width>
+      <height>21</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="_vertical_layout"/>
-   </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1000</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuMenu">
-    <property name="title">
-     <string>Menu</string>
+    <property name="text">
+     <string>Current Settings:</string>
     </property>
-    <addaction name="actionShow_Logs"/>
    </widget>
-   <addaction name="menuMenu"/>
+   <widget class="QLabel" name="_settings_label">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>40</y>
+      <width>161</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show settings here</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="_name_label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Name</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionShow_Logs">
    <property name="text">
     <string>Show Logs</string>
@@ -214,12 +201,6 @@
    <class>Toggle</class>
    <extends>QWidget</extends>
    <header>sbndprmdaq.tools/toggle</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PlotWidget</class>
-   <extends>QWidget</extends>
-   <header>pyqtgraph</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

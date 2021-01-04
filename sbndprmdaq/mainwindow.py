@@ -10,6 +10,22 @@ ICON_GREEN_LED = os.path.join(os.path.dirname(
                  os.path.realpath(__file__)),
                  'icons/green-led-on.png')
 
+class Controls(QtWidgets.QMainWindow):
+
+    def __init__(self, name='PrM 0'):
+        super().__init__()
+
+        uifile = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)),
+            "controls.ui")
+
+        uic.loadUi(uifile, self)
+
+        self._name = name
+        self._name_label.setText(self._name)
+        self._mode_toggle.setNames('Auto', 'Manual')
+        self._mode_toggle.isSimpleOption()
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, logs):
@@ -36,6 +52,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer = QTimer()
         self._status_timer.timeout.connect(self._check_status)
         self._status_timer.start(1000)
+
+        # self._temp = Controls()
+        self._prm_0_controls = Controls()
+        self._prm_0_controls.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+
+        self._vertical_layout.addWidget(self._prm_0_controls)
 
 
     def set_manager(self, manager):
