@@ -2,12 +2,12 @@
 
 ## Run
 ```
-python prm_gui.py
+./prm_gui.py
 ```
 
 If running without a parallel port, for testing purposes:
 ```
-python prm_gui.py --mock
+./prm_gui.py --mock
 ```
 
 ## Run tests
