@@ -32,9 +32,34 @@ class Control(QtWidgets.QMainWindow):
         self._mode_toggle.isSimpleOption()
         self._running = False
 
+        self._progress_bar.setValue(0)
+        self._progress_label.setText('')
+
     def get_id(self):
         return self._id
 
+    def set_progress(self, name, perc, **kwargs):
+        name = str(name)
+        if perc > 100 or perc < 0:
+            raise Exception('perc can pnly be between 0 and 100')
+
+        self._progress_label.setText(name)
+        self._progress_bar.setValue(perc)
+
+        if 'color' in kwargs:
+            self._progress_label.setStyleSheet("color: " + kwargs['color']);
+
+
+    def reset_progress(self, name=None, **kwargs):
+        self._progress_bar.setValue(0)
+
+        if name is not None:
+            self._progress_label.setText(name)
+        else:
+            self._progress_label.setText('')
+
+        if 'color' in kwargs:
+            self._progress_label.setStyleSheet("color: " + kwargs['color']);
 
 class DataDisplay(QtWidgets.QMainWindow):
 
@@ -54,6 +79,11 @@ class DataDisplay(QtWidgets.QMainWindow):
     def get_id(self):
         return self._id
 
+    def set_latest_data(self, qa, qc, tau, time):
+        text = f'Qa = {qa}\nQc = {qc}\nLifetime = {tau}'
+        self._text.setText(text)
+        self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
+
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -67,11 +97,6 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi(uifile, self)
 
         self._logs = logs
-
-        # self._start_stop_btn.clicked.connect(self._start_stop_prm)
-
-        # self._hv_toggle.setName('HV')
-        # self._hv_toggle.clicked.connect(self._set_hv)
 
         self._logs_btn.clicked.connect(self._logs.show)
 
@@ -133,7 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def setup_control(self, control):
         prm_id = control.get_id()
         control.setStyleSheet("background-color: rgba(0,0,0,0.1);")
-        control._start_stop_btn.clicked.connect(lambda: self._start_stop_prm(prm_id=prm_id))
+        control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
 
     def setup_latest_data(self, latest_data):
@@ -172,8 +197,14 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_manager = manager
 
+    def set_progress(self, prm_id, name, perc, **kwargs):
+        self._prm_controls[prm_id].set_progress(name, perc, **kwargs)
 
-    def _start_stop_prm(self, prm_id):
+    def reset_progress(self, prm_id, name=None, **kwargs):
+        self._prm_controls[prm_id].reset_progress(name, **kwargs)
+
+
+    def start_stop_prm(self, prm_id):
         print('Start stop prm_id', prm_id)
 
         self._prm_controls[prm_id]._running = not self._prm_controls[prm_id]._running
@@ -217,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Callback that checks the status
         '''
-        for i, control in enumerate(self._prm_controls.values()):
+        for control in self._prm_controls.values():
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
                 control._digi_status_label.setStyleSheet("color: red;")
@@ -262,6 +293,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
+            qa, qc, tau = self._extract_values(data['A'], data['B'])
 
+            self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
+
+    def _extract_values(self, a, b):
+        return 1, 2, 3
 
 

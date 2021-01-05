@@ -204,18 +204,38 @@ class ATS310():
         return True
 
 
-    def check_capture(self):
+    def check_capture(self, progress_callback):
         self._capture_success = False
-        while not ats.enter_pressed():
+
+        status = False
+
+        while self._acquisition_timeout_sec > time.time() - self._start:
+
             if not self._board.busy():
                 # Acquisition is done
+                status = True
                 break
-            if time.time() - self._start > self._acquisition_timeout_sec:
-                self._board.abortCapture()
-                self._logger.critical("Error: Capture timeout. Verify trigger")
-                # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
-                return
-            time.sleep(10e-3)
+
+            perc = (time.time() - self._start) / self._acquisition_timeout_sec * 100
+            progress_callback.emit(prm_id, 'Check Capture', perc)
+            time.sleep(0.1)
+
+        if not status:
+            return False
+
+        # while not ats.enter_pressed():
+        #     if not self._board.busy():
+        #         # Acquisition is done
+        #         break
+        #     perc = (time.time() - start) / simulated_time * 100
+        #     progress_callback.emit(prm_id, 'Check Capture', perc)
+
+        #     if time.time() - self._start > self._acquisition_timeout_sec:
+        #         self._board.abortCapture()
+        #         self._logger.critical("Error: Capture timeout. Verify trigger")
+        #         # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
+        #         return
+        #     time.sleep(10e-3)
 
         captureTime_sec = time.time() - self._start
         recordsPerSec = 0

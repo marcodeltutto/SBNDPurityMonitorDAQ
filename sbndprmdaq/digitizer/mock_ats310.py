@@ -54,6 +54,16 @@ class MockATS310():
         self._board.startCapture() # Start the acquisition
         self._board._status = True
 
+    def check_capture(self, prm_id, progress_callback):
+        # Simulate the time it takes to get the trigger
+        simulated_time = 4 #seconds
+        start = time.time()
+        while(simulated_time > time.time() - start):
+            perc = (time.time() - start) / simulated_time * 100
+            progress_callback.emit(prm_id, 'Check Capture', perc)
+            time.sleep(0.1)
+        return True
+
     def busy(self):
         '''
         Returns if the ats310 board is busy or not
