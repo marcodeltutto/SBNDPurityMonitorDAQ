@@ -140,7 +140,7 @@ class PrMManager():
         '''
         Called when a thread ends.
         '''
-        print("The I/O thread finished!")
+        self._logger.info(f'Thread completed for prm_id {prm_id}.')
         self._window.start_stop_prm(prm_id)
 
         if status:
