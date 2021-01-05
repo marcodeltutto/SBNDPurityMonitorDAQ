@@ -5,6 +5,8 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 
+from sbndprmdaq.prm_settings.settings import Settings
+
 ICON_RED_LED = os.path.join(os.path.dirname(
                os.path.realpath(__file__)),
                'icons/led-red-on.png')
@@ -99,6 +101,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._logs = logs
 
         self._logs_btn.clicked.connect(self._logs.show)
+
+        self._settings = Settings(self)
+        self._settings_btn.clicked.connect(self._settings.show)
 
         self._prm_manager = None
 
