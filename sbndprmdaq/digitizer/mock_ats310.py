@@ -1,5 +1,5 @@
 from __future__ import division
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import ctypes
 import numpy as np
 import os
@@ -46,14 +46,30 @@ class MockATS310():
         self._board = MockBoard()
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
+        self._samples_per_sec = 20000000.0
+
 
     def start_capture(self):
         start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         self._board._status = True
 
+    def check_capture(self, prm_id, progress_callback):
+        # Simulate the time it takes to get the trigger
+        simulated_time = 4 #seconds
+        start = time.time()
+        while(simulated_time > time.time() - start):
+            perc = (time.time() - start) / simulated_time * 100
+            progress_callback.emit(prm_id, 'Check Capture', perc)
+            time.sleep(0.1)
+        return True
+
     def busy(self):
         '''
         Returns if the ats310 board is busy or not
         '''
         return self._board.busy()
+
+    def get_samples_per_second(self):
+        return self._samples_per_sec
+

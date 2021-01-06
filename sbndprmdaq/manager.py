@@ -2,16 +2,20 @@ import time, copy
 import logging
 import numpy as np
 
-from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310, 
+from PyQt5.QtCore import QThreadPool, QTimer
+
+from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
 from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.parallel_communication.communicator import Communicator
+from sbndprmdaq.threading_utils import Worker
 
 class PrMManager():
 
-    def __init__(self, data_files_path):
+    def __init__(self, window, data_files_path):
         self._logger = logging.getLogger(__name__)
         # self._ats310 = ATS310()
         # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
+        self._window = window
         self._comm = Communicator()
 
         digitizers = get_digitizers()
@@ -23,6 +27,9 @@ class PrMManager():
         self._data_files_path = data_files_path
 
         self._hv_on = False
+
+        self._threadpool = QThreadPool()
+        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
 
 
     # def test(self):
@@ -44,26 +51,108 @@ class PrMManager():
         self._ats310 = self._digitizers[prm_id-1]
         return self._ats310.busy()
 
-
     def ats_samples_per_sec(self):
         return self._ats310.get_samples_per_second()
-
 
     def start_prm(self, prm_id=1):
         '''
         Sets the parallel port pin that turns the PrM ON
         '''
-        self._ats310 = self._digitizers[prm_id-1]
-        self._ats310.start_capture()
+
+        # Tell the parallel communicator to start the purity monitor
         self._comm.start_prm()
-        time.sleep(8)
-        self._ats310.start_capture()
-        self._ats310.check_capture()
 
-        self._data[prm_id-1] = self._ats310.get_data()
-        print('From manager:', self._data[prm_id-1])
+        # Start a thread where we let the digitizer run
+        self.start_io_thread(prm_id)
 
-        self._save_data(prm_id)
+
+    def start_io_thread(self, prm_id):
+        '''
+        Starts the thread.
+        '''
+        worker = Worker(self._capture_data, prm_id=prm_id)
+        worker.signals.result.connect(self._result_callback)
+        worker.signals.finished.connect(self._thread_complete)
+        worker.signals.progress.connect(self._thread_progress)
+
+        self._threadpool.start(worker)
+        self._logger.info(f'Thread started for prm_id {prm_id}.')
+
+
+    def _capture_data(self, progress_callback, prm_id):
+        '''
+        This is the main function that runs in the thread.
+        '''
+
+        ats310 = self._digitizers[prm_id-1]
+
+        #
+        # Wait some time for the HV to stabilize
+        #
+        purity_mon_wake_time = 4 #seconds
+        start = time.time()
+        while(purity_mon_wake_time > time.time() - start):
+            perc = (time.time() - start) / purity_mon_wake_time * 100
+            progress_callback.emit(prm_id, 'Awake Monitor', perc)
+            time.sleep(0.1)
+
+        progress_callback.emit(prm_id, 'Start Capture', 100)
+
+        #
+        # Tell the digitizer to start capturing data and check until it completes
+        #
+        ats310.start_capture()
+        status = ats310.check_capture(progress_callback, prm_id)
+
+        data_raw = ats310.get_data()
+        # print('From manager:', data)
+        data = {
+            'prm_id': prm_id,
+            'status': status,
+            'A': data_raw['A'],
+            'B': data_raw['B'],
+        }
+
+        return data
+
+
+    def _result_callback(self, data):
+        '''
+        This method is called at the end of every thread and receives the acquired data
+        '''
+        # print('Got data:', parameter, data)
+        print('Got data:', data['prm_id'])
+
+        if data['status']:
+            print('ok')
+            self._data[data['prm_id']-1] = {
+                'A': data['A'],
+                'B': data['B'],
+            }
+            self._save_data(data['prm_id'])
+
+
+
+    def _thread_progress(self, prm_id, name, s):
+        '''
+        Called during the thread.
+        '''
+        self._window.set_progress(prm_id=prm_id, name=name, perc=s)
+
+
+    def _thread_complete(self, prm_id, status):
+        '''
+        Called when a thread ends.
+        '''
+        self._logger.info(f'Thread completed for prm_id {prm_id}.')
+        self._window.start_stop_prm(prm_id)
+
+        if status:
+            self._window.reset_progress(prm_id, name='Done!', color='#006400') # #006400 is dark green
+        else:
+            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # #B22222 is firebrick
+
+        QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
     def _save_data(self, prm_id=1):
         '''
@@ -74,19 +163,22 @@ class PrMManager():
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
+        if self._data[prm_id-1] is None:
+            return
+
         for ch in self._data[prm_id-1].keys():
             # file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_' + ch + '.csv'
             # np.savetxt(file_name, self._data[ch], delimiter=',')
             # self._logger.info(f'Saving data for ch {ch} to file ' + file_name)
 
-            out_dict[f'ch_{ch}'] = self._data[ch]
+            out_dict[f'ch_{ch}'] = self._data[prm_id-1][ch]
 
         if self._hv_on:
             hv_status = 'on'
         else:
             hv_status = 'off'
 
-        file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_hv_' + hv_status
+        file_name = self._data_files_path + '/sbnd_prm' + str(prm_id) + '_data_' + timestr + '_hv_' + hv_status
         np.savez(file_name, **out_dict)
 
     def stop_prm(self, prm_id=1):
@@ -110,6 +202,9 @@ class PrMManager():
         '''
         self._comm.hv_off()
         self._hv_on = False
+
+    def set_mode(self, prm_id, mode):
+        return
 
     def get_data(self, prm_id):
         '''

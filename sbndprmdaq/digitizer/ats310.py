@@ -30,8 +30,14 @@ class ATS310Exception(Exception):
         super(ATS310Exception, self).__init__(self._message)
 
 def get_digitizers():
+
+    logger = logging.getLogger(__name__)
+
     n_systems = ats.numOfSystems()
     n_boards = ats.boardsFound()
+
+    logger.info(f'Number of ATS systems: {n_systems}.')
+    logger.info(f'Number of ATS boards: {n_boards}.')
 
     boards_per_system = []
     for i in range(n_systems):
@@ -54,6 +60,8 @@ class ATS310():
         self._logger = logging.getLogger(__name__)
 
         self._board = ats.Board(systemId, boardId)
+        self._system_id = systemId
+        self._board_id = boardId
 
         if self._board.handle is None or self._board.handle == 0:
             raise ATS310Exception(self._logger, 'Board handle is None or zero.')
@@ -199,23 +207,44 @@ class ATS310():
     def start_capture(self):
         self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
+        self._logger.info(f'Capturing data from ATS digitized with id {self._system_id}, board id: {self._board_id}.')
         print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
 
         return True
 
 
-    def check_capture(self):
+    def check_capture(self, progress_callback, prm_id):
         self._capture_success = False
-        while not ats.enter_pressed():
+
+        status = False
+
+        while self._acquisition_timeout_sec > time.time() - self._start:
+
             if not self._board.busy():
                 # Acquisition is done
+                status = True
                 break
-            if time.time() - self._start > self._acquisition_timeout_sec:
-                self._board.abortCapture()
-                self._logger.critical("Error: Capture timeout. Verify trigger")
-                # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
-                return
-            time.sleep(10e-3)
+
+            perc = (time.time() - self._start) / self._acquisition_timeout_sec * 100
+            progress_callback.emit(prm_id, 'Check Capture', perc)
+            time.sleep(0.1)
+
+        if not status:
+            return False
+
+        # while not ats.enter_pressed():
+        #     if not self._board.busy():
+        #         # Acquisition is done
+        #         break
+        #     perc = (time.time() - start) / simulated_time * 100
+        #     progress_callback.emit(prm_id, 'Check Capture', perc)
+
+        #     if time.time() - self._start > self._acquisition_timeout_sec:
+        #         self._board.abortCapture()
+        #         self._logger.critical("Error: Capture timeout. Verify trigger")
+        #         # raise ATS310Exception(self._logger, "Error: Capture timeout. Verify trigger")
+        #         return
+        #     time.sleep(10e-3)
 
         captureTime_sec = time.time() - self._start
         recordsPerSec = 0

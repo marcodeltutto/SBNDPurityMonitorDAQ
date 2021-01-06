@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>760</width>
+    <height>718</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>SBND Purity Monitor DAQ</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="_save_quit_btn">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>630</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save and Quit</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="_save_btn">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>630</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="_quit_btn">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>630</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Quit</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>761</width>
+      <height>581</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="_settings_layout"/>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="_status_bar"/>
+  <action name="actionShow_Logs">
+   <property name="text">
+    <string>Show Logs</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

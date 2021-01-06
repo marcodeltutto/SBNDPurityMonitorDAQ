@@ -6,115 +6,29 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1000</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SBND Purity Monitor DAQ</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="_start_stop_btn">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>40</y>
-      <width>141</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Start</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_run_status_label">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>120</y>
-      <width>101</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Not Running</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_run_label">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>100</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Status:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_status_led">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>100</y>
-      <width>40</width>
-      <height>40</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>icons/led-red-on.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="Toggle" name="_hv_toggle" native="true">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>60</y>
-      <width>131</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_hv_toggle_label">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>40</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Toggle HV:</string>
-    </property>
-   </widget>
    <widget class="PlotWidget" name="_plot" native="true">
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>320</y>
-      <width>711</width>
-      <height>171</height>
+      <y>560</y>
+      <width>921</width>
+      <height>211</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="_logs_btn">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>500</y>
+      <x>850</x>
+      <y>800</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -123,54 +37,112 @@
      <string>Show Logs</string>
     </property>
    </widget>
-   <widget class="QLabel" name="_digi_label">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>30</y>
-      <width>101</width>
-      <height>21</height>
+      <x>0</x>
+      <y>10</y>
+      <width>1001</width>
+      <height>321</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="_controls_layout"/>
+   </widget>
+   <widget class="QPushButton" name="_settings_btn">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>800</y>
+      <width>121</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>Digitizer Status:</string>
+     <string>Settings</string>
     </property>
    </widget>
-   <widget class="QLabel" name="_status_led_2">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>60</y>
-      <width>51</width>
-      <height>40</height>
+      <x>40</x>
+      <y>530</y>
+      <width>351</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Show:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prmall_checkbox">
+       <property name="text">
+        <string>All</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm1_checkbox">
+       <property name="text">
+        <string>PrM 1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm2_checkbox">
+       <property name="text">
+        <string>PrM 2</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="_prm3_checkbox">
+       <property name="text">
+        <string>PrM 3</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="horizontalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>400</y>
+      <width>701</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="_latest_data_layout"/>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>440</y>
+      <width>101</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>10</pointsize>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
-     <string/>
+     <string>Latest data:</string>
     </property>
-    <property name="pixmap">
-     <pixmap>icons/ats310_icon.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_digi_status_label">
-    <property name="geometry">
-     <rect>
-      <x>680</x>
-      <y>70</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Busy</string>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -179,7 +151,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1000</width>
      <height>22</height>
     </rect>
    </property>
@@ -199,12 +171,6 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>Toggle</class>
-   <extends>QWidget</extends>
-   <header>sbndprmdaq.tools/toggle</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>PlotWidget</class>
    <extends>QWidget</extends>

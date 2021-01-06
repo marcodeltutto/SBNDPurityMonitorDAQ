@@ -46,10 +46,10 @@ window.show()
 #
 if args.mock:
     from sbndprmdaq.mock_manager import MockPrMManager
-    manager = MockPrMManager()
+    manager = MockPrMManager(window)
 else:
     from sbndprmdaq.manager import PrMManager
-    manager = PrMManager(args.datafiles)
+    manager = PrMManager(window, args.datafiles)
 
 # manager.test()
 
