@@ -28,6 +28,9 @@ class PrMManager():
 
         self._hv_on = False
 
+        self._threadpool = QThreadPool()
+        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
+
 
     # def test(self):
 
@@ -99,7 +102,7 @@ class PrMManager():
         # Tell the digitizer to start capturing data and check until it completes
         #
         ats310.start_capture()
-        status = ats310.check_capture(progress_callback)
+        status = ats310.check_capture(progress_callback, prm_id)
 
         data_raw = ats310.get_data()
         # print('From manager:', data)
@@ -120,12 +123,13 @@ class PrMManager():
         # print('Got data:', parameter, data)
         print('Got data:', data['prm_id'])
 
-        self._data[data['prm_id']-1] = {
-            'A': data['A'],
-            'B': data['B'],
-        }
-
-        self._save_data(prm_id)
+        if data['status']:
+            print('ok')
+            self._data[data['prm_id']-1] = {
+                'A': data['A'],
+                'B': data['B'],
+            }
+            self._save_data(data['prm_id'])
 
 
 
@@ -159,19 +163,22 @@ class PrMManager():
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
+        if self._data[prm_id-1] is None:
+            return
+
         for ch in self._data[prm_id-1].keys():
             # file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_' + ch + '.csv'
             # np.savetxt(file_name, self._data[ch], delimiter=',')
             # self._logger.info(f'Saving data for ch {ch} to file ' + file_name)
 
-            out_dict[f'ch_{ch}'] = self._data[ch]
+            out_dict[f'ch_{ch}'] = self._data[prm_id-1][ch]
 
         if self._hv_on:
             hv_status = 'on'
         else:
             hv_status = 'off'
 
-        file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_hv_' + hv_status
+        file_name = self._data_files_path + '/sbnd_prm' + str(prm_id) + '_data_' + timestr + '_hv_' + hv_status
         np.savez(file_name, **out_dict)
 
     def stop_prm(self, prm_id=1):

@@ -253,6 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Callback that checks the status
         '''
+        print('_check_statusm len =', len(self._prm_controls))
         for control in self._prm_controls.values():
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
@@ -265,10 +266,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             data = self._prm_manager.get_data(control.get_id())
             # print('From mainwindow', data)
+            print('_check_status', control.get_id())
 
             if data is None:
-                return
+                continue
 
+            print('--> _check_status', control.get_id())
             # for el in data['A']:
             #     print('av of el in data A', np.mean(el))
 
