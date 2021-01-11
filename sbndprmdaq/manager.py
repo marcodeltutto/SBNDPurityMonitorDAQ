@@ -62,8 +62,8 @@ class PrMManager():
         # Tell the parallel communicator to start the purity monitor
         self._comm.start_prm()
 
-        # Start a thread where we let the digitizer run
         if self._window is not None:
+            # Start a thread where we let the digitizer run
             self.start_io_thread(prm_id)
         else:
             self.capture_data(prm_id)
