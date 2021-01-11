@@ -1,5 +1,7 @@
 # SBNDPurityMonitorDAQ
 
+[![Build Status](https://travis-ci.com/marcodeltutto/SBNDPurityMonitorDAQ.svg?branch=master)](https://travis-ci.com/marcodeltutto/SBNDPurityMonitorDAQ)
+
 ## Run
 ```
 ./prm_gui.py
