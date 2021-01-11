@@ -3,6 +3,16 @@ language: python
 python:
   - "3.8"
   
+addons:
+  apt:
+    packages:
+    - x11-utils
+    - libxkbcommon-x11-0
+
+services: xvfb
+
+dist: xenial
+        
 install:
   - pip install --upgrade pip
   - pip install pyparallel
@@ -10,6 +20,7 @@ install:
   - pip install PyQtGraph
   - pip install argparse
   - pip install qdarkstyle
+  - pip install pytest
   - pip install pytest-qt
   
 script:
