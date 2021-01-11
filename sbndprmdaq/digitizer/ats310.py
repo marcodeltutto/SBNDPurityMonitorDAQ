@@ -213,7 +213,7 @@ class ATS310():
         return True
 
 
-    def check_capture(self, progress_callback, prm_id):
+    def check_capture(self, prm_id, progress_callback=None):
         self._capture_success = False
 
         status = False
@@ -226,7 +226,8 @@ class ATS310():
                 break
 
             perc = (time.time() - self._start) / self._acquisition_timeout_sec * 100
-            progress_callback.emit(prm_id, 'Check Capture', perc)
+            if progress_callback is not None:
+                progress_callback.emit(prm_id, 'Check Capture', perc)
             time.sleep(0.1)
 
         if not status:

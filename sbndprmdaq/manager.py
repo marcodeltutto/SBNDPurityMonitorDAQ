@@ -11,7 +11,7 @@ from sbndprmdaq.threading_utils import Worker
 
 class PrMManager():
 
-    def __init__(self, window, data_files_path):
+    def __init__(self, window=None, data_files_path=None):
         self._logger = logging.getLogger(__name__)
         # self._ats310 = ATS310()
         # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
@@ -63,14 +63,17 @@ class PrMManager():
         self._comm.start_prm()
 
         # Start a thread where we let the digitizer run
-        self.start_io_thread(prm_id)
+        if self._window is not None:
+            self.start_io_thread(prm_id)
+        else:
+            self.capture_data(prm_id)
 
 
     def start_io_thread(self, prm_id):
         '''
         Starts the thread.
         '''
-        worker = Worker(self._capture_data, prm_id=prm_id)
+        worker = Worker(self.capture_data, prm_id=prm_id)
         worker.signals.result.connect(self._result_callback)
         worker.signals.finished.connect(self._thread_complete)
         worker.signals.progress.connect(self._thread_progress)
@@ -79,7 +82,7 @@ class PrMManager():
         self._logger.info(f'Thread started for prm_id {prm_id}.')
 
 
-    def _capture_data(self, progress_callback, prm_id):
+    def capture_data(self, prm_id, progress_callback=None):
         '''
         This is the main function that runs in the thread.
         '''
@@ -93,16 +96,18 @@ class PrMManager():
         start = time.time()
         while(purity_mon_wake_time > time.time() - start):
             perc = (time.time() - start) / purity_mon_wake_time * 100
-            progress_callback.emit(prm_id, 'Awake Monitor', perc)
+            if progress_callback is not None:
+                progress_callback.emit(prm_id, 'Awake Monitor', perc)
             time.sleep(0.1)
 
-        progress_callback.emit(prm_id, 'Start Capture', 100)
+        if progress_callback is not None:
+            progress_callback.emit(prm_id, 'Start Capture', 100)
 
         #
         # Tell the digitizer to start capturing data and check until it completes
         #
         ats310.start_capture()
-        status = ats310.check_capture(progress_callback, prm_id)
+        status = ats310.check_capture(prm_id, progress_callback)
 
         data_raw = ats310.get_data()
         # print('From manager:', data)
