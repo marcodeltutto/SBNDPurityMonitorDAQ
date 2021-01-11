@@ -5,3 +5,11 @@ python:
   
 install:
   - pip install --upgrade pip
+  - pyparallel
+  - PyQt5
+  - PyQtGraph
+  - argparse
+  - qdarkstyle
+  
+script:
+  - pytest tests
