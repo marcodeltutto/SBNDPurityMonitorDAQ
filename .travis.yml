@@ -26,4 +26,4 @@ install:
   - pip install pytest-qt
 
 script:
-  - pytest tests
+  - pytest -s -v tests
