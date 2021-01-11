@@ -15,11 +15,12 @@ def test_simple(qtbot):
     logs = PrMLogWidget()
     qtbot.addWidget(logs)
 
-    # comm = MockCommunicator()
-    manager = MockPrMManager()
-
     window = MainWindow(logs=logs)
+
+    # comm = MockCommunicator()
+    manager = MockPrMManager(window)
     window.set_manager(manager)
+
     qtbot.addWidget(window)
 
     for i in [1, 2, 3]:
