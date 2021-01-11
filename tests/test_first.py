@@ -37,12 +37,12 @@ def test_simple_2(qtbot):
     qtbot.addWidget(logs)
 
     window = MainWindow(logs=logs)
+    qtbot.addWidget(window)
 
     # comm = MockCommunicator()
     manager = MockPrMManager(window)
     window.set_manager(manager)
 
-    qtbot.addWidget(window)
 
     # for i in [1, 2, 3]:
     #     qtbot.mouseClick(window._prm_controls[i]._start_stop_btn, QtCore.Qt.LeftButton)
