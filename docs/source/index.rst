@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to sbndprmdaq's documentation!
+SBND Purity Monitor DAQ Documentation
 ======================================
 
 .. toctree::
@@ -12,6 +12,24 @@ Welcome to sbndprmdaq's documentation!
 
    .. sbndprmdaq.parallel_communication
    sbndprmdaq
+
+This repository contains the DAQ for the SBND purity monitors.
+
+How to install
+==============
+
+Some text
+
+.. code-block:: bash
+
+    ex code block
+
+Some text ``some code`` and some `link <https://google.com/>`_.
+
+
+Documentation
+=============
+
 
 
 

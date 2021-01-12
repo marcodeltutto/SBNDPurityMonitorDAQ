@@ -29,8 +29,9 @@ author = 'Marco Del Tutto'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    # 'sphinx.ext.viewcode',
+    # 'sphinx.ext.githubpages',
 ]
 
 autodoc_mock_imports = ['atsapi', 'sbndprmdaq.digitizer.atsapi']
