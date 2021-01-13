@@ -238,7 +238,7 @@ class PrMManager():
         self._comm.stop_prm()
 
 
-    def hv_on(self):
+    def hv_on(self, prm_id=1):
         '''
         Sets the parallel port pin that turns the HV ON.
 
@@ -249,7 +249,7 @@ class PrMManager():
         self._hv_on = True
 
 
-    def hv_off(self):
+    def hv_off(self, prm_id=1):
         '''
         Sets the parallel port pin that turns the HV OFF.
 
