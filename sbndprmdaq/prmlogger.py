@@ -1,3 +1,6 @@
+'''
+Logging tools.
+'''
 import sys
 import logging
 from PyQt5 import QtWidgets
