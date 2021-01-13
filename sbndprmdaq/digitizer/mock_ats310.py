@@ -16,7 +16,11 @@ class ATS310Exception(Exception):
 
     def __init__(self, logger, message):
         '''
-        Contructor
+        Contructor.
+
+        Args:
+            logger (PrMLogger): The logger widget.
+            message (str): The error message to display.
         '''
         self._message = message
         logger.critical(self._message)
@@ -36,10 +40,17 @@ class MockBoard():
 
 
 class MockATS310():
+    '''
+    This class controls a mock ATS310 digitizer.
+    '''
 
     def __init__(self):
         '''
-        Constructor
+        Constructor.
+
+        Args:
+            systemId (int): The system ID
+            boardId (int): The board ID
         '''
         self._logger = logging.getLogger(__name__)
 
@@ -49,12 +60,33 @@ class MockATS310():
         self._samples_per_sec = 20000000.0
 
 
+    def get_samples_per_second(self):
+        '''
+        Getter for the samples per seconds the digitizer is acquiring.
+
+        Returns:
+            int: Number of samples per second.
+        '''
+        return self._samples_per_sec
+
+
     def start_capture(self):
+        '''
+        Starts a digitizer capture.
+        '''
         start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         self._board._status = True
 
-    def check_capture(self, prm_id, progress_callback=None):
+
+    def check_capture(self, prm_id=1, progress_callback=None):
+        '''
+        Checks for a capture to finish.
+
+        Args:
+            prm_id (int): The purity monitor ID (for logging).
+            progress_callback (function): The callback for progress (for logging).
+        '''
         # Simulate the time it takes to get the trigger
         simulated_time = 4 #seconds
         start = time.time()
@@ -67,10 +99,10 @@ class MockATS310():
 
     def busy(self):
         '''
-        Returns if the ats310 board is busy or not
+        Returns if the ats310 board is busy or not.
+
+        Returns:
+            bool: True if busy, False otherwise.
         '''
         return self._board.busy()
-
-    def get_samples_per_second(self):
-        return self._samples_per_sec
 
