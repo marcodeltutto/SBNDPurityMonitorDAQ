@@ -24,15 +24,18 @@ class WorkerSignals(QObject):
 
 class Worker(QRunnable):
     '''
-    Worker thread
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-    kwargs will be passed through to the runner.
-    :type callback: function
-    :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
+    Worker thread. Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
     '''
 
     def __init__(self, fn, *args, **kwargs):
+        '''
+        Contructor.
+
+        Args:
+            fn (function): The callback function to run in the thread.
+            args: Arguments to pass to the callback function.
+            kwargs: Arguments to pass to the callback function.
+        '''
         super(Worker, self).__init__()
 
         # Store constructor arguments (re-used for processing)
