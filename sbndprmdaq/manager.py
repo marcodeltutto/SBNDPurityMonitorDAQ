@@ -1,4 +1,7 @@
-import time, copy
+'''
+The purity monitor manager.
+'''
+import time
 import logging
 import numpy as np
 
@@ -13,6 +16,7 @@ class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
     '''
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, window=None, data_files_path=None):
         '''
@@ -31,15 +35,16 @@ class PrMManager():
         digitizers = get_digitizers()
         self._digitizers = []
         self._data = []
-        for d in digitizers:
-            self._digitizers.append(BoardWrapper(d, self._logger, ATS310Exception))
+        for digitizer in digitizers:
+            self._digitizers.append(BoardWrapper(digitizer, self._logger, ATS310Exception))
             self._data.append(None)
         self._data_files_path = data_files_path
 
         self._hv_on = False
 
         self._threadpool = QThreadPool()
-        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
+        self._logger.info('Number of available threads: {n_thread}',
+                          n_thread=self._threadpool.maxThreadCount())
 
 
     def digitizer_busy(self, prm_id=1):
@@ -52,18 +57,19 @@ class PrMManager():
         Returns:
             bool: True for busy, False otherwise.
         '''
-        self._ats310 = self._digitizers[prm_id-1]
-        return self._ats310.busy()
+        ats310 = self._digitizers[prm_id-1]
+        return ats310.busy()
 
 
-    def ats_samples_per_sec(self):
+    def ats_samples_per_sec(self, prm_id=1):
         '''
         Returns the digitizer recorded samples per second
 
         Returns:
             bool: The digitizer samples per second
         '''
-        return self._ats310.get_samples_per_second()
+        ats310 = self._digitizers[prm_id-1]
+        return ats310.get_samples_per_second()
 
 
     def start_io_thread(self, prm_id):
@@ -79,7 +85,7 @@ class PrMManager():
         worker.signals.progress.connect(self._thread_progress)
 
         self._threadpool.start(worker)
-        self._logger.info(f'Thread started for prm_id {prm_id}.')
+        self._logger.info('Thread started for prm_id {prm_id}.', prm_id=prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None):
@@ -101,7 +107,7 @@ class PrMManager():
         #
         purity_mon_wake_time = 4 #seconds
         start = time.time()
-        while(purity_mon_wake_time > time.time() - start):
+        while purity_mon_wake_time > time.time() - start:
             perc = (time.time() - start) / purity_mon_wake_time * 100
             if progress_callback is not None:
                 progress_callback.emit(prm_id, 'Awake Monitor', perc)
@@ -146,16 +152,16 @@ class PrMManager():
             self.save_data(data['prm_id'])
 
 
-    def _thread_progress(self, prm_id, name, s):
+    def _thread_progress(self, prm_id, name, progress):
         '''
         Callback called during a thread to show progress.
 
         Args:
             prm_id (int): The purity monitor ID.
             name (str): The name of the current task for display.
-            s (int): The progress (0 to 100 percent).
+            progress (int): The progress (0 to 100 percent).
         '''
-        self._window.set_progress(prm_id=prm_id, name=name, perc=s)
+        self._window.set_progress(prm_id=prm_id, name=name, perc=progress)
 
 
     def _thread_complete(self, prm_id, status):
@@ -166,13 +172,13 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info(f'Thread completed for prm_id {prm_id}.')
+        self._logger.info('Thread completed for prm_id {prm_id}.', prm_id=prm_id)
         self._window.start_stop_prm(prm_id)
 
         if status:
-            self._window.reset_progress(prm_id, name='Done!', color='#006400') # #006400 is dark green
+            self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
         else:
-            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # #B22222 is firebrick
+            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
@@ -184,6 +190,7 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
+        # pylint: disable=invalid-name
 
         out_dict = {}
 
@@ -204,7 +211,14 @@ class PrMManager():
         else:
             hv_status = 'off'
 
-        file_name = self._data_files_path + '/sbnd_prm' + str(prm_id) + '_data_' + timestr + '_hv_' + hv_status
+        file_name = self._data_files_path
+        file_name += '/sbnd_prm'
+        file_name += str(prm_id)
+        file_name += '_data_'
+        file_name += timestr
+        file_name += '_hv_'
+        file_name += hv_status
+
         np.savez(file_name, **out_dict)
 
 
