@@ -69,6 +69,9 @@ class PrMManager():
     def start_io_thread(self, prm_id):
         '''
         Starts the thread.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         worker = Worker(self.capture_data, prm_id=prm_id)
         worker.signals.result.connect(self._result_callback)
@@ -127,9 +130,11 @@ class PrMManager():
 
     def _result_callback(self, data):
         '''
-        This method is called at the end of every thread and receives the acquired data
+        This method is called at the end of every thread and receives the acquired data.
+
+        Args:
+            data (dict): The acquired data.
         '''
-        # print('Got data:', parameter, data)
         print('Got data:', data['prm_id'])
 
         if data['status']:
@@ -143,7 +148,12 @@ class PrMManager():
 
     def _thread_progress(self, prm_id, name, s):
         '''
-        Called during the thread.
+        Callback called during a thread to show progress.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            name (str): The name of the current task for display.
+            s (int): The progress (0 to 100 percent).
         '''
         self._window.set_progress(prm_id=prm_id, name=name, perc=s)
 
@@ -151,6 +161,10 @@ class PrMManager():
     def _thread_complete(self, prm_id, status):
         '''
         Called when a thread ends.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            status (bool): True is the acquisition suceeded, False otherwise.
         '''
         self._logger.info(f'Thread completed for prm_id {prm_id}.')
         self._window.start_stop_prm(prm_id)
