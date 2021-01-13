@@ -6,10 +6,11 @@
 SBND Purity Monitor DAQ Documentation
 ======================================
 
+This repository contains the DAQ for the SBND purity monitors.
+
 .. toctree::
    :maxdepth: 1
    :caption: Documentation
-   :hidden:
 
    installation
    running
@@ -28,4 +29,3 @@ SBND Purity Monitor DAQ Documentation
 
    modules
 
-This repository contains the DAQ for the SBND purity monitors.
