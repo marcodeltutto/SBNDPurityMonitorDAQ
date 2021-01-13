@@ -96,10 +96,11 @@ class BoardWrapper:
     def _wrap(self, func, *args, **kwargs):
         """
         Wrapper function. This implements the try-catch statement
-        arguments:
-        - func:          the function to execute
+
+        Args:
+        func (fn): the function to execute
         *args, **kwargs: positional and named arguments to pass to the
-                         wrapped function
+        wrapped function
         """
 
         # Try the function a number of times before failing (unless had failed before)
@@ -133,11 +134,12 @@ class BoardWrapper:
         Constructor.
         It implements public methods by wrapping that of 'instance' within
         the _wrap function.
-        arguments:
-        - instance:      an instance of an arbitrary object to wrap public
-                         methods
-        - ExceptionType: the Exception class or tuple of Exception classes
-                         to catch in the wrapper.
+
+        Args:
+        instance (object): an instance of an arbitrary object to wrap public
+        methods
+        ExceptionType (Exception) the Exception class or tuple of Exception classes
+        to catch in the wrapper.
         """
 
         methods = dir(instance)

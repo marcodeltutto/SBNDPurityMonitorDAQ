@@ -9,10 +9,12 @@ import time
 import logging
 import copy
 
-try:
-    from . import atsapi as ats
-except:
-    import atsapi as ats
+import sbndprmdaq.digitizer.atsapi as ats
+
+# try:
+#     from . import atsapi as ats
+# except:
+#     import atsapi as ats
 
 # from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 

@@ -16,8 +16,14 @@ class ParallelException(Exception):
 
 
 class Communicator():
+    '''
+    A class
+    '''
 
     def __init__(self, port='/dev/parport0'):
+        '''
+        Test
+        '''
 
         self._logger = logging.getLogger(__name__)
 
