@@ -1,6 +1,10 @@
-import numpy as np
-import time, datetime
+'''
+The purity monitor mock manager (for testing).
+'''
+import time
+import datetime
 import logging
+import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
@@ -28,7 +32,8 @@ class MockPrMManager():
         self._data = [None, None, None]
 
         self._threadpool = QThreadPool()
-        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
+        self._logger.info('Number of available threads: {n_thread}',
+                          n_thread=self._threadpool.maxThreadCount())
 
 
     def digitizer_busy(self, prm_id):
@@ -97,7 +102,7 @@ class MockPrMManager():
         worker.signals.progress.connect(self._thread_progress)
 
         self._threadpool.start(worker)
-        self._logger.info(f'Thread started for prm_id {prm_id}.')
+        self._logger.info('Thread started for prm_id {prm_id}.', prm_id=prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None):
@@ -117,7 +122,7 @@ class MockPrMManager():
         #
         purity_mon_wake_time = 4 #seconds
         start = time.time()
-        while(purity_mon_wake_time > time.time() - start):
+        while purity_mon_wake_time > time.time() - start:
             perc = (time.time() - start) / purity_mon_wake_time * 100
             if progress_callback is not None:
                 progress_callback.emit(prm_id, 'Awake Monitor', perc)
@@ -163,16 +168,16 @@ class MockPrMManager():
         }
 
 
-    def _thread_progress(self, prm_id, name, s):
+    def _thread_progress(self, prm_id, name, progress):
         '''
         Callback called during a thread to show progress.
 
         Args:
             prm_id (int): The purity monitor ID.
             name (str): The name of the current task for display.
-            s (int): The progress (0 to 100 percent).
+            progress (int): The progress (0 to 100 percent).
         '''
-        self._window.set_progress(prm_id=prm_id, name=name, perc=s)
+        self._window.set_progress(prm_id=prm_id, name=name, perc=progress)
 
 
     def _thread_complete(self, prm_id, status):
@@ -183,14 +188,14 @@ class MockPrMManager():
             prm_id (int): The purity monitor ID.
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info(f'Thread completed for prm_id {prm_id}.')
+        self._logger.info('Thread completed for prm_id {prm_id}.', prm_id=prm_id)
         self._comm.stop_prm()
         self._window.start_stop_prm(prm_id)
 
         if status:
-            self._window.reset_progress(prm_id, name='Done!', color='#006400') # #006400 is dark green
+            self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
         else:
-            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # #B22222 is firebrick
+            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
@@ -223,7 +228,6 @@ class MockPrMManager():
             mode (int): The desired mode.
         '''
         print('Mode for', prm_id, 'set to', mode)
-        return
 
     def get_data(self, prm_id):
         '''
