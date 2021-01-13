@@ -42,17 +42,6 @@ class PrMManager():
         self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
 
 
-    # def test(self):
-
-    #     self._ats310.set_records_per_capture(1)
-    #     self._ats310.acquire_data()
-
-    #     while not self._ats310.busy():
-    #         time.sleep(10e-3)
-
-    #     data = self._ats310.get_data()
-    #     print(data)
-
     def digitizer_busy(self, prm_id=1):
         '''
         Returns the digitizers status
@@ -66,6 +55,7 @@ class PrMManager():
         self._ats310 = self._digitizers[prm_id-1]
         return self._ats310.busy()
 
+
     def ats_samples_per_sec(self):
         '''
         Returns the digitizer recorded samples per second
@@ -74,25 +64,6 @@ class PrMManager():
             bool: The digitizer samples per second
         '''
         return self._ats310.get_samples_per_second()
-
-    def start_prm(self, prm_id=1):
-        '''
-        Sets the parallel port pin that turns the PrM ON
-        and starts the thread for the data acquisition.
-        If no GUI is present, the thread is not started.
-
-        Args:
-            prm_id (int): The purity monitor ID.
-        '''
-
-        # Tell the parallel communicator to start the purity monitor
-        self._comm.start_prm()
-
-        if self._window is not None:
-            # Start a thread where we let the digitizer run
-            self.start_io_thread(prm_id)
-        else:
-            self.capture_data(prm_id)
 
 
     def start_io_thread(self, prm_id):
@@ -167,8 +138,7 @@ class PrMManager():
                 'A': data['A'],
                 'B': data['B'],
             }
-            self._save_data(data['prm_id'])
-
+            self.save_data(data['prm_id'])
 
 
     def _thread_progress(self, prm_id, name, s):
@@ -192,9 +162,13 @@ class PrMManager():
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
-    def _save_data(self, prm_id=1):
+
+    def save_data(self, prm_id=1):
         '''
-        Saves data to file
+        Saves the most recent captured data, if any.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
 
         out_dict = {}
@@ -219,16 +193,43 @@ class PrMManager():
         file_name = self._data_files_path + '/sbnd_prm' + str(prm_id) + '_data_' + timestr + '_hv_' + hv_status
         np.savez(file_name, **out_dict)
 
+
+    def start_prm(self, prm_id=1):
+        '''
+        Sets the parallel port pin that turns the PrM ON
+        and starts the thread for the data acquisition.
+        If no GUI is present, the thread is not started.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+
+        # Tell the parallel communicator to start the purity monitor
+        self._comm.start_prm()
+
+        if self._window is not None:
+            # Start a thread where we let the digitizer run
+            self.start_io_thread(prm_id)
+        else:
+            self.capture_data(prm_id)
+
+
     def stop_prm(self, prm_id=1):
         '''
-        Sets the parallel port pin that turns the PrM OFF
+        Sets the parallel port pin that turns the PrM OFF.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.stop_prm()
 
 
     def hv_on(self):
         '''
-        Sets the parallel port pin that turns the HV ON
+        Sets the parallel port pin that turns the HV ON.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.hv_on()
         self._hv_on = True
@@ -236,15 +237,34 @@ class PrMManager():
 
     def hv_off(self):
         '''
-        Sets the parallel port pin that turns the HV OFF
+        Sets the parallel port pin that turns the HV OFF.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.hv_off()
         self._hv_on = False
 
+
     def set_mode(self, prm_id, mode):
+        '''
+        Sets the mode (auto, manual).
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            mode (int): The desired mode.
+        '''
         return
+
 
     def get_data(self, prm_id):
         '''
+        Sets the mode (auto, manual).
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id-1]
