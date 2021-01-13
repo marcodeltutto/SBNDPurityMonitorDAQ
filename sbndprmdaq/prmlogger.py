@@ -36,21 +36,32 @@ class QTextEditLogger(logging.Handler):
     '''
     def __init__(self, parent):
         '''
-        Constructor
+        Constructor.
+
+        Args:
+            parent (QtWidget): The parent widget.
         '''
         super().__init__()
         self._widget = QtWidgets.QPlainTextEdit(parent)
         self._widget.setReadOnly(True)
 
+
     def get_widget(self):
         '''
-        Returns the text widget
+        Getter for the text widget.
+
+        Returns:
+            QtWidget: the text widget.
         '''
         return self._widget
 
+
     def emit(self, record):
         '''
-        Emits
+        Emitter.
+
+        Args:
+            record (str): the text.
         '''
         msg = self.format(record)
         self._widget.appendPlainText(msg)
@@ -60,9 +71,13 @@ class PrMLogWidget(QtWidgets.QDialog, QtWidgets.QPlainTextEdit):
     '''
     A window to display the logs
     '''
+
     def __init__(self, parent=None):
         '''
-        Constructor
+        Constructor.
+
+        Args:
+            parent (QtWidget): The parent widget.
         '''
         super().__init__(parent)
 
