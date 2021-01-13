@@ -10,8 +10,18 @@ from sbndprmdaq.parallel_communication.communicator import Communicator
 from sbndprmdaq.threading_utils import Worker
 
 class PrMManager():
+    '''
+    The purity monitor manager. Takes care of all DAQ aspects.
+    '''
 
     def __init__(self, window=None, data_files_path=None):
+        '''
+        Constructor. Can be called passing the GUI main window if the GUI is desired.
+
+        Args:
+            window (QMainWindow): The main window (optional).
+            data_files_path (str): The path where files will be saved (optional).
+        '''
         self._logger = logging.getLogger(__name__)
         # self._ats310 = ATS310()
         # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
@@ -47,16 +57,32 @@ class PrMManager():
         '''
         Returns the digitizers status
         (if it is busy or now)
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        Returns:
+            bool: True for busy, False otherwise.
         '''
         self._ats310 = self._digitizers[prm_id-1]
         return self._ats310.busy()
 
     def ats_samples_per_sec(self):
+        '''
+        Returns the digitizer recorded samples per second
+
+        Returns:
+            bool: The digitizer samples per second
+        '''
         return self._ats310.get_samples_per_second()
 
     def start_prm(self, prm_id=1):
         '''
         Sets the parallel port pin that turns the PrM ON
+        and starts the thread for the data acquisition.
+        If no GUI is present, the thread is not started.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
 
         # Tell the parallel communicator to start the purity monitor
@@ -84,7 +110,14 @@ class PrMManager():
 
     def capture_data(self, prm_id, progress_callback=None):
         '''
-        This is the main function that runs in the thread.
+        Capture the data. If running without a GUI, do not pass the progress_callback.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            progress_callback (fn): The callback function to be called to show progress (optional)
+        Returns:
+            dict: A dictionary containing the prm_id, the status,
+            the data for ch A, the data for ch B
         '''
 
         ats310 = self._digitizers[prm_id-1]

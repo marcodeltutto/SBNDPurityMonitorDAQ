@@ -7,35 +7,25 @@ SBND Purity Monitor DAQ Documentation
 ======================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Documentation
+   :hidden:
 
-   .. sbndprmdaq.parallel_communication
-   sbndprmdaq
+   installation
+   running
+   ats_drivers_ubuntu
+   ats_drivers_sl7
+   ubuntu_setup
+   scientific_linux_setup
+   kerberos_ubuntu
+   fnal_daq_systems
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API
+   :hidden:
+
+   modules
 
 This repository contains the DAQ for the SBND purity monitors.
-
-How to install
-==============
-
-Some text
-
-.. code-block:: bash
-
-    ex code block
-
-Some text ``some code`` and some `link <https://google.com/>`_.
-
-
-Documentation
-=============
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
