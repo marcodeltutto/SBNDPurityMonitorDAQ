@@ -98,9 +98,9 @@ class BoardWrapper:
         Wrapper function. This implements the try-catch statement
 
         Args:
-        func (fn): the function to execute
-        *args, **kwargs: positional and named arguments to pass to the
-        wrapped function
+            func (fn): the function to execute
+            *args, **kwargs: positional and named arguments to pass to the
+            wrapped function
         """
 
         # Try the function a number of times before failing (unless had failed before)
@@ -136,10 +136,10 @@ class BoardWrapper:
         the _wrap function.
 
         Args:
-        instance (object): an instance of an arbitrary object to wrap public
-        methods
-        ExceptionType (Exception) the Exception class or tuple of Exception classes
-        to catch in the wrapper.
+            instance (object): an instance of an arbitrary object to wrap public
+            methods
+            ExceptionType (Exception) the Exception class or tuple of Exception classes
+            to catch in the wrapper.
         """
 
         methods = dir(instance)

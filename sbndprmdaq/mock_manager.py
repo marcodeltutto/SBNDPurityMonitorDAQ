@@ -1,6 +1,10 @@
-import numpy as np
-import time, datetime
+'''
+The purity monitor mock manager (for testing).
+'''
+import time
+import datetime
 import logging
+import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
@@ -9,8 +13,17 @@ from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
 class MockPrMManager():
+    '''
+    A mock purity monitor manager. Takes care of all DAQ aspects.
+    '''
 
     def __init__(self, window=None):
+        '''
+        Constructor. Can be called passing the GUI main window if the GUI is desired.
+
+        Args:
+            window (QMainWindow): The main window (optional).
+        '''
         self._logger = logging.getLogger(__name__)
         self._ats310 = MockATS310()
         self._comm = MockCommunicator()
@@ -19,26 +32,41 @@ class MockPrMManager():
         self._data = [None, None, None]
 
         self._threadpool = QThreadPool()
-        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
+        self._logger.info('Number of available threads: {n_thread}',
+                          n_thread=self._threadpool.maxThreadCount())
 
-    def test(self):
-
-        print('ok, tested')
 
     def digitizer_busy(self, prm_id):
         '''
         Returns the digitizers status
         (if it is busy or now)
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        Returns:
+            bool: True for busy, False otherwise.
         '''
         return self._ats310.busy()
 
+
     def ats_samples_per_sec(self):
+        '''
+        Returns the digitizer recorded samples per second
+
+        Returns:
+            bool: The digitizer samples per second
+        '''
         return self._ats310.get_samples_per_second()
 
 
     def start_prm(self, prm_id):
         '''
         Sets the parallel port pin that turns the PrM ON
+        and starts the thread for the data acquisition.
+        If no GUI is present, the thread is not started.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         # Tell the parallel communicator to start the purity monitor
         self._comm.start_prm()
@@ -52,7 +80,10 @@ class MockPrMManager():
 
     def stop_prm(self, prm_id):
         '''
-        Sets the parallel port pin that turns the PrM OFF
+        Sets the parallel port pin that turns the PrM OFF.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.stop_prm()
 
@@ -61,6 +92,9 @@ class MockPrMManager():
     def start_io_thread(self, prm_id):
         '''
         Starts the thread.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         worker = Worker(self.capture_data, prm_id=prm_id)
         worker.signals.result.connect(self._result_callback)
@@ -68,12 +102,19 @@ class MockPrMManager():
         worker.signals.progress.connect(self._thread_progress)
 
         self._threadpool.start(worker)
-        self._logger.info(f'Thread started for prm_id {prm_id}.')
+        self._logger.info('Thread started for prm_id {prm_id}.', prm_id=prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None):
         '''
-        This is the main function that runs in the thread.
+        Capture the data. If running without a GUI, do not pass the progress_callback.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            progress_callback (fn): The callback function to be called to show progress (optional)
+        Returns:
+            dict: A dictionary containing the prm_id, the status,
+            the data for ch A, the data for ch B
         '''
 
         #
@@ -81,7 +122,7 @@ class MockPrMManager():
         #
         purity_mon_wake_time = 4 #seconds
         start = time.time()
-        while(purity_mon_wake_time > time.time() - start):
+        while purity_mon_wake_time > time.time() - start:
             perc = (time.time() - start) / purity_mon_wake_time * 100
             if progress_callback is not None:
                 progress_callback.emit(prm_id, 'Awake Monitor', perc)
@@ -112,7 +153,10 @@ class MockPrMManager():
 
     def _result_callback(self, data):
         '''
-        This method is called at the end of every thread and receives the acquired data
+        This method is called at the end of every thread and receives the acquired data.
+
+        Args:
+            data (dict): The acquired data.
         '''
         # print('Got data:', parameter, data)
         print('Got data:', data['prm_id'])
@@ -124,47 +168,75 @@ class MockPrMManager():
         }
 
 
-    def _thread_progress(self, prm_id, name, s):
+    def _thread_progress(self, prm_id, name, progress):
         '''
-        Called during the thread.
+        Callback called during a thread to show progress.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            name (str): The name of the current task for display.
+            progress (int): The progress (0 to 100 percent).
         '''
-        self._window.set_progress(prm_id=prm_id, name=name, perc=s)
+        self._window.set_progress(prm_id=prm_id, name=name, perc=progress)
 
 
     def _thread_complete(self, prm_id, status):
         '''
         Called when a thread ends.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info(f'Thread completed for prm_id {prm_id}.')
+        self._logger.info('Thread completed for prm_id {prm_id}.', prm_id=prm_id)
         self._comm.stop_prm()
         self._window.start_stop_prm(prm_id)
 
         if status:
-            self._window.reset_progress(prm_id, name='Done!', color='#006400') # #006400 is dark green
+            self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
         else:
-            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # #B22222 is firebrick
+            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
 
     def hv_on(self):
         '''
-        Sets the parallel port pin that turns the HV ON
+        Sets the parallel port pin that turns the HV ON.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.hv_on()
 
 
     def hv_off(self):
         '''
-        Sets the parallel port pin that turns the HV OFF
+        Sets the parallel port pin that turns the HV OFF.
+
+        Args:
+            prm_id (int): The purity monitor ID.
         '''
         self._comm.hv_off()
 
     def set_mode(self, prm_id, mode):
+        '''
+        Sets the mode (auto, manual).
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            mode (int): The desired mode.
+        '''
         print('Mode for', prm_id, 'set to', mode)
-        return
 
     def get_data(self, prm_id):
         '''
+        Sets the mode (auto, manual).
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id-1]

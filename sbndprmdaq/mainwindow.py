@@ -15,8 +15,20 @@ ICON_GREEN_LED = os.path.join(os.path.dirname(
                  'icons/green-led-on.png')
 
 class Control(QtWidgets.QMainWindow):
+    '''
+    A widget to display a single purity monitor control panel.
+    '''
 
     def __init__(self, prm_id=1, name='PrM 1', description='Cryo Bottom'):
+        '''
+        Contructor.
+
+        Args:
+            prm_id (int): The purity monitor ID
+            name (str): The name of the monitor for display
+            description (str): A description of the monitor.
+        '''
+
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
@@ -37,10 +49,26 @@ class Control(QtWidgets.QMainWindow):
         self._progress_bar.setValue(0)
         self._progress_label.setText('')
 
+
     def get_id(self):
+        '''
+        Getter for the PrM ID.
+
+        Returns:
+            int: The purity monitor ID.
+        '''
         return self._id
 
+
     def set_progress(self, name, perc, **kwargs):
+        '''
+        Sets the progress in the progress bar.
+
+        Args:
+            name (str): The name of the current task.
+            perc (int): The progress, a number between 0 and 100.
+            color (hex): The color of the text.
+        '''
         name = str(name)
         if perc > 100 or perc < 0:
             raise Exception('perc can pnly be between 0 and 100')
@@ -53,6 +81,13 @@ class Control(QtWidgets.QMainWindow):
 
 
     def reset_progress(self, name=None, **kwargs):
+        '''
+        Resets the progress in the progress bar.
+
+        Args:
+            name (str): The name of the current task.
+            color (hex): The color of the text.
+        '''
         self._progress_bar.setValue(0)
 
         if name is not None:
@@ -63,9 +98,21 @@ class Control(QtWidgets.QMainWindow):
         if 'color' in kwargs:
             self._progress_label.setStyleSheet("color: " + kwargs['color']);
 
+
+
 class DataDisplay(QtWidgets.QMainWindow):
+    '''
+    A widget to display the latest data from a single purity monitor.
+    '''
 
     def __init__(self, prm_id=1, name='PrM 1'):
+        '''
+        Contructor.
+
+        Args:
+            prm_id (int): The purity monitor ID
+            name (str): The name of the monitor for display
+        '''
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
@@ -79,17 +126,41 @@ class DataDisplay(QtWidgets.QMainWindow):
         self._name_label.setText(self._name)
 
     def get_id(self):
+        '''
+        Getter for the PrM ID.
+
+        Returns:
+            int: The purity monitor ID.
+        '''
         return self._id
 
     def set_latest_data(self, qa, qc, tau, time):
+        '''
+        Sets the latest data for display.
+
+        Returns:
+            qa: The anode charge.
+            qc: The cathode charge.
+            tau: The lifetime.
+            time: The timestamp.
+        '''
         text = f'Qa = {qa}\nQc = {qc}\nLifetime = {tau}'
         self._text.setText(text)
         self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    '''
+    The main window.
+    '''
 
     def __init__(self, logs):
+        '''
+        Contructor.
+
+        Args:
+            logs (PrMLogger): The widget for the logs.
+        '''
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
@@ -161,23 +232,36 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def setup_control(self, control):
+        '''
+        Sets up a single purity monitor control widget.
+
+        Args:
+            control (Control): The purity monitor Control widget.
+        '''
         prm_id = control.get_id()
         control.setStyleSheet("background-color: rgba(0,0,0,0.1);")
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
 
     def setup_latest_data(self, latest_data):
+        '''
+        Sets up a single purity monitor latest-data widget.
+
+        Args:
+            control (DataDisply): The purity monitor DataDisplay widget.
+        '''
         prm_id = latest_data.get_id()
         latest_data.setStyleSheet("background-color: rgba(0,0,0,0.1);")
 
 
 
     def _update_plot_choice(self, prm_id):
+        '''
+        Updates the plot choice.
 
-        # Reset to false
-        # for key in self._show_choice_checkboxes.keys():
-        #     self._show_graph[key] = False
-
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
         if prm_id == 'all':
             if self._prmall_checkbox.isChecked():
                 for pid in [1, 2, 3]:
@@ -198,19 +282,44 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_manager(self, manager):
         '''
-        Sets the purity monitor manager
+        Sets the purity monitor manager.
+
+        Args:
+            manager (PrMManager): The purity monitor manager.
         '''
         self._prm_manager = manager
 
     def set_progress(self, prm_id, name, perc, **kwargs):
+        '''
+        Sets the current progress for a certain task.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            name (str): The name of the current task.
+            perc (int): The progress, a number between 0 and 100.
+            color (hex): The color of the text.
+        '''
         self._prm_controls[prm_id].set_progress(name, perc, **kwargs)
 
     def reset_progress(self, prm_id, name=None, **kwargs):
+        '''
+        Resets the progress in the progress bar.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            name (str): The name of the current task.
+            color (hex): The color of the text.
+        '''
         self._prm_controls[prm_id].reset_progress(name, **kwargs)
 
 
     def start_stop_prm(self, prm_id):
-        print('Start stop prm_id', prm_id)
+        '''
+        Starts or stops the purity monitor depending on the current status.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
 
         self._prm_controls[prm_id]._running = not self._prm_controls[prm_id]._running
 
@@ -221,6 +330,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def _start_prm(self, prm_id):
+        '''
+        Tells the manager to start the purity monitor.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
         self._prm_manager.start_prm(prm_id)
         self._prm_controls[prm_id]._start_stop_btn.setText("Stop")
         self._prm_controls[prm_id]._run_status_label.setText('Running')
@@ -229,6 +344,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def _stop_prm(self, prm_id):
+        '''
+        Tells the manager to stop the purity monitor.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
         self._prm_manager.stop_prm(prm_id)
         self._prm_controls[prm_id]._start_stop_btn.setText("Start")
         self._prm_controls[prm_id]._run_status_label.setText('Not Running')
@@ -236,24 +357,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.repaint()
 
 
-    def _set_hv(self):
-        if self._hv_toggle.isChecked():
-            self._prm_manager.hv_on()
+    def _set_hv(self, prm_id):
+        '''
+        Tells the manager how to set the HV.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        if self._prm_controls[prm_id]._hv_toggle.isChecked():
+            self._prm_manager.hv_on(prm_id)
         else:
-            self._prm_manager.hv_off()
+            self._prm_manager.hv_off(prm_id)
+
 
     def _set_mode(self, prm_id):
+        '''
+        Tells the manager how to set the HV.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
         control = self._prm_controls[prm_id]
         if control._mode_toggle.isChecked():
             self._prm_manager.set_mode(prm_id, 'auto')
         else:
             self._prm_manager.set_mode(prm_id, 'manual')
 
+
     def _check_status(self):
         '''
-        Callback that checks the status
+        Callback that checks the status.
         '''
-        print('_check_statusm len =', len(self._prm_controls))
         for control in self._prm_controls.values():
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
@@ -306,6 +440,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
 
     def _extract_values(self, a, b):
+        '''
+        Extracts the Qa, Qc, tau from the latest data. To be implemented in a separate
+        analysis class.
+
+        Args:
+            a (array): Waveform for channel A.
+            b (array): Waveform for channel B.
+
+        Returns:
+            float: The extracted Qa.
+            float: The extracted Qc.
+            float: The extracted Lifetime.
+        '''
         return 1, 2, 3
 
 

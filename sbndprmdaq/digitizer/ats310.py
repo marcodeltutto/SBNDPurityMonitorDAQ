@@ -11,12 +11,6 @@ import copy
 
 import sbndprmdaq.digitizer.atsapi as ats
 
-# try:
-#     from . import atsapi as ats
-# except:
-#     import atsapi as ats
-
-# from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 
 class ATS310Exception(Exception):
     """
@@ -25,14 +19,21 @@ class ATS310Exception(Exception):
 
     def __init__(self, logger, message):
         '''
-        Contructor
+        Contructor.
+
+        Args:
+            logger (PrMLogger): The logger widget.
+            message (str): The error message to display.
         '''
         self._message = message
         logger.critical(self._message)
         super(ATS310Exception, self).__init__(self._message)
 
-def get_digitizers():
 
+def get_digitizers():
+    '''
+    Returns all the available digitizers.
+    '''
     logger = logging.getLogger(__name__)
 
     n_systems = ats.numOfSystems()
@@ -54,10 +55,17 @@ def get_digitizers():
 
 
 class ATS310():
+    '''
+    This class controls an ATS310 digitizer.
+    '''
 
     def __init__(self, systemId=1, boardId=1):
         '''
-        Constructor
+        Constructor.
+
+        Args:
+            systemId (int): The system ID
+            boardId (int): The board ID
         '''
         self._logger = logging.getLogger(__name__)
 
@@ -98,10 +106,19 @@ class ATS310():
         self.prepare_acquisition()
 
     def get_samples_per_second(self):
+        '''
+        Getter for the samples per seconds the digitizer is acquiring.
+
+        Returns:
+            int: Number of samples per second.
+        '''
         return self._samples_per_sec
 
     # Configures a board for acquisition
     def configure_board(self):
+        '''
+        Configures the board.
+        '''
         # TODO: Select clock parameters as required to generate this
         # sample rate
         #
@@ -185,6 +202,9 @@ class ATS310():
         return True
 
     def prepare_acquisition(self):
+        '''
+        Prepares for the acquisition.
+        '''
 
         # Compute the number of bytes per record and per buffer
         memory_size_samples, bits_per_sample = self._board.getChannelInfo()
@@ -207,6 +227,9 @@ class ATS310():
 
 
     def start_capture(self):
+        '''
+        Starts a digitizer capture.
+        '''
         self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         self._logger.info(f'Capturing data from ATS digitized with id {self._system_id}, board id: {self._board_id}.')
@@ -215,7 +238,14 @@ class ATS310():
         return True
 
 
-    def check_capture(self, prm_id, progress_callback=None):
+    def check_capture(self, prm_id=1, progress_callback=None):
+        '''
+        Checks for a capture to finish.
+
+        Args:
+            prm_id (int): The purity monitor ID (for logging).
+            progress_callback (function): The callback for progress (for logging).
+        '''
         self._capture_success = False
 
         status = False
@@ -261,6 +291,12 @@ class ATS310():
 
 
     def get_data(self):
+        '''
+        Getter for the latest data.
+
+        Returns:
+            dict: A dictionary containg the waveform for channel A and B.
+        '''
 
         start = time.time() # Keep track of when acquisition started
 
@@ -371,7 +407,10 @@ class ATS310():
 
     def busy(self):
         '''
-        Returns if the ats310 board is busy or not
+        Returns if the ats310 board is busy or not.
+
+        Returns:
+            bool: True if busy, False otherwise.
         '''
         return self._board.busy()
 
