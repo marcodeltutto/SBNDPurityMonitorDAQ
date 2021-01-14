@@ -389,6 +389,10 @@ class MainWindow(QtWidgets.QMainWindow):
         Callback that checks the status.
         '''
         for control in self._prm_controls.values():
+
+            if not control.isEnabled():
+                continue
+
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
                 control._digi_status_label.setStyleSheet("color: red;")
@@ -400,12 +404,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
             data = self._prm_manager.get_data(control.get_id())
             # print('From mainwindow', data)
-            print('_check_status', control.get_id())
 
             if data is None:
                 continue
 
-            print('--> _check_status', control.get_id())
             # for el in data['A']:
             #     print('av of el in data A', np.mean(el))
 
@@ -454,5 +456,15 @@ class MainWindow(QtWidgets.QMainWindow):
             float: The extracted Lifetime.
         '''
         return 1, 2, 3
+
+    def missing_digitizer(self, prm_id):
+        '''
+        Setter for a missing digitizer.
+
+        Args:
+            prm_id (int): The purity monitor ID
+        '''
+        self._status_bar.showMessage(f'Cannot find digitizer for PrM ID {prm_id}.')
+        self._prm_controls[prm_id].setEnabled(False)
 
 

@@ -163,7 +163,7 @@
    </widget>
    <addaction name="menuMenu"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="_status_bar"/>
   <action name="actionShow_Logs">
    <property name="text">
     <string>Show Logs</string>

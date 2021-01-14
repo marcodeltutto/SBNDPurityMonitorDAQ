@@ -29,9 +29,15 @@ class ATS310Exception(Exception):
         super(ATS310Exception, self).__init__(self._message)
 
 
-def get_digitizers():
+def get_digitizers(prm_id_to_ats_systemid):
     '''
     Returns all the available digitizers.
+
+    Args:
+        prm_id_to_ats_systemid (dict): A dictionary from PrM ID to digitized systemId.
+
+    Returns:
+        list: A list of digitizers
     '''
     logger = logging.getLogger(__name__)
 
@@ -45,10 +51,21 @@ def get_digitizers():
     for i in range(n_systems):
         boards_per_system.append(ats.boardsInSystemBySystemID(i+1))
 
-    digitizers = []
-    for i in range(n_systems):
-        d = ATS310(systemId=i+1, boardId=1)
-        digitizers.append(d)
+    digitizers = {}
+    for prm_id, systemid in prm_id_to_ats_systemid.items():
+
+        # Check that we have an available digitizer for this systemid
+        n_boards = ats.boardsInSystemBySystemID(systemid)
+        if n_boards == 1:
+            ats310 = ATS310(systemId=systemid, boardId=1)
+        else:
+            ats310 = None
+        digitizers[prm_id] = ats310
+
+    # digitizers = []
+    # for i in range(n_systems):
+    #     ats310 = ATS310(systemId=i+1, boardId=1)
+    #     digitizers.append(ats310)
 
     return digitizers
 

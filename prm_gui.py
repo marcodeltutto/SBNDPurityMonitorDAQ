@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import argparse
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph
+import yaml
 import qdarkstyle
 
 from sbndprmdaq.mainwindow import MainWindow
@@ -32,6 +34,19 @@ logger.info('SBND Purity Monitor starts.')
 
 
 #
+# Get the settings from the settings file
+#
+settings = os.path.join(os.path.dirname(__file__), 'settings.yaml')
+
+with open(settings) as file:
+    config = yaml.load(file, Loader=yaml.FullLoader)
+print('Config:', yaml.dump(config), sep='\n')
+
+# logger.info(yaml.dump(config))
+
+
+
+#
 # Construct the GUI
 #
 app = QtWidgets.QApplication(sys.argv)
@@ -46,10 +61,10 @@ window.show()
 #
 if args.mock:
     from sbndprmdaq.mock_manager import MockPrMManager
-    manager = MockPrMManager(window)
+    manager = MockPrMManager(config, window)
 else:
     from sbndprmdaq.manager import PrMManager
-    manager = PrMManager(window, args.datafiles)
+    manager = PrMManager(config, window)
 
 # manager.test()
 

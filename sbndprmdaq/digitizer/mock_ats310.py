@@ -26,6 +26,30 @@ class ATS310Exception(Exception):
         super(ESP32Exception, self).__init__(self._message)
 
 
+def get_digitizers(prm_id_to_ats_systemid):
+    '''
+    Returns all the available digitizers (mock)
+
+    Args:
+        prm_id_to_ats_systemid (dict): A dictionary from PrM ID to digitized systemId.
+
+    Returns:
+        list: A list of digitizers
+    '''
+
+    digitizers = {}
+    for prm_id, systemid in prm_id_to_ats_systemid.items():
+
+        ats310 = MockATS310()
+
+        # Simulate that prm 3 is not available
+        if prm_id == 3:
+            ats310 = None
+        digitizers[prm_id] = ats310
+
+    return digitizers
+
+
 class MockBoard():
     def __init__(self):
         self._status = False

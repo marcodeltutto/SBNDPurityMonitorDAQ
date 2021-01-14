@@ -18,7 +18,7 @@ class PrMManager():
     '''
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, window=None, data_files_path=None):
+    def __init__(self, config, window=None):
         '''
         Constructor. Can be called passing the GUI main window if the GUI is desired.
 
@@ -32,19 +32,27 @@ class PrMManager():
         self._window = window
         self._comm = Communicator()
 
-        digitizers = get_digitizers()
-        self._digitizers = []
-        self._data = []
-        for digitizer in digitizers:
-            self._digitizers.append(BoardWrapper(digitizer, self._logger, ATS310Exception))
-            self._data.append(None)
-        self._data_files_path = data_files_path
+        self._digitizers = {}
+        self._data = {}
+
+        digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
+        for prm_id, digitizer in digitizers.items():
+            if digitizer is None:
+                self._window.missing_digitizer(prm_id)
+                continue
+            self._digitizers[prm_id] = BoardWrapper(digitizer, self._logger, ATS310Exception)
+            self._data[prm_id] = None
+
+        self._logger.info('Number of available digitizers: {n_digi}'.format(
+                          n_digi=len(self._digitizers)))
+
+        self._data_files_path = prm_id_to_ats_systemid['data_files_path']
 
         self._hv_on = False
 
         self._threadpool = QThreadPool()
-        self._logger.info('Number of available threads: {n_thread}',
-                          n_thread=self._threadpool.maxThreadCount())
+        self._logger.info('Number of available threads: {n_thread}'.format(
+                          n_thread=self._threadpool.maxThreadCount()))
 
 
     def digitizer_busy(self, prm_id=1):
@@ -57,7 +65,7 @@ class PrMManager():
         Returns:
             bool: True for busy, False otherwise.
         '''
-        ats310 = self._digitizers[prm_id-1]
+        ats310 = self._digitizers[prm_id]
         return ats310.busy()
 
 
@@ -68,7 +76,7 @@ class PrMManager():
         Returns:
             bool: The digitizer samples per second
         '''
-        ats310 = self._digitizers[prm_id-1]
+        ats310 = self._digitizers[prm_id]
         return ats310.get_samples_per_second()
 
 
@@ -85,7 +93,7 @@ class PrMManager():
         worker.signals.progress.connect(self._thread_progress)
 
         self._threadpool.start(worker)
-        self._logger.info('Thread started for prm_id {prm_id}.', prm_id=prm_id)
+        self._logger.info('Thread started for prm_id {prm_id}.'.format(prm_id=prm_id))
 
 
     def capture_data(self, prm_id, progress_callback=None):
@@ -100,7 +108,7 @@ class PrMManager():
             the data for ch A, the data for ch B
         '''
 
-        ats310 = self._digitizers[prm_id-1]
+        ats310 = self._digitizers[prm_id]
 
         #
         # Wait some time for the HV to stabilize
@@ -145,7 +153,7 @@ class PrMManager():
 
         if data['status']:
             print('ok')
-            self._data[data['prm_id']-1] = {
+            self._data[data['prm_id']] = {
                 'A': data['A'],
                 'B': data['B'],
             }
@@ -172,7 +180,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info('Thread completed for prm_id {prm_id}.', prm_id=prm_id)
+        self._logger.info('Thread completed for prm_id {prm_id}.'.format(prm_id=prm_id))
         self._window.start_stop_prm(prm_id)
 
         if status:
@@ -196,15 +204,15 @@ class PrMManager():
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
-        if self._data[prm_id-1] is None:
+        if self._data[prm_id] is None:
             return
 
-        for ch in self._data[prm_id-1].keys():
+        for ch in self._data[prm_id].keys():
             # file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_' + ch + '.csv'
             # np.savetxt(file_name, self._data[ch], delimiter=',')
             # self._logger.info(f'Saving data for ch {ch} to file ' + file_name)
 
-            out_dict[f'ch_{ch}'] = self._data[prm_id-1][ch]
+            out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
 
         if self._hv_on:
             hv_status = 'on'
@@ -295,4 +303,4 @@ class PrMManager():
         Returns:
             dict: A dictionary containing the data for ch A and for ch B.
         '''
-        return self._data[prm_id-1]
+        return self._data[prm_id]

@@ -8,7 +8,7 @@ import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
-from sbndprmdaq.digitizer.mock_ats310 import MockATS310
+from sbndprmdaq.digitizer.mock_ats310 import MockATS310, get_digitizers
 from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
@@ -17,7 +17,7 @@ class MockPrMManager():
     A mock purity monitor manager. Takes care of all DAQ aspects.
     '''
 
-    def __init__(self, window=None):
+    def __init__(self, config, window=None):
         '''
         Constructor. Can be called passing the GUI main window if the GUI is desired.
 
@@ -25,15 +25,24 @@ class MockPrMManager():
             window (QMainWindow): The main window (optional).
         '''
         self._logger = logging.getLogger(__name__)
-        self._ats310 = MockATS310()
+
         self._comm = MockCommunicator()
         self._window = window
 
-        self._data = [None, None, None]
+        self._digitizers = {}
+        self._data = {}
+
+        digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
+        for prm_id, digitizer in digitizers.items():
+            if digitizer is None:
+                self._window.missing_digitizer(prm_id)
+                continue
+            self._digitizers[prm_id] = digitizer
+            self._data[prm_id] = None
 
         self._threadpool = QThreadPool()
-        self._logger.info('Number of available threads: {n_thread}',
-                          n_thread=self._threadpool.maxThreadCount())
+        self._logger.info('Number of available threads: {n_thread}'.format(
+                          n_thread=self._threadpool.maxThreadCount()))
 
 
     def digitizer_busy(self, prm_id):
@@ -46,17 +55,19 @@ class MockPrMManager():
         Returns:
             bool: True for busy, False otherwise.
         '''
-        return self._ats310.busy()
+        return self._digitizers[prm_id].busy()
 
 
-    def ats_samples_per_sec(self):
+    def ats_samples_per_sec(self, prm_id=1):
         '''
         Returns the digitizer recorded samples per second
 
+        Args:
+            prm_id (int): The purity monitor ID.
         Returns:
             bool: The digitizer samples per second
         '''
-        return self._ats310.get_samples_per_second()
+        return self._digitizers[prm_id].get_samples_per_second()
 
 
     def start_prm(self, prm_id):
@@ -102,7 +113,7 @@ class MockPrMManager():
         worker.signals.progress.connect(self._thread_progress)
 
         self._threadpool.start(worker)
-        self._logger.info('Thread started for prm_id {prm_id}.', prm_id=prm_id)
+        self._logger.info('Thread started for prm_id {prm_id}.'.format(prm_id=prm_id))
 
 
     def capture_data(self, prm_id, progress_callback=None):
@@ -188,7 +199,7 @@ class MockPrMManager():
             prm_id (int): The purity monitor ID.
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info('Thread completed for prm_id {prm_id}.', prm_id=prm_id)
+        self._logger.info('Thread completed for prm_id {prm_id}.'.format(prm_id=prm_id))
         self._comm.stop_prm()
         self._window.start_stop_prm(prm_id)
 
@@ -239,4 +250,4 @@ class MockPrMManager():
         Returns:
             dict: A dictionary containing the data for ch A and for ch B.
         '''
-        return self._data[prm_id-1]
+        return self._data[prm_id]

@@ -1,0 +1,10 @@
+# Configuration file
+
+test: 'test'
+
+prm_id_to_ats_systemid:
+  1: 1
+  2: 2
+  3: 3
+
+data_files_path: None
