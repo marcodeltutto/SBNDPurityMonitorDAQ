@@ -146,8 +146,8 @@ class MockPrMManager():
         #
         # Tell the digitizer to start capturing data and check until it completes
         #
-        self._ats310.start_capture()
-        status = self._ats310.check_capture(prm_id, progress_callback)
+        self._digitizers[prm_id].start_capture()
+        status = self._digitizers[prm_id].check_capture(prm_id, progress_callback)
 
         # Generate random data
         records_per_capture = 3
