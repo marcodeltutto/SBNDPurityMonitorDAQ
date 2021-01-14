@@ -1,3 +1,5 @@
+import os
+import yaml
 from pytestqt.qt_compat import qt_api
 import pytest
 
@@ -7,6 +9,11 @@ from sbndprmdaq.mainwindow import MainWindow
 # from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
 from sbndprmdaq.mock_manager import MockPrMManager
 from sbndprmdaq.prmlogger import PrMLogWidget
+
+settings = os.path.join(os.path.dirname(__file__), '../settings.yaml')
+
+with open(settings) as file:
+    config = yaml.load(file, Loader=yaml.FullLoader)
 
 
 def test_simple():
@@ -18,7 +25,7 @@ def test_simple():
     # window = MainWindow(logs=logs)
 
     # comm = MockCommunicator()
-    manager = MockPrMManager()
+    manager = MockPrMManager(config)
     # window.set_manager(manager)
 
     # qtbot.addWidget(window)
@@ -40,7 +47,7 @@ def test_simple_2(qtbot):
     qtbot.addWidget(window)
 
     # comm = MockCommunicator()
-    manager = MockPrMManager(window)
+    manager = MockPrMManager(config, window)
     window.set_manager(manager)
 
 

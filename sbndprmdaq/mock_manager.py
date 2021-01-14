@@ -35,7 +35,8 @@ class MockPrMManager():
         digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
         for prm_id, digitizer in digitizers.items():
             if digitizer is None:
-                self._window.missing_digitizer(prm_id)
+                if self._window is not None:
+                    self._window.missing_digitizer(prm_id)
                 continue
             self._digitizers[prm_id] = digitizer
             self._data[prm_id] = None
