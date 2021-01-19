@@ -6,7 +6,7 @@ ATS310 Drivers
 ---------------
 
 Download file
-ftp://release@ftp.alazartech.com/outgoing/linux/Ubuntu/20.04/drivers-ats310-dkms_7.2.1_amd64.deb
+ftp://release@ftp.alazartech.com/outgoing/linux/Ubuntu/20.04/drivers-ats310-dkms_7.3.0_amd64.deb
 
 .. code-block:: bash
 
@@ -26,7 +26,7 @@ libats Library
 ---------------
 
 Download file
-ftp://release@ftp.alazartech.com/outgoing/linux/Ubuntu/libats/libats_7.2.1_amd64.deb
+ftp://release@ftp.alazartech.com/outgoing/linux/Ubuntu/libats/libats_7.3.0_amd64.deb
 
 Then, in the Downloads folder:
 
