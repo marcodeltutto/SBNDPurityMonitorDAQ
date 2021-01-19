@@ -2,6 +2,7 @@
 The purity monitor manager.
 '''
 import time
+import datetime
 import logging
 import numpy as np
 
@@ -47,7 +48,7 @@ class PrMManager():
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=len(self._digitizers)))
 
-        self._data_files_path = prm_id_to_ats_systemid['data_files_path']
+        self._data_files_path = config['data_files_path']
 
         self._hv_on = False
 
@@ -136,6 +137,7 @@ class PrMManager():
         data = {
             'prm_id': prm_id,
             'status': status,
+            'time': datetime.datetime.today(),
             'A': data_raw['A'],
             'B': data_raw['B'],
         }
@@ -157,6 +159,7 @@ class PrMManager():
             self._data[data['prm_id']] = {
                 'A': data['A'],
                 'B': data['B'],
+                'time': data['time'],
             }
             self.save_data(data['prm_id'])
 
@@ -200,6 +203,10 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         # pylint: disable=invalid-name
+
+        if self._data_files_path is None:
+            self._logger.warning('Cannot save to file, data_files_path not set.')
+            return
 
         out_dict = {}
 
