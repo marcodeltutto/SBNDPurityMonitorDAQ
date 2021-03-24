@@ -6,7 +6,7 @@ import pytest
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from sbndprmdaq.mainwindow import MainWindow
-from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
+from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.mock_manager import MockPrMManager
 from sbndprmdaq.prmlogger import PrMLogWidget
 
