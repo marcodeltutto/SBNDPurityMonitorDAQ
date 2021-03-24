@@ -9,7 +9,7 @@ import numpy as np
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.digitizer.mock_ats310 import MockATS310, get_digitizers
-from sbndprmdaq.parallel_communication.mock_communicator import MockCommunicator
+from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
 class MockPrMManager():
