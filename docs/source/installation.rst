@@ -1,5 +1,22 @@
 How to install
 ==============
 
-To be written.
+The reuired packages are:
 
+.. code-block:: bash
+
+	pyparallel
+	pyserial
+	PyQt5==5.13.2
+	PyQtGraph
+	argparse
+	pyyaml
+	qdarkstyle
+
+You can get all the requirements with 
+
+.. code-block:: bash
+	
+	pip install -r requirements.txt --user
+
+That's it!
