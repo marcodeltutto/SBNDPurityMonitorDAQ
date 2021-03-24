@@ -279,6 +279,7 @@ class ATS310():
             time.sleep(0.1)
 
         if not status:
+            self._board.abortCapture() # Stop the acquisition
             return False
 
         # while not ats.enter_pressed():
