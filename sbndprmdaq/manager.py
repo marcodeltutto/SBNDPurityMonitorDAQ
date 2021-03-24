@@ -10,7 +10,7 @@ from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
 from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
-from sbndprmdaq.parallel_communication.communicator import Communicator
+from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.threading_utils import Worker
 
 class PrMManager():
@@ -60,7 +60,7 @@ class PrMManager():
     def digitizer_busy(self, prm_id=1):
         '''
         Returns the digitizers status
-        (if it is busy or now)
+        (if it is busy or not)
 
         Args:
             prm_id (int): The purity monitor ID.
