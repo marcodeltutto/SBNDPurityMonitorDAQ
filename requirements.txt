@@ -1,4 +1,5 @@
 pyparallel
+pyserial
 PyQt5==5.13.2
 PyQtGraph
 argparse
