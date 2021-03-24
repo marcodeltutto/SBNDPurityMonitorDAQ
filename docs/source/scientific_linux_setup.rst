@@ -4,7 +4,7 @@ ATS Digitizer Drivers Installation (SL7)
 Bla 
 
 .. code-block:: bash
-        sudo yum install qtcreator
+	sudo yum install qtcreator
 
 
 .. code-block:: bash
