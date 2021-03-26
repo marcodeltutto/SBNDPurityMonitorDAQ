@@ -10,7 +10,7 @@ This project is documented [here](https://sbndpuritymonitordaq.readthedocs.io/en
 ./prm_gui.py
 ```
 
-If running without a parallel port, for testing purposes:
+If running without a parallel/serial port, and without digitizer, for testing purposes:
 ```
 ./prm_gui.py --mock
 ```

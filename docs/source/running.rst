@@ -7,7 +7,7 @@ Some text
 
     ./prm_gui.py
 
-If running without a parallel port, for testing purposes:
+If running without a parallel/serial port, or without a digitizer, for testing purposes:
 
 .. code-block:: bash
 
