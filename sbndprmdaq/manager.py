@@ -13,6 +13,8 @@ from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.threading_utils import Worker
 
+from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
+
 class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
@@ -32,6 +34,7 @@ class PrMManager():
         # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
         self._window = window
         self._comm = Communicator()
+        self._prm_control = PrMControlArduino(config=config)
 
         self._digitizers = {}
         self._data = {}

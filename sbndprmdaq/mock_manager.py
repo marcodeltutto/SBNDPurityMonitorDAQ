@@ -12,6 +12,8 @@ from sbndprmdaq.digitizer.mock_ats310 import MockATS310, get_digitizers
 from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
+from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
+
 class MockPrMManager():
     '''
     A mock purity monitor manager. Takes care of all DAQ aspects.
@@ -27,6 +29,8 @@ class MockPrMManager():
         self._logger = logging.getLogger(__name__)
 
         self._comm = MockCommunicator()
+        self._prm_control = PrMControlArduino(config=config)
+
         self._window = window
 
         self._digitizers = {}
@@ -82,6 +86,7 @@ class MockPrMManager():
         '''
         # Tell the parallel communicator to start the purity monitor
         self._comm.start_prm()
+        self._prm_control.start_prm()
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
@@ -98,6 +103,7 @@ class MockPrMManager():
             prm_id (int): The purity monitor ID.
         '''
         self._comm.stop_prm()
+        self._prm_control.stop_prm()
 
 
 

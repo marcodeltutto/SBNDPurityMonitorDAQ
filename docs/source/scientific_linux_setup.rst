@@ -1,4 +1,4 @@
-ATS Digitizer Drivers Installation (SL7)
+SL7 Setup
 ===========================================
 
 Bla 
