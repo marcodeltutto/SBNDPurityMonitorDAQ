@@ -436,11 +436,18 @@ if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)
     # ConfigureBoard(board)
     # AcquireData(board)
+    prm_id_to_ats_systemid = {
+        1: 1,
+        2: 2,
+        3: 3
+    }
 
-    digitizers = get_digitizers()
+    digitizers = get_digitizers(prm_id_to_ats_systemid)
 
     my_ats310 = ATS310()
     my_ats310.start_capture()
+    my_ats310.abort_acquisition()
+    del my_ats310
     # my_ats310.start_capture()
 
     # my_ats310.prepare_acquisition()

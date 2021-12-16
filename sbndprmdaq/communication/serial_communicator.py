@@ -37,10 +37,10 @@ class Communicator():
 
         self._ser = serial.Serial()
         self._ser.port = port
-        self._ser.dtr = True
-        self._ser.rts = True
+        self._ser.dtr = False
+        self._ser.rts = False
         self._ser.open()
-        
+
         self._prm_id = prm_id
 
         if not self._ser.is_open:
@@ -60,7 +60,7 @@ class Communicator():
         Sets the parallel port pin that turns the PrM ON.
         '''
         self._logger.info(f'Starting purity monitor {self._prm_id}.')
-        self._ser.rts = False
+        self._ser.rts = True
 
 
     def stop_prm(self):
@@ -68,7 +68,7 @@ class Communicator():
         Sets the parallel port pin that turns the PrM OFF.
         '''
         self._logger.info(f'Stopping purity monitor {self._prm_id}.')
-        self._ser.rts = True
+        self._ser.rts = False
 
 
     def hv_on(self):
