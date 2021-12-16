@@ -8,3 +8,5 @@ prm_id_to_ats_systemid:
   3: 3
 
 data_files_path: null
+
+arduino_address: '/dev/cu.usbmodem143301'
