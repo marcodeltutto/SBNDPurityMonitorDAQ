@@ -24,7 +24,7 @@ class HVControlBase():
     A base class to control the HV.
     '''
 
-    def __init__(self, prm_id=1, config=None):
+    def __init__(self, prm_ids=None, config=None):
         '''
         Contructor.
 
@@ -34,16 +34,14 @@ class HVControlBase():
 
         self._logger = logging.getLogger(__name__)
 
-        self._prm_id = prm_id
-        self._setting = config
-
-        # raise HVControlException(self._logger,
-            # f'Cannot set data to parallel port in constructor. Tried to send: {data}.')
+        if prm_ids is None:
+            raise HVControlException(self._logger,
+                f'Need to set prm_ids.')
 
         self._logger.info('HVControl created.')
 
 
-    def hv_on(self):
+    def hv_on(self, prm_id=1):
         '''
         Turn the HV ON.
         '''
@@ -51,7 +49,7 @@ class HVControlBase():
         return
 
 
-    def hv_off(self):
+    def hv_off(self, prm_id=1):
         '''
         Turn the HV OFF.
         '''

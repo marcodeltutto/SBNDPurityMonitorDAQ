@@ -9,4 +9,14 @@ prm_id_to_ats_systemid:
 
 data_files_path: null
 
-arduino_address: '/dev/cu.usbmodem143301'
+arduino_address: '/dev/ttyACM0'
+# arduino_address: '/dev/cu.usbmodem143301'
+
+arduino_prm1_pin: 7
+arduino_prm2_pin: 7
+arduino_prm3_pin: 7
+
+mpod_ip: "192.168.0.25"
+mpod_prm1_ch: 101
+mpod_prm2_ch: 101
+mpod_prm3_ch: 101

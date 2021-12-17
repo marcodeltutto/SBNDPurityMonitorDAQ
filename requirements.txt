@@ -5,3 +5,5 @@ PyQtGraph
 argparse
 pyyaml
 qdarkstyle
+pyfirmata
+

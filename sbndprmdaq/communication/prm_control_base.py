@@ -24,27 +24,25 @@ class PrMControlBase():
     The communicator class that deals with the parallel port.
     '''
 
-    def __init__(self, prm_id=1, config=None):
+    def __init__(self, prm_ids=None, config=None):
         '''
         Contructor.
 
         Args:
-            prm_id (int): The purity monitor ID.
+            prm_ids (list): The purity monitor IDs.
             config (dict): Settings
         '''
 
         self._logger = logging.getLogger(__name__)
 
-        self._prm_id = prm_id
-        self._setting = config
-
-            # raise PrMControlException(self._logger,
-            #     f'Cannot set data to parallel port in constructor. Tried to send: {data}.')
+        if prm_ids is None:
+            raise PrMControlException(self._logger,
+                f'Need to set prm_ids.')
 
         self._logger.info('PrMControlBase created.')
 
 
-    def start_prm(self):
+    def start_prm(self, prm_id=None):
         '''
         Turns the PrM ON.
         '''
@@ -52,7 +50,7 @@ class PrMControlBase():
         return
 
 
-    def stop_prm(self):
+    def stop_prm(self, prm_id=None):
         '''
         Turns the PrM OFF.
         '''

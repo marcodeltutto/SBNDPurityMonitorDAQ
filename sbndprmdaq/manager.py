@@ -10,10 +10,11 @@ from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
 from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
-from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.threading_utils import Worker
 
+# from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
+from sbndprmdaq.communication.hv_control_mpod import HVControlMPOD
 
 class PrMManager():
     '''
@@ -33,8 +34,7 @@ class PrMManager():
         # self._ats310 = ATS310()
         # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
         self._window = window
-        self._comm = Communicator()
-        self._prm_control = PrMControlArduino(config=config)
+        # self._comm = Communicator()
 
         self._digitizers = {}
         self._data = {}
@@ -48,12 +48,16 @@ class PrMManager():
             self._digitizers[prm_id] = BoardWrapper(digitizer, self._logger, ATS310Exception)
             self._data[prm_id] = None
 
+        self._prm_control = PrMControlArduino(self._digitizers.keys(), config=config)
+        self._hv_control = HVControlMPOD(self._digitizers.keys(), config=config)
+
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=len(self._digitizers)))
 
         self._data_files_path = config['data_files_path']
 
         self._hv_on = False
+        self._use_hv = True
 
         self._threadpool = QThreadPool()
         self._logger.info('Number of available threads: {n_thread}'.format(
@@ -252,7 +256,12 @@ class PrMManager():
         '''
 
         # Tell the parallel communicator to start the purity monitor
-        self._comm.start_prm()
+        # self._comm.start_prm()
+        self._prm_control.start_prm(prm_id)
+        if self._use_hv:
+            self.hv_on()
+        else:
+            self.hv_off()
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
@@ -268,7 +277,9 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        self._comm.stop_prm()
+        # self._comm.stop_prm()
+        self._prm_control.stop_prm(prm_id)
+        self.hv_off()
 
 
     def hv_on(self, prm_id=1):
@@ -278,7 +289,8 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        self._comm.hv_on()
+        # self._comm.hv_on()
+        self._hv_control.hv_on(prm_id)
         self._hv_on = True
 
 
@@ -289,7 +301,8 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        self._comm.hv_off()
+        # self._comm.hv_off()
+        self._hv_control.hv_off(prm_id)
         self._hv_on = False
 
 
