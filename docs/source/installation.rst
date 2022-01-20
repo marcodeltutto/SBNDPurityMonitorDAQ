@@ -1,7 +1,7 @@
 How to install
 ==============
 
-The reuired packages are:
+The required packages are:
 
 .. code-block:: bash
 
