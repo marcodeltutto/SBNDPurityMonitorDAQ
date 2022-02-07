@@ -22,8 +22,5 @@ jobs:
     - name: Test
       env:
         QT_DEBUG_PLUGINS: 1
-      run: |
-        ulimit -c unlimited
-        sudo catchsegv xvfb-run --auto-servernum `which coverage` run -m pytest
-        pytest -s -v tests
+      run: xvfb-run pytest -s -v tests
     - run: echo "🍏 This job's status is ${{ job.status }}."
