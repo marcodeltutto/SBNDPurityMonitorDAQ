@@ -1,6 +1,6 @@
 pyparallel
 pyserial
-PyQt5==5.13.2
+PyQt5
 PyQtGraph
 argparse
 pyyaml
