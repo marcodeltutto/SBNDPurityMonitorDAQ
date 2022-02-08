@@ -26,7 +26,7 @@ def test_instantiate_manager():
 
 
 def test_simple_2(qtbot):
-    assert qt_api.QApplication.instance() is not None
+    # assert qt_api.QApplication.instance() is not None
 
     logs = PrMLogWidget()
     qtbot.addWidget(logs)

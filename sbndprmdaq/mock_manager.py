@@ -12,7 +12,7 @@ from sbndprmdaq.digitizer.mock_ats310 import MockATS310, get_digitizers
 from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
-from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
+from sbndprmdaq.communication.mock_prm_control import MockPrMControl
 
 class MockPrMManager():
     '''
@@ -29,7 +29,7 @@ class MockPrMManager():
         self._logger = logging.getLogger(__name__)
 
         self._comm = MockCommunicator()
-        self._prm_control = PrMControlArduino(config=config)
+        self._prm_control = MockPrMControl(prm_ids=[1,2,3], config=config)
 
         self._window = window
 
