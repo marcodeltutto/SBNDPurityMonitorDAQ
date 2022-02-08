@@ -1,6 +1,6 @@
 # SBNDPurityMonitorDAQ
 
-[![Build Status](https://travis-ci.com/marcodeltutto/SBNDPurityMonitorDAQ.svg?branch=master)](https://travis-ci.com/marcodeltutto/SBNDPurityMonitorDAQ)
+[![tests](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/actions/workflows/test.yml/badge.svg)](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/sbndpuritymonitordaq/badge/?version=latest)](https://sbndpuritymonitordaq.readthedocs.io/en/latest/?badge=latest)
 
 This project is documented [here](https://sbndpuritymonitordaq.readthedocs.io/en/latest/).
