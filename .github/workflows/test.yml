@@ -10,16 +10,15 @@ jobs:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.8
+        python-version: 3.7
         architecture: 'x64'
     - name: Install dependencies
       run: |
         sudo apt-get update -y
         sudo apt-get install -y xvfb libxcb-icccm4 libxcb-image0 libxcb-randr0 libxcb-xinerama0 libxcb-keysyms1 libxcb-render-util0 libxcb-xkb1 x11-utils libxkbcommon-x11-0
         python -m pip install --upgrade pip
-        pip install pyside2 pytest coverage pytest-qt
         pip install -r requirements.txt
-        pip install pytest-qt pytest-cov
+        pip install pytest-qt==4.0.2
     - name: Test
       env:
         QT_DEBUG_PLUGINS: 1
