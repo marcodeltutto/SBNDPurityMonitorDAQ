@@ -241,6 +241,7 @@ class PrMManager():
         file_name += timestr
         file_name += '_hv_'
         file_name += hv_status
+        file_name += '.npz'
 
         np.savez(file_name, **out_dict)
 
