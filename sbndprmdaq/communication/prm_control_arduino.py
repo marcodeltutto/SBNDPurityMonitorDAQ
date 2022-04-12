@@ -22,6 +22,12 @@ class PrMControlArduino(PrMControlBase):
         if 'arduino_address' not in config:
             raise PrMControlException(self._logger, 'Missing arduino_address in config.')
 
+        self._configure()
+
+        self._logger.info('PrMControlArduino created.')
+
+    def _configure(self):
+
         self._logger.info(f"Trying to talk to Arduino at address {config['arduino_address']}")
         self._board = pyfirmata.Arduino(config['arduino_address'])
         self._logger.info(f"Connection with Arduino established.")
@@ -38,8 +44,6 @@ class PrMControlArduino(PrMControlBase):
                 self._pins[prm_id] = config[f'arduino_prm{prm_id}_pin']
                 self._board.digital[self._pins[prm_id]].write(0)
         self._logger.info("Arduino pins set to 0.")
-
-        self._logger.info('PrMControlArduino created.')
 
 
     def start_prm(self, prm_id=1):
