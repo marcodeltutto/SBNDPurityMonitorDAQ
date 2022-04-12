@@ -20,6 +20,7 @@ This repository contains the DAQ for the SBND purity monitors.
    scientific_linux_setup
    kerberos_ubuntu
    fnal_daq_systems
+   usb_serial_persistent_name
 
 
 .. toctree::
