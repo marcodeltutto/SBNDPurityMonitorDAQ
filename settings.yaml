@@ -7,9 +7,9 @@ prm_id_to_ats_systemid:
   2: 2
   3: 3
 
-data_files_path: null
+data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'
 
-arduino_address: '/dev/ttyACM0'
+arduino_address: '/dev/arduino'
 # arduino_address: '/dev/cu.usbmodem143301'
 
 arduino_prm1_pin: 7
@@ -17,6 +17,9 @@ arduino_prm2_pin: 7
 arduino_prm3_pin: 7
 
 mpod_ip: "192.168.0.25"
-mpod_prm1_ch: 101
-mpod_prm2_ch: 101
-mpod_prm3_ch: 101
+mpod_prm1_negative_ch: 100
+mpod_prm1_positive_ch: 200
+mpod_prm2_negative_ch: 101
+mpod_prm2_positive_ch: 201
+mpod_prm3_negative_ch: 103
+mpod_prm3_positive_ch: 203
