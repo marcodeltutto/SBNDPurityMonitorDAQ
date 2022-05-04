@@ -40,6 +40,13 @@ class HVControlBase():
 
         self._logger.info('HVControl created.')
 
+    def is_crate_on(self):
+        '''
+        Returns True if the crate is ON
+        '''
+        print('To be implemented')
+        return
+
 
     def hv_on(self, prm_id=1):
         '''
