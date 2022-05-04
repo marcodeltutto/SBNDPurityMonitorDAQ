@@ -63,6 +63,10 @@ class PrMManager():
         self._logger.info('Number of available threads: {n_thread}'.format(
                           n_thread=self._threadpool.maxThreadCount()))
 
+        # A timer used to periodically run the PrMs
+        self._timer = QTimer()
+        self._mode = 'manual'
+
 
     def digitizer_busy(self, prm_id=1):
         '''
@@ -97,15 +101,17 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         worker = Worker(self.capture_data, prm_id=prm_id)
-        worker.signals.result.connect(self._result_callback)
+        # worker.signals.result.connect(self._result_callback)
         worker.signals.finished.connect(self._thread_complete)
         worker.signals.progress.connect(self._thread_progress)
+        worker.signals.data.connect(self._thread_data)
+        # worker.setAutoDelete(False)
 
         self._threadpool.start(worker)
         self._logger.info('Thread started for prm_id {prm_id}.'.format(prm_id=prm_id))
 
 
-    def capture_data(self, prm_id, progress_callback=None):
+    def capture_data(self, prm_id, progress_callback=None, data_callback=None):
         '''
         Capture the data. If running without a GUI, do not pass the progress_callback.
 
@@ -114,52 +120,79 @@ class PrMManager():
             progress_callback (fn): The callback function to be called to show progress (optional)
         Returns:
             dict: A dictionary containing the prm_id, the status,
-            the data for ch A, the data for ch B
+            the data for ch A, the data for ch B NO LONGER USED
         '''
 
-        ats310 = self._digitizers[prm_id]
+        while True:
+            print('MMMMMMMMMMMMMMMMMMMM START')
+            self._prm_control.start_prm(prm_id)
 
-        #
-        # Wait some time for the HV to stabilize
-        #
-        purity_mon_wake_time = 4 #seconds
-        start = time.time()
-        while purity_mon_wake_time > time.time() - start:
-            perc = (time.time() - start) / purity_mon_wake_time * 100
+            ats310 = self._digitizers[prm_id]
+
+            #
+            # Wait some time for the HV to stabilize
+            #
+            purity_mon_wake_time = 4 #seconds
+            self._logger.info('Awaking {prm_id} for {sec} seconds.'.format(prm_id=prm_id, sec=purity_mon_wake_time))
+            start = time.time()
+            while purity_mon_wake_time > time.time() - start:
+                perc = (time.time() - start) / purity_mon_wake_time * 100
+                if progress_callback is not None:
+                    progress_callback.emit(prm_id, 'Awake Monitor', perc)
+                time.sleep(0.1)
+
             if progress_callback is not None:
-                progress_callback.emit(prm_id, 'Awake Monitor', perc)
-            time.sleep(0.1)
+                progress_callback.emit(prm_id, 'Start Capture', 100)
 
-        if progress_callback is not None:
-            progress_callback.emit(prm_id, 'Start Capture', 100)
+            #
+            # Tell the digitizer to start capturing data and check until it completes
+            #
+            self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
+            ats310.start_capture()
+            self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
+            status = ats310.check_capture(prm_id, progress_callback)
+            if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
 
-        #
-        # Tell the digitizer to start capturing data and check until it completes
-        #
-        ats310.start_capture()
-        status = ats310.check_capture(prm_id, progress_callback)
+            progress_callback.emit(prm_id, 'Retrieving Data', 100)
+            data_raw = ats310.get_data()
+            # print('From manager:', data)
+            data = {
+                'prm_id': prm_id,
+                'status': status,
+                'time': datetime.datetime.today(),
+                'A': data_raw['A'],
+                'B': data_raw['B'],
+            }
 
-        data_raw = ats310.get_data()
-        # print('From manager:', data)
-        data = {
-            'prm_id': prm_id,
-            'status': status,
-            'time': datetime.datetime.today(),
-            'A': data_raw['A'],
-            'B': data_raw['B'],
-        }
+            data_callback.emit(data)
 
+            self._prm_control.stop_prm(prm_id)
+            # self._window.start_stop_prm(prm_id)
+            print('MMMMMMMMMMMMMMMMMMMM END')
+            if self._mode == 'auto':
+                time_interval = 20
+
+                self._window.reset_progress(prm_id, name='Done!', color='#006400')
+                time.sleep(1)
+                self._window.reset_progress(prm_id, name='Waiting', color='#ffffff') # dark green
+                time.sleep(time_interval - 1)
+            else:
+                break
+            #     self.capture_data(prm_id, progress_callback, data_callback)
+
+        # Not used
         return data
 
 
-    def _result_callback(self, data):
+    def _thread_data(self, data):
+
         '''
         This method is called at the end of every thread and receives the acquired data.
 
         Args:
             data (dict): The acquired data.
         '''
-        print('Got data:', data['prm_id'])
+        print('***************Got data:', data['prm_id'])
 
         if data['status']:
             print('ok')
@@ -169,6 +202,24 @@ class PrMManager():
                 'time': data['time'],
             }
             self.save_data(data['prm_id'])
+
+    # def _result_callback(self, data):
+    #     '''
+    #     This method is called at the end of every thread and receives the acquired data.
+
+    #     Args:
+    #         data (dict): The acquired data.
+    #     '''
+    #     print('Got data:', data['prm_id'])
+
+    #     if data['status']:
+    #         print('ok')
+    #         self._data[data['prm_id']] = {
+    #             'A': data['A'],
+    #             'B': data['B'],
+    #             'time': data['time'],
+    #         }
+    #         self.save_data(data['prm_id'])
 
 
     def _thread_progress(self, prm_id, name, progress):
@@ -192,7 +243,7 @@ class PrMManager():
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
         self._logger.info('Thread completed for prm_id {prm_id}.'.format(prm_id=prm_id))
-        self._window.start_stop_prm(prm_id)
+        # self._window.start_stop_prm(prm_id)
 
         if status:
             self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
@@ -200,6 +251,12 @@ class PrMManager():
             self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
+
+        # if self._mode == 'auto':
+        #     time_interval = 20
+        # #     import threading
+        # #     threading.Timer(time_interval, lambda: self.start_prm(prm_id)).start()
+        #     QTimer.singleShot(time_interval * 1000, lambda: self.start_io_thread(prm_id))
 
 
     def save_data(self, prm_id=1):
@@ -258,7 +315,7 @@ class PrMManager():
 
         # Tell the parallel communicator to start the purity monitor
         # self._comm.start_prm()
-        self._prm_control.start_prm(prm_id)
+        # self._prm_control.start_prm(prm_id)
         if self._use_hv:
             self.hv_on()
         else:
@@ -270,6 +327,36 @@ class PrMManager():
         else:
             self.capture_data(prm_id)
 
+        # if self._mode == 'auto':
+        #     time_interval = 20
+        #     import threading
+        #     threading.Timer(time_interval, lambda: self.start_prm(prm_id)).start()
+            # QTimer.singleShot(time_interval * 1000, lambda: self.start_prm(prm_id))
+
+    # def start_prm(self, prm_id=1):
+    #     if self._mode == 'manual':
+    #         self._do_start_prm(prm_id)
+    #     else:
+    #         self.periodic_start_prm(prm_id)
+
+
+    # def periodic_start_prm(self, prm_id=1, time_interval=20):
+    #     '''
+    #     Starts purity monitor prm_id every time_interval seconds.
+    #     Time interval cannot be less than 20 seconds, and if so,
+    #     it will be set to 20 seconds.
+
+    #     Args:
+    #         prm_id (int): The purity monitor ID.
+    #         time_interval (int): The time interaval in seconds.
+    #     '''
+    #     if time_interval < 20:
+    #         time_interval = 20
+
+    #     self._do_start_prm(prm_id)
+    #     self._timer.timeout.connect(lambda: self._do_start_prm(prm_id))
+    #     self._timer.start(time_interval * 1000)
+
 
     def stop_prm(self, prm_id=1):
         '''
@@ -280,7 +367,7 @@ class PrMManager():
         '''
         # self._comm.stop_prm()
         self._prm_control.stop_prm(prm_id)
-        self.hv_off()
+        # self.hv_off()
 
 
     def hv_on(self, prm_id=1):
@@ -290,7 +377,6 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        # self._comm.hv_on()
         self._hv_control.hv_on(prm_id)
         self._hv_on = True
 
@@ -302,7 +388,6 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        # self._comm.hv_off()
         self._hv_control.hv_off(prm_id)
         self._hv_on = False
 
@@ -315,6 +400,9 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             mode (int): The desired mode.
         '''
+        self._mode = mode
+        self._logger.info('Setting mode to: {mode}'.format(
+                          mode=self._mode))
         return
 
 

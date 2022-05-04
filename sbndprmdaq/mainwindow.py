@@ -340,7 +340,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._prm_controls[prm_id]._start_stop_btn.setText("Stop")
         self._prm_controls[prm_id]._run_status_label.setText('Running')
         self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
-        self.repaint()
+        # self.repaint()
 
 
     def _stop_prm(self, prm_id):
@@ -354,7 +354,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._prm_controls[prm_id]._start_stop_btn.setText("Start")
         self._prm_controls[prm_id]._run_status_label.setText('Not Running')
        	self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
-        self.repaint()
+        # self.repaint()
 
 
     def _set_hv(self, prm_id):
@@ -416,7 +416,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if 'A' in data and data['A'] is not None:
                 # print('------------------------------ len data', len(data['A']))
-                av_waveform = data['A'][2] #np.mean(data['A'], axis=0)
+                av_waveform = np.mean(data['A'], axis=0)
                 # print('------------------------------ len av_waveform', len(av_waveform))
                 x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
                 y = av_waveform
@@ -428,7 +428,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self._graphs[control.get_id()]['A'].setData([], [])
 
             if 'B' in data and data['B'] is not None:
-                av_waveform = data['B'][2] #np.mean(data['B'], axis=0)
+                av_waveform = np.mean(data['B'], axis=0)
                 x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
                 y = av_waveform
                 # self._graph_b.setData(x, y, pen=pg.mkPen('r'))

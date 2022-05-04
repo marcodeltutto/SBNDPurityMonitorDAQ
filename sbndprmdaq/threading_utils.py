@@ -20,6 +20,7 @@ class WorkerSignals(QObject):
     # result = pyqtSignal(object, object)
     result = pyqtSignal(object)
     progress = pyqtSignal(int, object, int) # prm_id, name, percentage
+    data = pyqtSignal(object) # data dict
 
 
 
@@ -49,7 +50,7 @@ class Worker(QRunnable):
 
         # Add the callback to our kwargs
         self.kwargs['progress_callback'] = self.signals.progress
-        # self.kwargs['data_callback'] = self.signals.result
+        self.kwargs['data_callback'] = self.signals.data
 
     @pyqtSlot()
     def run(self):
@@ -65,6 +66,7 @@ class Worker(QRunnable):
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
-            self.signals.result.emit(result)  # Return the result of the processing
+            None
+            # self.signals.result.emit(result)  # Return the result of the processing
         finally:
             self.signals.finished.emit(result['prm_id'], result['status'])  # Done

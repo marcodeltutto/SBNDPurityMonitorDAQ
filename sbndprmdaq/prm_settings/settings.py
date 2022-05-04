@@ -55,6 +55,9 @@ class Settings(QtWidgets.QMainWindow):
             self.setup_settings(s)
             self._settings_layout.addWidget(s)
 
+    def get_prm(prm_id=1):
+        return self._prm_settings[prm_id]
+
 
     def setup_settings(self, s):
         prm_id = s.get_id()
