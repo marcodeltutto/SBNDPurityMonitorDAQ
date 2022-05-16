@@ -152,21 +152,27 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">
     <property name="title">
      <string>Menu</string>
     </property>
-    <addaction name="actionShow_Logs"/>
+    <addaction name="_actionShow_Logs"/>
+    <addaction name="_action_comment"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
   <widget class="QStatusBar" name="_status_bar"/>
-  <action name="actionShow_Logs">
+  <action name="_actionShow_Logs">
    <property name="text">
     <string>Show Logs</string>
+   </property>
+  </action>
+  <action name="_action_comment">
+   <property name="text">
+    <string>Add Comment</string>
    </property>
   </action>
  </widget>
