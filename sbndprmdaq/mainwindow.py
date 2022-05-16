@@ -230,6 +230,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self._latest_data_layout.addWidget(latest_data)
             self.setup_latest_data(latest_data)
 
+        print('------', self.menuMenu.actions())
+        print('------0', self.menuMenu.actions()[0].text())
+        print('------1', self.menuMenu.actions()[1].text())
+        self.menuMenu.actions()[1].triggered.connect(self.show_comment)
+        # exit(0)
 
     def setup_control(self, control):
         '''
@@ -466,5 +471,14 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._status_bar.showMessage(f'Cannot find digitizer for PrM ID {prm_id}.')
         self._prm_controls[prm_id].setEnabled(False)
+
+
+    def show_comment(self):
+        '''
+        '''
+        print('Hi!')
+        comment, _ = QtWidgets.QInputDialog.getText(
+             self, 'Input Dialog', 'Enter your comment:')
+        self._prm_manager.set_comment(comment)
 
 

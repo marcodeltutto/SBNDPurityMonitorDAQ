@@ -67,6 +67,8 @@ class PrMManager():
         self._timer = QTimer()
         self._mode = 'manual'
 
+        self._comment = 'No comment'
+
 
     def digitizer_busy(self, prm_id=1):
         '''
@@ -291,6 +293,10 @@ class PrMManager():
         else:
             hv_status = 'off'
 
+        out_dict['date'] = timestr
+        out_dict['hv'] = hv_status
+        out_dict['comment'] = self._comment
+
         file_name = self._data_files_path
         file_name += '/sbnd_prm'
         file_name += str(prm_id)
@@ -301,6 +307,9 @@ class PrMManager():
         file_name += '.npz'
 
         np.savez(file_name, **out_dict)
+
+    def set_comment(self, comment):
+        self._comment = comment
 
 
     def start_prm(self, prm_id=1):
