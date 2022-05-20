@@ -161,6 +161,7 @@
     </property>
     <addaction name="_actionShow_Logs"/>
     <addaction name="_action_comment"/>
+    <addaction name="_action_config"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
@@ -173,6 +174,11 @@
   <action name="_action_comment">
    <property name="text">
     <string>Add Comment</string>
+   </property>
+  </action>
+  <action name="_action_config">
+   <property name="text">
+    <string>Set Configuration</string>
    </property>
   </action>
  </widget>
