@@ -230,11 +230,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self._latest_data_layout.addWidget(latest_data)
             self.setup_latest_data(latest_data)
 
-        print('------', self.menuMenu.actions())
-        print('------0', self.menuMenu.actions()[0].text())
-        print('------1', self.menuMenu.actions()[1].text())
+        self._config_form = Form(self)
+
         self.menuMenu.actions()[1].triggered.connect(self.show_comment)
-        # exit(0)
+        self.menuMenu.actions()[2].triggered.connect(self._config_form.show)
 
     def setup_control(self, control):
         '''
@@ -393,6 +392,11 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Callback that checks the status.
         '''
+
+        for k, v in self._config_form.get_values(1).items():
+            print(k, v)
+
+
         for control in self._prm_controls.values():
 
             if not control.isEnabled():
@@ -476,9 +480,162 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_comment(self):
         '''
         '''
-        print('Hi!')
         comment, _ = QtWidgets.QInputDialog.getText(
              self, 'Input Dialog', 'Enter your comment:')
         self._prm_manager.set_comment(comment)
+
+
+
+    def get_config_values(self, prm_id=1):
+        '''
+        '''
+        self._config_form.get_values(prm_id)
+
+
+
+
+
+class Form(QtWidgets.QDialog):
+
+    # constructor
+    def __init__(self, parent=None):
+        super(Form, self).__init__(parent)
+
+        # setting window title
+        self.setWindowTitle("Python")
+
+        # setting geometry to the window
+        self.setGeometry(100, 100, 300, 400)
+
+        self._tabs = [QtWidgets.QWidget(), QtWidgets.QWidget(), QtWidgets.QWidget()]
+
+        self._tabwidget = QtWidgets.QTabWidget()
+
+        for i, tab in enumerate(self._tabs):
+            self._tabwidget.addTab(tab, f"PrM {i+1}")
+
+
+        self.setup()
+        self.create_form(prm_id=1)
+        self.create_form(prm_id=2)
+        self.create_form(prm_id=3)
+
+        self.create_buttons()
+
+
+
+        # creating a vertical layout
+        mainLayout = QtWidgets.QVBoxLayout()
+
+        # adding form group box to the layout
+        mainLayout.addWidget(self._tabwidget)
+
+        # adding button box to the layout
+        mainLayout.addWidget(self.buttonBox)
+
+        # setting lay out
+        self.setLayout(mainLayout)
+
+        self._output = [{}, {}, {}]
+
+
+    # get info method called when form is accepted
+    def get_info(self, prm_id=1):
+
+        prm = prm_id - 1
+
+        self._output[prm] = {
+            'location': self._location[prm].currentText(),
+            'vessel': self._vessel[prm].currentText(),
+            'medium': self._medium[prm].currentText(),
+            'pressure': self._pressure[prm].text(),
+            'photocathode': self._photocathode[prm].text(),
+            'fibers': self._fibers[prm].text(),
+            'n_fibers': self._n_fibers[prm].text(),
+            'optical_ft': self._optical_ft[prm].text(),
+            'hv_ft': self._hv_ft[prm].text(),
+            'hv_warm_cables': self._hv_warm_cables[prm].text(),
+        }
+
+
+        # closing the window
+        self.close()
+
+    def get_values(self, prm_id=None):
+
+        if prm_id is None:
+            return self._output
+
+        return self._output[prm_id-1]
+
+
+    def create_buttons(self):
+
+        # creating a dialog button for ok and cancel
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+
+        # adding action when form is accepted
+        self.buttonBox.accepted.connect(self.get_info)
+
+        # adding action when form is rejected
+        self.buttonBox.rejected.connect(self.reject)
+
+    def setup(self):
+
+        # self._form_layouts = [QtWidgets.QFormLayout()] * 3
+
+        self._location = [QtWidgets.QComboBox(), QtWidgets.QComboBox(), QtWidgets.QComboBox()]
+        self._vessel = [QtWidgets.QComboBox(), QtWidgets.QComboBox(), QtWidgets.QComboBox()]
+        self._medium = [QtWidgets.QComboBox(), QtWidgets.QComboBox(), QtWidgets.QComboBox()]
+        self._pressure = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+
+        self._photocathode = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+        self._fibers = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+        self._n_fibers = [QtWidgets.QSpinBox(), QtWidgets.QSpinBox(), QtWidgets.QSpinBox()]
+
+        self._optical_ft = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+        self._hv_ft = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+        self._hv_warm_cables = [QtWidgets.QLineEdit(), QtWidgets.QLineEdit(), QtWidgets.QLineEdit()]
+
+
+    def defaults(self, prm_id):
+
+        self._location[prm_id-1].addItems(["SBN-ND", "PAB", "Other"])
+        self._vessel[prm_id-1].addItems(["SBND", "Rocket", "Other"])
+        self._medium[prm_id-1].addItems(["LAr", "GAr", "Vacuum", "Other"])
+        self._pressure[prm_id-1].setText("0")
+
+        self._photocathode[prm_id-1].setText("LAPD")
+        self._fibers[prm_id-1].setText("LAPD")
+        self._n_fibers[prm_id-1].setValue(3)
+
+        self._optical_ft[prm_id-1].setText("LAPD")
+        self._hv_ft[prm_id-1].setText("LAPD")
+        self._hv_warm_cables[prm_id-1].setText("PAB")
+        return
+
+    # creat form method
+    def create_form(self, prm_id=1):
+
+        prm = prm_id - 1
+
+        layout = QtWidgets.QFormLayout()
+
+        layout.addRow(QtWidgets.QLabel("Location"), self._location[prm])
+        layout.addRow(QtWidgets.QLabel("Vessel"), self._vessel[prm])
+        layout.addRow(QtWidgets.QLabel("Medium"), self._medium[prm])
+        layout.addRow(QtWidgets.QLabel("Pressure []"), self._pressure[prm])
+
+        layout.addRow(QtWidgets.QLabel("Photocathode"), self._photocathode[prm])
+        layout.addRow(QtWidgets.QLabel("Fibers"), self._fibers[prm])
+        layout.addRow(QtWidgets.QLabel("Number of Fibers"), self._n_fibers[prm])
+
+        layout.addRow(QtWidgets.QLabel("Optical Feedthrough"), self._optical_ft[prm])
+        layout.addRow(QtWidgets.QLabel("HV Feedthrough"), self._hv_ft[prm])
+        layout.addRow(QtWidgets.QLabel("HV Warm Cable"), self._hv_warm_cables[prm])
+
+        self.defaults(prm_id)
+
+        self._tabs[prm].setLayout(layout)
 
 

@@ -297,6 +297,10 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
+        # Add the extra configuration
+        for k, v in self._window.get_config_values(prm_id).items():
+            out_dict['config_' + k] = v
+
         file_name = self._data_files_path
         file_name += '/sbnd_prm'
         file_name += str(prm_id)
