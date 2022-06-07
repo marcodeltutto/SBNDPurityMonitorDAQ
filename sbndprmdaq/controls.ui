@@ -158,46 +158,6 @@
      <string>Busy</string>
     </property>
    </widget>
-   <widget class="QLabel" name="_settings_title_label">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>10</y>
-      <width>151</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Current Settings:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_settings_label">
-    <property name="geometry">
-     <rect>
-      <x>610</x>
-      <y>40</y>
-      <width>181</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>HV: ON
-Number of acquisitions: 1</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-    </property>
-   </widget>
    <widget class="QLabel" name="_name_label">
     <property name="geometry">
      <rect>
@@ -278,7 +238,7 @@ Number of acquisitions: 1</string>
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>80</y>
+      <y>20</y>
       <width>64</width>
       <height>16</height>
      </rect>
@@ -288,7 +248,7 @@ Number of acquisitions: 1</string>
     <property name="geometry">
      <rect>
       <x>610</x>
-      <y>80</y>
+      <y>20</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -306,7 +266,7 @@ Number of acquisitions: 1</string>
     <property name="geometry">
      <rect>
       <x>610</x>
-      <y>100</y>
+      <y>50</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -324,7 +284,7 @@ Number of acquisitions: 1</string>
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>100</y>
+      <y>50</y>
       <width>64</width>
       <height>16</height>
      </rect>
