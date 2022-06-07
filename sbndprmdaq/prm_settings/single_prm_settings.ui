@@ -50,8 +50,8 @@
      </rect>
     </property>
     <property name="text">
-     <string>Number of
-acquisitions:</string>
+     <string>Cathode
+HV [V]</string>
     </property>
    </widget>
    <widget class="QLabel" name="_name_label">
@@ -173,21 +173,6 @@ acquisitions:</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QSpinBox" name="_n_acquisitions_spinbox">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>10</y>
-      <width>71</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-   </widget>
    <widget class="Toggle" name="_hv_toggle_2" native="true">
     <property name="geometry">
      <rect>
@@ -212,6 +197,46 @@ acquisitions:</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="_n_acquisitions_label_2">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>60</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Anode
+HV [V]</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="_cathode_hv">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>20</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>-100</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="_anode_hv">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>70</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>100</string>
     </property>
    </widget>
   </widget>

@@ -515,4 +515,16 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._config_form.get_values(prm_id)
 
+    def save_settings(self, values):
+        for prm_id, values in values.items():
+            print(prm_id, values)
+
+            for name, value in values.items():
+                if value == 'cathode_hv':
+                    self._prm_manager._hv_control.set_hv_value('neg', value, prm_id)
+                elif value == 'anode_hv':
+                    self._prm_manager._hv_control.set_hv_value('pos', value, prm_id)
+                else:
+                    raise Exception('Not an option')
+
 

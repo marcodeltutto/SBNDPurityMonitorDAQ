@@ -27,6 +27,12 @@ class SinglePrMSettings(QtWidgets.QMainWindow):
     def get_id(self):
         return self._id
 
+    def get_values(self):
+        return {
+            'cathode_hv': self._cathode_hv.text(),
+            'anode_hv': self._anode_hv.text(),
+        }
+
 
 class Settings(QtWidgets.QMainWindow):
 
@@ -38,6 +44,8 @@ class Settings(QtWidgets.QMainWindow):
             "settings.ui")
 
         uic.loadUi(uifile, self)
+
+        self._parent = parent
 
         self._quit_btn.clicked.connect(self.hide)
         self._save_btn.clicked.connect(self.save)
@@ -63,21 +71,28 @@ class Settings(QtWidgets.QMainWindow):
         prm_id = s.get_id()
         s.setStyleSheet("background-color: rgba(0,0,0,0.1);")
 
+    def values(self):
+        ret = {}
+        for k, v in self._prm_settings.items():
+            ret[k] = v.get_values()
 
+        return ret
 
     def save(self):
-        self._status_bar.showMessage('Saved.')
+        self._parent.save_settings(self.values())
+        self._parent._status_bar.showMessage('Saved.')
         self._clear_statusbar(delay=5)
 
 
     def save_quit(self):
-        self._status_bar.showMessage('Saved.')
+        self._parent.save_settings(self.values())
+        self._parent._status_bar.showMessage('Saved.')
         self._clear_statusbar(delay=5)
         self.hide()
 
 
     def _clear_statusbar(self, delay=0):
-        QtCore.QTimer.singleShot(delay * 1000, lambda: self._status_bar.showMessage(''))
+        QtCore.QTimer.singleShot(delay * 1000, lambda: self._parent._status_bar.showMessage(''))
 
 
 
