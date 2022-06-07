@@ -140,3 +140,5 @@ cython_debug/
 .DS_Store
 *log.txt
 *.png
+*.autosave
+
