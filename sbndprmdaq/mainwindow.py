@@ -69,7 +69,7 @@ class Control(QtWidgets.QMainWindow):
         return self._running
 
 
-    def update(self):
+    def update(self, hv_cathode=None, hv_anode=None):
         '''
         Updates the controller.
 
@@ -84,6 +84,13 @@ class Control(QtWidgets.QMainWindow):
             self._start_stop_btn.setText("Start")
             self._run_status_label.setText('Not Running')
             self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+
+
+        if hv_cathode is not None:
+            self._lcd_cathode_hv.display(f'-{float(hv_cathode):.0f}')
+
+        if hv_anode is not None:
+            self._lcd_anode_hv.display(f'+{float(hv_anode):.0f}')
 
 
     def set_progress(self, name, perc, **kwargs):
@@ -424,7 +431,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if not control.isEnabled():
                 continue
 
-            control.update()
+            cathode_hv, anode_hv = self._prm_manager.get_hv(control.get_id())
+
+            control.update(cathode_hv, anode_hv)
 
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')

@@ -432,3 +432,24 @@ class PrMManager():
             dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id]
+
+    def get_hv(self, prm_id):
+        '''
+        Returns the HV values for the cathode and anode
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            float: The cathode HV.
+            float: The anode HV.
+        '''
+        cathode_hv = self._hv_control.get_hv_value('neg', prm_id)
+        anode_hv = self._hv_control.get_hv_value('pos', prm_id)
+
+        return cathode_hv, anode_hv
+
+
+
+
+

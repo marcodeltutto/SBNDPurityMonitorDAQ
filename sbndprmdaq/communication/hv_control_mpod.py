@@ -72,7 +72,7 @@ class HVControlMPOD(HVControlBase):
 
         # cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/  -m +WIENER-CRATE-MIB -c private 192.168.0.25  sysMainSwitch.0 i 1".format()
 
-    def _get_cmd(self, name='sysMainSwitch.', ch='0', t='i', value='0'):
+    def _get_cmd(self, name='sysMainSwitch.', ch='0'):
         cmd = "snmpget -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c public "
         cmd += self._mpod_ip + ' '
         cmd += name
@@ -149,5 +149,28 @@ class HVControlMPOD(HVControlBase):
         else:
             raise HVControlException(self._logger, 'posneg can only be pos or neg')
         return
+
+
+    def get_hv_value(self, posneg, prm_id):
+        '''
+        Returns the HV values
+
+        args:
+        posneg: 'pos' or 'neg'
+        '''
+        ret = None
+        if posneg == 'pos':
+            channel = self._positive_channels[prm_id]
+            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+        elif posneg == 'neg':
+            channel = self._negative_channels[prm_id]
+            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+        else:
+            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+
+        ret = ret.split('Float: ')[1][:-2]
+        ref = float(ret)
+        return ret
+
 
 
