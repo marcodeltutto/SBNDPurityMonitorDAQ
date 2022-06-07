@@ -50,6 +50,9 @@ class Control(QtWidgets.QMainWindow):
         self._progress_bar.setValue(0)
         self._progress_label.setText('')
 
+        self._lcd_cathode_hv.display('199')
+        self._lcd_anode_hv.display('199')
+
 
     def get_id(self):
         '''
