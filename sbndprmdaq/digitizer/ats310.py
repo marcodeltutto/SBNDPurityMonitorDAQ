@@ -391,7 +391,7 @@ class ATS310():
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
 
-        # self._convert_to_volts()
+        self._convert_to_volts()
 
         print('Returning data, self._samples_per_record', self._samples_per_record)
         return self._data
