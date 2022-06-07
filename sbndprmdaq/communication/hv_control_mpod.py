@@ -77,7 +77,7 @@ class HVControlMPOD(HVControlBase):
         cmd += self._mpod_ip + ' '
         cmd += name
         cmd += ch + ' '
-        self._logger.info('Subprocess: ' + cmd)
+        # self._logger.info('Subprocess: ' + cmd)
 
         # Start a subprocess
         start = time.time()

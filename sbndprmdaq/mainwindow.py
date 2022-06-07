@@ -87,10 +87,10 @@ class Control(QtWidgets.QMainWindow):
 
 
         if hv_cathode is not None:
-            self._lcd_cathode_hv.display(f'-{float(hv_cathode):.0f}')
+            self._lcd_cathode_hv.display(f'{float(hv_cathode):.0f}')
 
         if hv_anode is not None:
-            self._lcd_anode_hv.display(f'+{float(hv_anode):.0f}')
+            self._lcd_anode_hv.display(f'{float(hv_anode):.0f}')
 
 
     def set_progress(self, name, perc, **kwargs):
@@ -529,11 +529,12 @@ class MainWindow(QtWidgets.QMainWindow):
             print(prm_id, values)
 
             for name, value in values.items():
-                if value == 'cathode_hv':
+                if name == 'cathode_hv':
                     self._prm_manager._hv_control.set_hv_value('neg', value, prm_id)
-                elif value == 'anode_hv':
+                elif name == 'anode_hv':
                     self._prm_manager._hv_control.set_hv_value('pos', value, prm_id)
                 else:
+                    print(name, value)
                     raise Exception('Not an option')
 
 
