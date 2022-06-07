@@ -60,6 +60,28 @@ class Control(QtWidgets.QMainWindow):
         '''
         return self._id
 
+    def is_running(self):
+        '''
+        '''
+        return self._running
+
+
+    def update(self):
+        '''
+        Updates the controller.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        if self.is_running():
+            self._start_stop_btn.setText("Stop")
+            self._run_status_label.setText('Running')
+            self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+        else:
+            self._start_stop_btn.setText("Start")
+            self._run_status_label.setText('Not Running')
+            self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+
 
     def set_progress(self, name, perc, **kwargs):
         '''
@@ -328,7 +350,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._prm_controls[prm_id]._running = not self._prm_controls[prm_id]._running
 
-        if self._prm_controls[prm_id]._running:
+        if self._prm_controls[prm_id].is_running():
             self._start_prm(prm_id)
         else:
             self._stop_prm(prm_id)
@@ -342,9 +364,9 @@ class MainWindow(QtWidgets.QMainWindow):
             prm_id (int): The purity monitor ID.
         '''
         self._prm_manager.start_prm(prm_id)
-        self._prm_controls[prm_id]._start_stop_btn.setText("Stop")
-        self._prm_controls[prm_id]._run_status_label.setText('Running')
-        self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+        # self._prm_controls[prm_id]._start_stop_btn.setText("Stop")
+        # self._prm_controls[prm_id]._run_status_label.setText('Running')
+        # self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
         # self.repaint()
 
 
@@ -356,9 +378,9 @@ class MainWindow(QtWidgets.QMainWindow):
             prm_id (int): The purity monitor ID.
         '''
         self._prm_manager.stop_prm(prm_id)
-        self._prm_controls[prm_id]._start_stop_btn.setText("Start")
-        self._prm_controls[prm_id]._run_status_label.setText('Not Running')
-       	self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+        # self._prm_controls[prm_id]._start_stop_btn.setText("Start")
+        # self._prm_controls[prm_id]._run_status_label.setText('Not Running')
+       	# self._prm_controls[prm_id]._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
         # self.repaint()
 
 
@@ -398,6 +420,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if not control.isEnabled():
                 continue
+
+            control.update()
 
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
