@@ -237,10 +237,10 @@
    <widget class="QLCDNumber" name="_lcd_cathode_hv">
     <property name="geometry">
      <rect>
-      <x>690</x>
+      <x>713</x>
       <y>20</y>
-      <width>64</width>
-      <height>16</height>
+      <width>41</width>
+      <height>20</height>
      </rect>
     </property>
    </widget>
@@ -249,7 +249,7 @@
      <rect>
       <x>610</x>
       <y>20</y>
-      <width>81</width>
+      <width>91</width>
       <height>16</height>
      </rect>
     </property>
@@ -267,7 +267,7 @@
      <rect>
       <x>610</x>
       <y>50</y>
-      <width>71</width>
+      <width>91</width>
       <height>16</height>
      </rect>
     </property>
@@ -283,10 +283,10 @@
    <widget class="QLCDNumber" name="_lcd_anode_hv">
     <property name="geometry">
      <rect>
-      <x>690</x>
+      <x>713</x>
       <y>50</y>
-      <width>64</width>
-      <height>16</height>
+      <width>41</width>
+      <height>20</height>
      </rect>
     </property>
    </widget>
