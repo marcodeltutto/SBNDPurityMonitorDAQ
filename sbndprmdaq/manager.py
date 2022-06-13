@@ -94,6 +94,16 @@ class PrMManager():
         ats310 = self._digitizers[prm_id]
         return ats310.get_samples_per_second()
 
+    def get_n_acquisitions(self, prm_id=1):
+        '''
+        Returns the digitizer number of acquisitions
+
+        Returns:
+            bool: The digitizer samples per second
+        '''
+        ats310 = self._digitizers[prm_id]
+        return ats310.get_number_acquisitions()
+
 
     def start_io_thread(self, prm_id):
         '''
@@ -134,7 +144,7 @@ class PrMManager():
             #
             # Wait some time for the HV to stabilize
             #
-            purity_mon_wake_time = 4 #seconds
+            purity_mon_wake_time = 4 # seconds
             self._logger.info('Awaking {prm_id} for {sec} seconds.'.format(prm_id=prm_id, sec=purity_mon_wake_time))
             start = time.time()
             while purity_mon_wake_time > time.time() - start:

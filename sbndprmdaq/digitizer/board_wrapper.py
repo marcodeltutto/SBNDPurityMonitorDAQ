@@ -93,7 +93,7 @@ class BoardWrapper:
     extra arguments:
     """
 
-    def _wrap(self, func, *args, **kwargs):
+    def _wrap(self, func, is_ats_func, *args, **kwargs):
         """
         Wrapper function. This implements the try-catch statement
 
@@ -113,6 +113,8 @@ class BoardWrapper:
             if not isinstance(ret, int):
                 return ret
 
+            if not is_ats_func:
+                return ret
 
             if ret in return_statues:
                 if return_statues[ret] == "ApiSuccess":
@@ -150,5 +152,5 @@ class BoardWrapper:
         for __method in methods:
             if callable(getattr(instance, __method)) and __method[0] != '_':
                 replacement = lambda *args, __method=__method, **kwargs: self._wrap(
-                    getattr(instance, __method), *args, **kwargs)
+                    getattr(instance, __method), __method[0:4] != 'get_', *args, **kwargs)
                 setattr(self, __method, replacement)

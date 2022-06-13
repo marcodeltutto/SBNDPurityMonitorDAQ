@@ -282,6 +282,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._config_form = Form(self)
 
+        self.menuMenu.actions()[0].triggered.connect(self._logs.show)
         self.menuMenu.actions()[1].triggered.connect(self.show_comment)
         self.menuMenu.actions()[2].triggered.connect(self._config_form.show)
         self.menuMenu.actions()[3].triggered.connect(self._hv_settings.show)
@@ -456,6 +457,8 @@ class MainWindow(QtWidgets.QMainWindow):
             cathode_hv_onoff, anode_hv_onoff = self._prm_manager.get_hv_status(control.get_id())
 
             control.update(cathode_hv, anode_hv, cathode_hv_onoff, anode_hv_onoff)
+
+            control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
 
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')

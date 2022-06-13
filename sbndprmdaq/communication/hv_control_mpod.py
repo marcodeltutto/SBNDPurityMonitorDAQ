@@ -191,7 +191,7 @@ class HVControlMPOD(HVControlBase):
         else:
             raise HVControlException(self._logger, 'posneg can only be pos or neg')
 
-        ret = ret.split('INTEGER: ')[1][:-3]
+        ret = ret.split('INTEGER: ')[1][:-4]
         if ret == 'on':
             return True
         return False
