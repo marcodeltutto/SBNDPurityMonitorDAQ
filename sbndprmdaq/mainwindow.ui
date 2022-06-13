@@ -162,6 +162,8 @@
     <addaction name="_actionShow_Logs"/>
     <addaction name="_action_comment"/>
     <addaction name="_action_config"/>
+    <addaction name="_action_hv_settings"/>
+    <addaction name="_action_digitizer_settings"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
@@ -179,6 +181,16 @@
   <action name="_action_config">
    <property name="text">
     <string>Set Configuration</string>
+   </property>
+  </action>
+  <action name="_action_hv_settings">
+   <property name="text">
+    <string>HV Settings</string>
+   </property>
+  </action>
+  <action name="_action_digitizer_settings">
+   <property name="text">
+    <string>Digitizer Settings</string>
    </property>
   </action>
  </widget>

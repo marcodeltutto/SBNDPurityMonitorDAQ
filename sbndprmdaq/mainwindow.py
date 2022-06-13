@@ -5,7 +5,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 
-from sbndprmdaq.prm_settings.settings import Settings
+from sbndprmdaq.prm_settings.settings import HVSettings
 from sbndprmdaq.configuration_form import Form
 
 ICON_RED_LED = os.path.join(os.path.dirname(
@@ -69,7 +69,8 @@ class Control(QtWidgets.QMainWindow):
         return self._running
 
 
-    def update(self, hv_cathode=None, hv_anode=None):
+    def update(self, hv_cathode=None, hv_anode=None,
+                     cathode_hv_onoff=None, anode_hv_onoff=None):
         '''
         Updates the controller.
 
@@ -91,6 +92,18 @@ class Control(QtWidgets.QMainWindow):
 
         if hv_anode is not None:
             self._lcd_anode_hv.display(f'{float(hv_anode):.0f}')
+
+        if cathode_hv_onoff is not None:
+            if cathode_hv_onoff:
+                self._led_cathode_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+            else:
+                self._led_cathode_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+
+        if anode_hv_onoff is not None:
+            if anode_hv_onoff:
+                self._led_anode_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+            else:
+                self._led_anode_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
 
 
     def set_progress(self, name, perc, **kwargs):
@@ -206,8 +219,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._logs_btn.clicked.connect(self._logs.show)
 
-        self._settings = Settings(self)
-        self._settings_btn.clicked.connect(self._settings.show)
+        # self._settings = Settings(self)
+        # self._settings_btn.clicked.connect(self._settings.show)
+
+        self._hv_settings = HVSettings(self)
 
         self._prm_manager = None
 
@@ -267,6 +282,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menuMenu.actions()[1].triggered.connect(self.show_comment)
         self.menuMenu.actions()[2].triggered.connect(self._config_form.show)
+        self.menuMenu.actions()[3].triggered.connect(self._hv_settings.show)
+        # self.menuMenu.actions()[4].triggered.connect(self._digitizer_settings.show)
 
     def setup_control(self, control):
         '''
@@ -325,6 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
             manager (PrMManager): The purity monitor manager.
         '''
         self._prm_manager = manager
+        self._hv_settings.set_hv_control(self._prm_manager._hv_control)
 
     def set_progress(self, prm_id, name, perc, **kwargs):
         '''
@@ -432,8 +450,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 continue
 
             cathode_hv, anode_hv = self._prm_manager.get_hv(control.get_id())
+            cathode_hv_onoff, anode_hv_onoff = self._prm_manager.get_hv_status(control.get_id())
 
-            control.update(cathode_hv, anode_hv)
+            control.update(cathode_hv, anode_hv, cathode_hv_onoff, anode_hv_onoff)
 
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')

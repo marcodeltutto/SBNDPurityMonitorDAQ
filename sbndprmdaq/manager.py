@@ -449,6 +449,22 @@ class PrMManager():
 
         return cathode_hv, anode_hv
 
+    def get_hv_status(self, prm_id):
+        '''
+        Returns whether the HV is on or off for the cathode and anode
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            bool: Whether the cathode HV is on or not.
+            bool: Whether the anode HV is on or not.
+        '''
+        cathode_hv = self._hv_control.get_hv_status('neg', prm_id)
+        anode_hv = self._hv_control.get_hv_status('pos', prm_id)
+
+        return cathode_hv, anode_hv
+
 
 
 

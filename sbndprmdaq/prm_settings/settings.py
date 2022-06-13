@@ -6,14 +6,14 @@ from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 
 
-class SinglePrMSettings(QtWidgets.QMainWindow):
+class SinglePrMHVSettings(QtWidgets.QMainWindow):
 
     def __init__(self, prm_id=1, name='PrM 1', description='Cryo Bottom'):
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
             os.path.realpath(__file__)),
-            "single_prm_settings.ui")
+            "single_prm_hv_settings.ui")
 
         uic.loadUi(uifile, self)
 
@@ -34,14 +34,14 @@ class SinglePrMSettings(QtWidgets.QMainWindow):
         }
 
 
-class Settings(QtWidgets.QMainWindow):
+class HVSettings(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
-        super(Settings, self).__init__(parent)
+        super(HVSettings, self).__init__(parent)
 
         uifile = os.path.join(os.path.dirname(
             os.path.realpath(__file__)),
-            "settings.ui")
+            "hvsettings.ui")
 
         uic.loadUi(uifile, self)
 
@@ -54,14 +54,17 @@ class Settings(QtWidgets.QMainWindow):
 
 
         self._prm_settings = {
-            1: SinglePrMSettings(prm_id=1, name='PrM 1', description='Cryo Bottom'),
-            2: SinglePrMSettings(prm_id=2, name='PrM 2', description='Cryo Top'),
-            3: SinglePrMSettings(prm_id=3, name='PrM 3', description='Inline'),
+            1: SinglePrMHVSettings(prm_id=1, name='PrM 1', description='Cryo Bottom'),
+            2: SinglePrMHVSettings(prm_id=2, name='PrM 2', description='Cryo Top'),
+            3: SinglePrMHVSettings(prm_id=3, name='PrM 3', description='Inline'),
         }
 
         for s in self._prm_settings.values():
             self.setup_settings(s)
             self._settings_layout.addWidget(s)
+
+    def set_hv_control(self, hv_control):
+        self._hv_control = hv_control
 
     def get_prm(prm_id=1):
         return self._prm_settings[prm_id]
@@ -94,17 +97,4 @@ class Settings(QtWidgets.QMainWindow):
     def _clear_statusbar(self, delay=0):
         QtCore.QTimer.singleShot(delay * 1000, lambda: self._parent._status_bar.showMessage(''))
 
-
-
-        # self._id = prm_id
-        # self._name = name
-        # self._description = description
-        # self._name_label.setText(self._name)
-        # self._description_label.setText(description)
-        # self._mode_toggle.setNames('Auto', 'Manual')
-        # self._mode_toggle.isSimpleOption()
-        # self._running = False
-
-        # self._progress_bar.setValue(0)
-        # self._progress_label.setText('')
 

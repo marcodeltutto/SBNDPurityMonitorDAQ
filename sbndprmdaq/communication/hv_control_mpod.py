@@ -157,6 +157,7 @@ class HVControlMPOD(HVControlBase):
 
         args:
         posneg: 'pos' or 'neg'
+        prm_id: the prm id
         '''
         ret = None
         if posneg == 'pos':
@@ -171,6 +172,29 @@ class HVControlMPOD(HVControlBase):
         ret = ret.split('Float: ')[1][:-2]
         ref = float(ret)
         return ret
+
+    def get_hv_status(self, posneg, prm_id):
+        '''
+        Returns wheter the HV is on or off
+
+        args:
+        posneg: 'pos' or 'neg'
+        prm_id: the prm id
+        '''
+        ret = None
+        if posneg == 'pos':
+            channel = self._positive_channels[prm_id]
+            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+        elif posneg == 'neg':
+            channel = self._negative_channels[prm_id]
+            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+        else:
+            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+
+        ret = ret.split('INTEGER: ')[1][:-3]
+        if ret == 'on':
+            return True
+        return False
 
 
 
