@@ -299,4 +299,7 @@ class MockPrMManager():
     def set_comment(self, comment):
         self._comment = comment
 
+    def is_running(self, prm_id):
+        return False
+
 

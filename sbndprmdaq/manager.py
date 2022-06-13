@@ -38,6 +38,7 @@ class PrMManager():
 
         self._digitizers = {}
         self._data = {}
+        self._is_running = {}
 
         digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
         for prm_id, digitizer in digitizers.items():
@@ -47,6 +48,7 @@ class PrMManager():
                 continue
             self._digitizers[prm_id] = BoardWrapper(digitizer, self._logger, ATS310Exception)
             self._data[prm_id] = None
+            self._is_running[prm_id] = False
 
         self._prm_control = PrMControlArduino(self._digitizers.keys(), config=config)
         self._hv_control = HVControlMPOD(self._digitizers.keys(), config=config)
@@ -264,6 +266,8 @@ class PrMManager():
 
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
+        self._is_running[prm_id] = False
+
         # if self._mode == 'auto':
         #     time_interval = 20
         # #     import threading
@@ -324,8 +328,13 @@ class PrMManager():
 
         np.savez(file_name, **out_dict)
 
+
     def set_comment(self, comment):
         self._comment = comment
+
+
+    def is_running(self, prm_id):
+        return self._is_running[prm_id]
 
 
     def start_prm(self, prm_id=1):
@@ -341,6 +350,9 @@ class PrMManager():
         # Tell the parallel communicator to start the purity monitor
         # self._comm.start_prm()
         # self._prm_control.start_prm(prm_id)
+
+        self._is_running[prm_id] = True
+
         if self._use_hv:
             self.hv_on()
         else:

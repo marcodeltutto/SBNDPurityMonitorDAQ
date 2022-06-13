@@ -79,11 +79,13 @@ class Control(QtWidgets.QMainWindow):
             prm_id (int): The purity monitor ID.
         '''
         if self.is_running():
-            self._start_stop_btn.setText("Stop")
+            self._start_stop_btn.setText("(Running)")
+            self._start_stop_btn.setDisabled(True)
             self._run_status_label.setText('Running')
             self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
         else:
             self._start_stop_btn.setText("Start")
+            self._start_stop_btn.setDisabled(False)
             self._run_status_label.setText('Not Running')
             self._status_led.setPixmap(QtGui.QPixmap(ICON_RED_LED))
 
@@ -452,6 +454,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if not control.isEnabled():
                 continue
+
+            control._running = self._prm_manager.is_running(control.get_id())
 
             cathode_hv, anode_hv = self._prm_manager.get_hv(control.get_id())
             cathode_hv_onoff, anode_hv_onoff = self._prm_manager.get_hv_status(control.get_id())
