@@ -431,6 +431,13 @@ class ATS310():
         '''
         return self._board.busy()
 
+    def set_number_acquisitions(self, value):
+        '''
+        Sets the number of acquisitions.
+        '''
+        self._records_per_capture = int(value)
+        self._board.setRecordCount(self._records_per_capture)
+
 
 if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)

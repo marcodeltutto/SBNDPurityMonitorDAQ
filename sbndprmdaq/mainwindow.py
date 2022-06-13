@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
 
 from sbndprmdaq.prm_settings.settings import HVSettings
+from sbndprmdaq.prm_settings.settings import DigitizerSettings
 from sbndprmdaq.configuration_form import Form
 
 ICON_RED_LED = os.path.join(os.path.dirname(
@@ -223,6 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # self._settings_btn.clicked.connect(self._settings.show)
 
         self._hv_settings = HVSettings(self)
+        self._digitizer_settings = DigitizerSettings(self)
 
         self._prm_manager = None
 
@@ -283,7 +285,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuMenu.actions()[1].triggered.connect(self.show_comment)
         self.menuMenu.actions()[2].triggered.connect(self._config_form.show)
         self.menuMenu.actions()[3].triggered.connect(self._hv_settings.show)
-        # self.menuMenu.actions()[4].triggered.connect(self._digitizer_settings.show)
+        self.menuMenu.actions()[4].triggered.connect(self._digitizer_settings.show)
 
     def setup_control(self, control):
         '''
@@ -343,6 +345,7 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_manager = manager
         self._hv_settings.set_hv_control(self._prm_manager._hv_control)
+        self._digitizer_settings.set_digitizer_control(self._prm_manager._digitizers)
 
     def set_progress(self, prm_id, name, perc, **kwargs):
         '''
@@ -543,17 +546,17 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._config_form.get_values(prm_id)
 
-    def save_settings(self, values):
-        for prm_id, values in values.items():
-            print(prm_id, values)
+    # def save_settings(self, values):
+    #     for prm_id, values in values.items():
+    #         print(prm_id, values)
 
-            for name, value in values.items():
-                if name == 'cathode_hv':
-                    self._prm_manager._hv_control.set_hv_value('neg', value, prm_id)
-                elif name == 'anode_hv':
-                    self._prm_manager._hv_control.set_hv_value('pos', value, prm_id)
-                else:
-                    print(name, value)
-                    raise Exception('Not an option')
+    #         for name, value in values.items():
+    #             if name == 'cathode_hv':
+    #                 self._prm_manager._hv_control.set_hv_value('neg', value, prm_id)
+    #             elif name == 'anode_hv':
+    #                 self._prm_manager._hv_control.set_hv_value('pos', value, prm_id)
+    #             else:
+    #                 print(name, value)
+    #                 raise Exception('Not an option')
 
 

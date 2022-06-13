@@ -129,3 +129,6 @@ class MockATS310():
         '''
         return self._board.busy()
 
+    def set_number_acquisitions(self, value):
+        return
+
