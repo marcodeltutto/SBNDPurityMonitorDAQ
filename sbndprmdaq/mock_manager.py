@@ -13,6 +13,7 @@ from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
 from sbndprmdaq.communication.mock_prm_control import MockPrMControl
+from sbndprmdaq.communication.mock_hv_control import MockHVControl
 
 class MockPrMManager():
     '''
@@ -30,6 +31,7 @@ class MockPrMManager():
 
         self._comm = MockCommunicator()
         self._prm_control = MockPrMControl(prm_ids=[1,2,3], config=config)
+        self._hv_control = MockHVControl(prm_ids=[1,2,3], config=config)
 
         self._window = window
 
@@ -258,3 +260,43 @@ class MockPrMManager():
             dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id]
+
+    def get_hv(self, prm_id):
+        '''
+        Returns the HV values for the cathode and anode
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            float: The cathode HV.
+            float: The anode HV.
+        '''
+        cathode_hv = self._hv_control.get_hv_value('neg', prm_id)
+        anode_hv = self._hv_control.get_hv_value('pos', prm_id)
+
+        return cathode_hv, anode_hv
+
+    def get_hv_status(self, prm_id):
+        '''
+        Returns whether the HV is on or off for the cathode and anode
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            bool: Whether the cathode HV is on or not.
+            bool: Whether the anode HV is on or not.
+        '''
+        if prm_id == 1:
+            return True, True
+        else:
+            return True, False
+
+        return cathode_hv, anode_hv
+
+
+    def set_comment(self, comment):
+        self._comment = comment
+
+
