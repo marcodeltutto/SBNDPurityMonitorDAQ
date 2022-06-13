@@ -96,17 +96,19 @@ class ATS310():
 
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
-        self._samples_per_sec = 20000000.0
-        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
+        # self._samples_per_sec = 20000000.0
+        # self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
+        self._samples_per_sec = 2000000.0
+        self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 512 #1024
 
         # TODO: Select the number of samples per record.
-        self._post_trigger_samples = 10240 #1024
+        self._post_trigger_samples = 4096 #1024
 
         # TODO: Select the number of records in the acquisition.
-        self._records_per_capture = 1
+        self._records_per_capture = 3
 
         # TODO: Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
@@ -391,6 +393,8 @@ class ATS310():
         print("Transferred %d bytes (%f bytes per sec)" %
               (bytesTransferred, bytesPerSec))
 
+        del buffer
+
         self._convert_to_volts()
 
         print('Returning data, self._samples_per_record', self._samples_per_record)
@@ -437,6 +441,12 @@ class ATS310():
         '''
         self._records_per_capture = int(value)
         self._board.setRecordCount(self._records_per_capture)
+
+    def get_number_acquisitions(self):
+        '''
+        Returns the number of acquisitions
+        '''
+        return self._records_per_capture
 
 
 if __name__ == "__main__":
