@@ -71,6 +71,25 @@ class PrMManager():
 
         self._comment = 'No comment'
 
+    def exit(self):
+
+        self._logger.info('Exiting:')
+
+        for prm_id in self._digitizers.keys():
+
+            # Set HV values to 0
+            self._hv_control.set_hv_value('pos', 0, prm_id)
+            self._hv_control.set_hv_value('neg', 0, prm_id)
+            self._logger.info('HV is set to 0.')
+
+            # Turn off HV
+            self.hv_off(prm_id)
+            self._logger.info('HV is off.')
+
+            # Stop the PrM
+            self._prm_control.stop_prm(prm_id)
+            self._logger.info('PrM is off.')
+
 
     def digitizer_busy(self, prm_id=1):
         '''
@@ -311,6 +330,14 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
+        out_dict['hv_anode'] = self._hv_control.get_hv_value('pos', prm_id)
+        out_dict['hv_cathode'] = self._hv_control.get_hv_value('neg', prm_id)
+
+        out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
+        out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
+        out_dict['post_trigger_samples'] = self._digitizers[prm_id].get_post_trigger_samples()
+        out_dict['input_range_volts'] = self._digitizers[prm_id].get_input_range_volts()
+
         # Add the extra configuration
         configs = self._window.get_config_values(prm_id)
         if configs is not None:
@@ -353,10 +380,10 @@ class PrMManager():
 
         self._is_running[prm_id] = True
 
-        if self._use_hv:
-            self.hv_on()
-        else:
-            self.hv_off()
+        # if self._use_hv:
+        #     self.hv_on(prm_id)
+        # else:
+        #     self.hv_off(prm_id)
 
         if self._window is not None:
             # Start a thread where we let the digitizer run

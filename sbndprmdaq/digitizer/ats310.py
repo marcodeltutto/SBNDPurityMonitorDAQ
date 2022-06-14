@@ -102,7 +102,7 @@ class ATS310():
         self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
 
         # TODO: Select the number of pre-trigger samples
-        self._pre_trigger_samples = 512 #1024
+        self._pre_trigger_samples = 256 #512 #1024
 
         # TODO: Select the number of samples per record.
         self._post_trigger_samples = 4096 #1024
@@ -123,6 +123,7 @@ class ATS310():
         self.configure_board()
         self.prepare_acquisition()
 
+
     def get_samples_per_second(self):
         '''
         Getter for the samples per seconds the digitizer is acquiring.
@@ -131,6 +132,36 @@ class ATS310():
             int: Number of samples per second.
         '''
         return self._samples_per_sec
+
+    def get_pre_trigger_samples(self):
+        '''
+        Getter for the number of pre trigger samples.
+
+        Returns:
+            int: Number of number of pre trigger samples.
+        '''
+        return self._pre_trigger_samples
+
+
+    def get_post_trigger_samples(self):
+        '''
+        Getter for the number of post trigger samples.
+
+        Returns:
+            int: Number of post trigger samples.
+        '''
+        return self._post_trigger_samples
+
+
+    def get_input_range_volts(self):
+        '''
+        Getter for the digitizer input range volts.
+
+        Returns:
+            int: Input range in volts.
+        '''
+        return self._input_range_volts
+
 
     # Configures a board for acquisition
     def configure_board(self):

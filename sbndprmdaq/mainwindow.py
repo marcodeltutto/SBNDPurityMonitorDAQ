@@ -1,4 +1,5 @@
 import os
+import logging
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5 import uic
@@ -218,6 +219,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         uic.loadUi(uifile, self)
 
+        self._logger = logging.getLogger(__name__)
+
         self._logs = logs
 
         self._logs_btn.clicked.connect(self._logs.show)
@@ -255,8 +258,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # self._graph_a = self._plot.plot()
         # self._graph_b = self._plot.plot()
-        self._plot.setLabel(axis='left', text='Signal [V]')
-        self._plot.setLabel(axis='bottom', text='Time [s]')
+        self._plot.setLabel(axis='left', text='Signal [mV]')
+        self._plot.setLabel(axis='bottom', text='Time [ms]')
 
         # Connect the checkboxes for plot displaying
         self._show_choice_checkboxes = {
@@ -289,6 +292,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuMenu.actions()[2].triggered.connect(self._config_form.show)
         self.menuMenu.actions()[3].triggered.connect(self._hv_settings.show)
         self.menuMenu.actions()[4].triggered.connect(self._digitizer_settings.show)
+
+        self._can_exit = True
+
+    def closeEvent(self, event):
+        '''
+        Override closeEvent. This is called when user closes the window.
+        '''
+        self._logger.info('Requested to close DAQ.')
+        if self._can_exit:
+            self._prm_manager.exit()
+            self._logger.info('Event accepted.')
+            event.accept()
+        else:
+            QtWidgets.QMessageBox.critical(self, 'Error', 'Cannot close the DAQ right now.')
+            self._logger.info('Event rejected.')
+            event.ignore()
 
     def setup_control(self, control):
         '''
@@ -485,12 +504,15 @@ class MainWindow(QtWidgets.QMainWindow):
             # for el in data['B']:
             #     print('av of el in data B', np.mean(el))
 
+            s_to_ms = 1e3
+            v_to_mv = 1e3
+
             if 'A' in data and data['A'] is not None:
                 # print('------------------------------ len data', len(data['A']))
                 av_waveform = np.mean(data['A'], axis=0)
                 # print('------------------------------ len av_waveform', len(av_waveform))
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
-                y = av_waveform
+                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_ms
+                y = av_waveform * v_to_mv
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
                 if self._show_graph[control.get_id()]:
@@ -500,8 +522,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             if 'B' in data and data['B'] is not None:
                 av_waveform = np.mean(data['B'], axis=0)
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec()
-                y = av_waveform
+                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_ms
+                y = av_waveform * v_to_mv
                 # self._graph_b.setData(x, y, pen=pg.mkPen('r'))
                 if self._show_graph[control.get_id()]:
                     self._graphs[control.get_id()]['B'].setData(x, y, pen=pg.mkPen('r'))
