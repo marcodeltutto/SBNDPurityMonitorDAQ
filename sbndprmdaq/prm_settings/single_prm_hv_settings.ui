@@ -138,7 +138,7 @@ HV [V]</string>
      </rect>
     </property>
     <property name="text">
-     <string>-100</string>
+     <string>-0</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="_anode_hv">
@@ -151,7 +151,7 @@ HV [V]</string>
      </rect>
     </property>
     <property name="text">
-     <string>100</string>
+     <string>0</string>
     </property>
    </widget>
   </widget>

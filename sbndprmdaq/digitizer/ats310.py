@@ -108,7 +108,7 @@ class ATS310():
         self._post_trigger_samples = 4096 #1024
 
         # TODO: Select the number of records in the acquisition.
-        self._records_per_capture = 3
+        self._records_per_capture = 1
 
         # TODO: Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
