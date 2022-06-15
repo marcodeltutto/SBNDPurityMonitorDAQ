@@ -344,6 +344,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         # pylint: disable=invalid-name
+        self.increment_run_number(prm_id)
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
@@ -368,6 +369,7 @@ class PrMManager():
         else:
             hv_status = 'off'
 
+        out_dict['run'] = self._run_numbers[prm_id]
         out_dict['date'] = timestr
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
