@@ -152,6 +152,7 @@ class PrMManager():
                     prm_id = line.split()[0]
                     run_no = line.split()[1]
                     print('PrM:', prm_id, 'Run No:', run_no)
+                    self._run_numbers[int(prm_id)] = int(run_no)
 
     def write_run_numbers(self):
         run_file_name = self._data_files_path + '/latest_run_number.txt'
