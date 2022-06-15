@@ -31,7 +31,7 @@
     <property name="geometry">
      <rect>
       <x>110</x>
-      <y>60</y>
+      <y>70</y>
       <width>101</width>
       <height>21</height>
      </rect>
@@ -47,7 +47,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>20</y>
+      <y>30</y>
       <width>40</width>
       <height>40</height>
      </rect>
@@ -373,6 +373,37 @@
     </property>
     <property name="digitCount">
      <number>7</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>10</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Run:</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="_lcd_run">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>10</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="digitCount">
+     <number>5</number>
     </property>
    </widget>
   </widget>

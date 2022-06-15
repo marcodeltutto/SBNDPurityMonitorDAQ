@@ -1,6 +1,7 @@
 '''
 The purity monitor mock manager (for testing).
 '''
+import os
 import time
 import datetime
 import logging
@@ -37,6 +38,8 @@ class MockPrMManager():
 
         self._digitizers = {}
         self._data = {}
+        self._is_running = {}
+        self._run_numbers = {}
 
         digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
         for prm_id, digitizer in digitizers.items():
@@ -46,10 +49,15 @@ class MockPrMManager():
                 continue
             self._digitizers[prm_id] = digitizer
             self._data[prm_id] = None
+            self._is_running[prm_id] = False
+            self._run_numbers[prm_id] = None
 
         self._threadpool = QThreadPool()
         self._logger.info('Number of available threads: {n_thread}'.format(
                           n_thread=self._threadpool.maxThreadCount()))
+
+        self._data_files_path = config['data_files_path']
+        self.retrieve_run_numbers()
 
 
     def digitizer_busy(self, prm_id):
@@ -301,5 +309,37 @@ class MockPrMManager():
 
     def is_running(self, prm_id):
         return False
+
+    def get_n_acquisitions(self, prm_id):
+        return 1
+
+    def retrieve_run_numbers(self):
+        if self._data_files_path is None:
+            self._logger.warning('Cannot retrieve run number as data_files_path is not set.')
+            return
+
+        if not os.path.exists(self._data_files_path):
+            self._logger.error('data_files_path is not a real path.')
+            raise Exception()
+
+        run_file_name = self._data_files_path + '/latest_run_number.txt'
+
+        print('---', os.path.exists(run_file_name))
+        if not os.path.exists(run_file_name):
+            self._logger.info('Latest run file doesnt exist.')
+            f = open(run_file_name, "w")
+            for k, v in self._run_numbers.items():
+                self._run_numbers[k] = -1
+                f.write(str(k) + ' ' + str(self._run_numbers[k]) + '\n')
+        else:
+            with open(run_file_name) as f:
+                for line in f:
+                    prm_id = line.split()[0]
+                    run_no = line.split()[1]
+                    print('PrM:', prm_id, 'Run No:', run_no)
+
+    def get_run_number(self, prm_id):
+        print('run no', self._run_numbers[prm_id])
+        return self._run_numbers[prm_id]
 
 

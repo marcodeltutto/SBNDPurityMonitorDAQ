@@ -482,6 +482,7 @@ class MainWindow(QtWidgets.QMainWindow):
             control.update(cathode_hv, anode_hv, cathode_hv_onoff, anode_hv_onoff)
 
             control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
+            control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')
 
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')

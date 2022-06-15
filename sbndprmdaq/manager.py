@@ -1,6 +1,7 @@
 '''
 The purity monitor manager.
 '''
+import os
 import time
 import datetime
 import logging
@@ -39,6 +40,7 @@ class PrMManager():
         self._digitizers = {}
         self._data = {}
         self._is_running = {}
+        self._run_numbers = {}
 
         digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
         for prm_id, digitizer in digitizers.items():
@@ -49,6 +51,7 @@ class PrMManager():
             self._digitizers[prm_id] = BoardWrapper(digitizer, self._logger, ATS310Exception)
             self._data[prm_id] = None
             self._is_running[prm_id] = False
+            self._run_numbers[prm_id] = None
 
         self._prm_control = PrMControlArduino(self._digitizers.keys(), config=config)
         self._hv_control = HVControlMPOD(self._digitizers.keys(), config=config)
@@ -70,6 +73,8 @@ class PrMManager():
         self._mode = 'manual'
 
         self._comment = 'No comment'
+
+        self.retrieve_run_numbers()
 
     def exit(self):
 
@@ -124,6 +129,42 @@ class PrMManager():
         '''
         ats310 = self._digitizers[prm_id]
         return ats310.get_number_acquisitions()
+
+    def retrieve_run_numbers(self):
+        if self._data_files_path is None:
+            self._logger.warning('Cannot retrieve run number as data_files_path is not set.')
+            return
+
+        if not os.path.exists(self._data_files_path):
+            self._logger.error('data_files_path is not a real path.')
+            raise Exception()
+
+        run_file_name = self._data_files_path + '/latest_run_number.txt'
+
+        if not os.path.exists(run_file_name):
+            self._logger.info('Latest run file doesnt exist.')
+            for k, v in self._run_numbers.items():
+                self._run_numbers[k] = -1
+            self.write_run_numbers()
+        else:
+            with open(run_file_name) as f:
+                for line in f:
+                    prm_id = line.split()[0]
+                    run_no = line.split()[1]
+                    print('PrM:', prm_id, 'Run No:', run_no)
+
+    self.write_run_numbers(self):
+        run_file_name = self._data_files_path + '/latest_run_number.txt'
+        f = open(run_file_name, "w")
+        for k, v in self._run_numbers.items():
+            f.write(str(k) + ' ' + str(v) + '\n')
+
+    def increment_run_number(self, prm_id):
+        self._run_numbers[prm_id] += 1
+        self.write_run_numbers()
+
+
+    def get_run_number(self, prm_id):
 
 
     def start_io_thread(self, prm_id):
