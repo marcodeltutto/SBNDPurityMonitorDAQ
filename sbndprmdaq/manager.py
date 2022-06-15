@@ -165,6 +165,7 @@ class PrMManager():
 
 
     def get_run_number(self, prm_id):
+        return self._run_numbers[prm_id]
 
 
     def start_io_thread(self, prm_id):
