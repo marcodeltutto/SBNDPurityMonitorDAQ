@@ -78,7 +78,7 @@ class PrMManager():
 
     def exit(self):
 
-        self._logger.info('Exiting:')
+        self._logger.info('Exiting...')
 
         for prm_id in self._digitizers.keys():
 

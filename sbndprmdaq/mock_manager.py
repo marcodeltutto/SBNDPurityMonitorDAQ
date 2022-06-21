@@ -59,6 +59,24 @@ class MockPrMManager():
         self._data_files_path = config['data_files_path']
         self.retrieve_run_numbers()
 
+    def exit(self):
+
+        self._logger.info('Exiting:')
+
+        for prm_id in self._digitizers.keys():
+
+            # Set HV values to 0
+            self._hv_control.set_hv_value('pos', 0, prm_id)
+            self._hv_control.set_hv_value('neg', 0, prm_id)
+            self._logger.info('HV is set to 0.')
+
+            # Turn off HV
+            self.hv_off(prm_id)
+            self._logger.info('HV is off.')
+
+            # Stop the PrM
+            self._prm_control.stop_prm(prm_id)
+            self._logger.info('PrM is off.')
 
     def digitizer_busy(self, prm_id):
         '''
