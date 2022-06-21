@@ -392,10 +392,10 @@ class PrMManager():
         file_name = self._data_files_path
         file_name += '/sbnd_prm'
         file_name += str(prm_id)
+        file_name += '_run_'
+        file_name += str(self._run_numbers[prm_id])
         file_name += '_data_'
         file_name += timestr
-        file_name += '_hv_'
-        file_name += hv_status
         file_name += '.npz'
 
         np.savez(file_name, **out_dict)
