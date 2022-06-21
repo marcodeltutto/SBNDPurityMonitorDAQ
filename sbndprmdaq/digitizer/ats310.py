@@ -96,16 +96,18 @@ class ATS310():
 
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
-        # self._samples_per_sec = 20000000.0
-        # self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
-        self._samples_per_sec = 2000000.0
-        self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
+        self._samples_per_sec = 20000000.0
+        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
+        # self._samples_per_sec = 2000000.0
+        # self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
 
         # TODO: Select the number of pre-trigger samples
-        self._pre_trigger_samples = 256 #512 #1024
+        self._pre_trigger_samples = 512 # #1024
+        # self._pre_trigger_samples = 256
 
         # TODO: Select the number of samples per record.
-        self._post_trigger_samples = 4096 #1024
+        # self._post_trigger_samples = 4096
+        self._post_trigger_samples = 10240 #1024
 
         # TODO: Select the number of records in the acquisition.
         self._records_per_capture = 1
