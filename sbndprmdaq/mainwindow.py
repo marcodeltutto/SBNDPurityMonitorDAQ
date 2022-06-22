@@ -71,8 +71,8 @@ class Control(QtWidgets.QMainWindow):
         return self._running
 
 
-    def update(self, hv_cathode=None, hv_anode=None,
-                     cathode_hv_onoff=None, anode_hv_onoff=None):
+    def update(self, hv_cathode=None, hv_anode=None, hv_anodegrid=None,
+                     cathode_hv_onoff=None, anode_hv_onoff=None, anodegrid_hv_onoff=None):
         '''
         Updates the controller.
 
@@ -97,6 +97,9 @@ class Control(QtWidgets.QMainWindow):
         if hv_anode is not None:
             self._lcd_anode_hv.display(f'{float(hv_anode):.0f}')
 
+        if hv_anodegrid is not None:
+            self._lcd_anodegrid_hv.display(f'{float(hv_anodegrid):.0f}')
+
         if cathode_hv_onoff is not None:
             if cathode_hv_onoff:
                 self._led_cathode_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
@@ -108,6 +111,12 @@ class Control(QtWidgets.QMainWindow):
                 self._led_anode_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
             else:
                 self._led_anode_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+
+        if anodegrid_hv_onoff is not None:
+            if anodegrid_hv_onoff:
+                self._led_anodegrid_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+            else:
+                self._led_anodegrid_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
 
 
     def set_progress(self, name, perc, **kwargs):
@@ -476,10 +485,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
             control._running = self._prm_manager.is_running(control.get_id())
 
-            cathode_hv, anode_hv = self._prm_manager.get_hv(control.get_id())
-            cathode_hv_onoff, anode_hv_onoff = self._prm_manager.get_hv_status(control.get_id())
+            cathode_hv, anode_hv, anodegrid_hv = self._prm_manager.get_hv(control.get_id())
+            cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff = self._prm_manager.get_hv_status(control.get_id())
 
-            control.update(cathode_hv, anode_hv, cathode_hv_onoff, anode_hv_onoff)
+            control.update(cathode_hv, anode_hv, anodegrid_hv,\
+                           cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff)
 
             control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
             control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')

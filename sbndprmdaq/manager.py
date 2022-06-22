@@ -83,8 +83,9 @@ class PrMManager():
         for prm_id in self._digitizers.keys():
 
             # Set HV values to 0
-            self._hv_control.set_hv_value('pos', 0, prm_id)
-            self._hv_control.set_hv_value('neg', 0, prm_id)
+            self._hv_control.set_hv_value('anode', 0, prm_id)
+            self._hv_control.set_hv_value('anodegrid', 0, prm_id)
+            self._hv_control.set_hv_value('cathode', 0, prm_id)
             self._logger.info('HV is set to 0.')
 
             # Turn off HV
@@ -375,8 +376,9 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
-        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('pos', prm_id)
-        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('neg', prm_id)
+        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', prm_id)
+        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
+        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', prm_id)
 
         out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
         out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
@@ -537,11 +539,13 @@ class PrMManager():
         Returns:
             float: The cathode HV.
             float: The anode HV.
+            float: The anodegrid HV.
         '''
-        cathode_hv = self._hv_control.get_hv_sense_value('neg', prm_id)
-        anode_hv = self._hv_control.get_hv_sense_value('pos', prm_id)
+        cathode_hv = self._hv_control.get_hv_sense_value('cathode', prm_id)
+        anode_hv = self._hv_control.get_hv_sense_value('anode', prm_id)
+        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
 
-        return cathode_hv, anode_hv
+        return cathode_hv, anode_hv, anodegrid_hv
 
     def get_hv_status(self, prm_id):
         '''
@@ -553,11 +557,13 @@ class PrMManager():
         Returns:
             bool: Whether the cathode HV is on or not.
             bool: Whether the anode HV is on or not.
+            bool: Whether the anodegrid HV is on or not.
         '''
-        cathode_hv = self._hv_control.get_hv_status('neg', prm_id)
-        anode_hv = self._hv_control.get_hv_status('pos', prm_id)
+        cathode_hv = self._hv_control.get_hv_status('cathode', prm_id)
+        anode_hv = self._hv_control.get_hv_status('anode', prm_id)
+        anodegrid_hv = self._hv_control.get_hv_status('anodegrid', prm_id)
 
-        return cathode_hv, anode_hv
+        return cathode_hv, anode_hv, anodegrid_hv
 
 
 
