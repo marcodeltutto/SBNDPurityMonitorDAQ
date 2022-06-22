@@ -33,6 +33,11 @@
       <height>21</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>Toggle HV:</string>
     </property>
@@ -65,7 +70,7 @@ HV [V]</string>
     </property>
     <property name="font">
      <font>
-      <pointsize>15</pointsize>
+      <pointsize>13</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -88,7 +93,7 @@ HV [V]</string>
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <pointsize>10</pointsize>
       <weight>50</weight>
       <italic>true</italic>
       <bold>false</bold>
@@ -131,7 +136,7 @@ HV [V]</string>
    <widget class="QLineEdit" name="_cathode_hv">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>500</x>
       <y>10</y>
       <width>81</width>
       <height>21</height>
@@ -144,7 +149,7 @@ HV [V]</string>
    <widget class="QLineEdit" name="_anode_hv">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>500</x>
       <y>90</y>
       <width>81</width>
       <height>21</height>
@@ -171,7 +176,7 @@ HV [V]</string>
    <widget class="QLineEdit" name="_anodegrid_hv">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>500</x>
       <y>50</y>
       <width>81</width>
       <height>21</height>
