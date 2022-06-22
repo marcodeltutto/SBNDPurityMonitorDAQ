@@ -59,7 +59,18 @@ class MockHVControl(HVControlBase):
 
     def get_hv_value(self, posneg, prm_id):
         '''
-        Returns the HV values
+        Returns the HV set values
+
+        args:
+        posneg: 'pos' or 'neg'
+        prm_id: the prm id
+        '''
+
+        return 9999
+
+    def get_hv_sense_value(self, posneg, prm_id):
+        '''
+        Returns the HV sensed values
 
         args:
         posneg: 'pos' or 'neg'

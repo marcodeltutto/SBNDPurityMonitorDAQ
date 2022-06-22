@@ -153,7 +153,7 @@ class HVControlMPOD(HVControlBase):
 
     def get_hv_value(self, posneg, prm_id):
         '''
-        Returns the HV values
+        Returns the HV set values
 
         args:
         posneg: 'pos' or 'neg'
@@ -172,6 +172,29 @@ class HVControlMPOD(HVControlBase):
         ret = ret.split('Float: ')[1][:-2]
         ref = float(ret)
         return ret
+
+    def get_hv_sense_value(self, posneg, prm_id):
+        '''
+        Returns the HV sensed values
+
+        args:
+        posneg: 'pos' or 'neg'
+        prm_id: the prm id
+        '''
+        ret = None
+        if posneg == 'pos':
+            channel = self._positive_channels[prm_id]
+            ret = self._get_cmd(name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+        elif posneg == 'neg':
+            channel = self._negative_channels[prm_id]
+            ret = self._get_cmd(name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+        else:
+            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+
+        ret = ret.split('Float: ')[1][:-2]
+        ref = float(ret)
+        return ret
+
 
     def get_hv_status(self, posneg, prm_id):
         '''

@@ -375,8 +375,8 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
-        out_dict['hv_anode'] = self._hv_control.get_hv_value('pos', prm_id)
-        out_dict['hv_cathode'] = self._hv_control.get_hv_value('neg', prm_id)
+        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('pos', prm_id)
+        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('neg', prm_id)
 
         out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
         out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
@@ -538,8 +538,8 @@ class PrMManager():
             float: The cathode HV.
             float: The anode HV.
         '''
-        cathode_hv = self._hv_control.get_hv_value('neg', prm_id)
-        anode_hv = self._hv_control.get_hv_value('pos', prm_id)
+        cathode_hv = self._hv_control.get_hv_sense_value('neg', prm_id)
+        anode_hv = self._hv_control.get_hv_sense_value('pos', prm_id)
 
         return cathode_hv, anode_hv
 
