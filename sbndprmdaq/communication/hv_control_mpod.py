@@ -37,15 +37,19 @@ class HVControlMPOD(HVControlBase):
         #
         # Setting HV channels
         #
-        self._positive_channels = {}
-        self._negative_channels = {}
+        self._anode_channels = {}
+        self._anodegrid_channels = {}
+        self._cathode_channels = {}
         for prm_id in prm_ids:
-            if f'mpod_prm{prm_id}_positive_ch' not in config or f'mpod_prm{prm_id}_negative_ch' not in config:
+            if (f'mpod_prm{prm_id}_anode_ch' not in config) \
+              or (f'mpod_prm{prm_id}_anodegrid_ch' not in config) \
+              or (f'mpod_prm{prm_id}_cathode_ch' not in config):
                 raise HVControlException(self._logger,
-                                         f'Missing mpod_prm{prm_id}_positive_ch or mpod_prm{prm_id}_negative_ch in config.')
+                                         f'Missing mpod_prm{prm_id}_anode_ch or mpod_prm{prm_id}_anodegrid_ch or mpod_prm{prm_id}_cathode_ch in config.')
             else:
-                self._positive_channels[prm_id] = config[f'mpod_prm{prm_id}_positive_ch']
-                self._negative_channels[prm_id] = config[f'mpod_prm{prm_id}_negative_ch']
+                self._anode_channels[prm_id] = config[f'mpod_prm{prm_id}_anode_ch']
+                self._anodegrid_channels[prm_id] = config[f'mpod_prm{prm_id}_anodegrid_ch']
+                self._cathode_channels[prm_id] = config[f'mpod_prm{prm_id}_cathode_ch']
 
                 # self.set_hv_value(0, prm_id)
 
@@ -108,12 +112,13 @@ class HVControlMPOD(HVControlBase):
         '''
         Sets the HV ON.
         '''
-        channel = self._negative_channels[prm_id]
-        print('self._negative_channels[prm_id]', self._negative_channels[prm_id])
+        channel = self._cathode_channels[prm_id]
         self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
 
-        channel = self._positive_channels[prm_id]
-        print('self._positive_channels[prm_id]', self._positive_channels[prm_id])
+        channel = self._anode_channels[prm_id]
+        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
+
+        channel = self._anodegrid_channels[prm_id]
         self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
 
         return
@@ -123,73 +128,85 @@ class HVControlMPOD(HVControlBase):
         '''
         Sets the OFF
         '''
-        channel = self._negative_channels[prm_id]
+        channel = self._cathode_channels[prm_id]
         self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
 
-        channel = self._positive_channels[prm_id]
+        channel = self._anode_channels[prm_id]
+        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
+
+        channel = self._anodegrid_channels[prm_id]
         self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
 
         return
 
 
-    def set_hv_value(self, posneg, value, prm_id=1):
+    def set_hv_value(self, item, value, prm_id=1):
         '''
         Sets HV value
 
         args:
-        posneg: 'pos' or 'neg'
+        item: 'anode', 'anodegrid', or 'cathode',
         '''
 
-        if posneg == 'pos':
-            channel = self._positive_channels[prm_id]
+        if item == 'anode':
+            channel = self._anode_channels[prm_id]
             self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
-        elif posneg == 'neg':
-            channel = self._negative_channels[prm_id]
+        elif item == 'anodegrid':
+            channel = self._anodegrid_channels[prm_id]
+            self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
+        elif item == 'cathode':
+            channel = self._cathode_channels[prm_id]
             self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
         else:
-            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+            raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
         return
 
 
-    def get_hv_value(self, posneg, prm_id):
+    def get_hv_value(self, item, prm_id):
         '''
         Returns the HV values
 
         args:
-        posneg: 'pos' or 'neg'
+        item: 'anode', 'anodegrid', or 'cathode',
         prm_id: the prm id
         '''
         ret = None
-        if posneg == 'pos':
-            channel = self._positive_channels[prm_id]
+        if item == 'anode':
+            channel = self._anode_channels[prm_id]
             ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
-        elif posneg == 'neg':
-            channel = self._negative_channels[prm_id]
+        elif item == 'anodegrid':
+            channel = self._anodegrid_channels[prm_id]
+            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+        elif item == 'cathode':
+            channel = self._cathode_channels[prm_id]
             ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
         else:
-            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+            raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
         ret = ret.split('Float: ')[1][:-2]
         ref = float(ret)
         return ret
 
-    def get_hv_status(self, posneg, prm_id):
+    def get_hv_status(self, item, prm_id):
         '''
         Returns wheter the HV is on or off
 
         args:
-        posneg: 'pos' or 'neg'
+        item: 'anode', 'anodegrid', or 'cathode',
         prm_id: the prm id
         '''
         ret = None
-        if posneg == 'pos':
-            channel = self._positive_channels[prm_id]
+        if item == 'anode':
+            channel = self._anode_channels[prm_id]
             ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
-        elif posneg == 'neg':
-            channel = self._negative_channels[prm_id]
+        elif item == 'anodegrid':
+            channel = self._anodegrid_channels[prm_id]
+            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+        elif item == 'cathode':
+            channel = self._cathode_channels[prm_id]
             ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
         else:
-            raise HVControlException(self._logger, 'posneg can only be pos or neg')
+            raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
         ret = ret.split('INTEGER: ')[1][:-4]
         if ret == 'on':
