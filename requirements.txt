@@ -1,9 +1,6 @@
-pyparallel
-pyserial
 PyQt5==5.15.6
 PyQtGraph
 argparse
 pyyaml
 qdarkstyle
 pyfirmata
-
