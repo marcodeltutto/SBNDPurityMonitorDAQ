@@ -31,6 +31,7 @@ class SinglePrMHVSettings(QtWidgets.QMainWindow):
         return {
             'cathode_hv': self._cathode_hv.text(),
             'anode_hv': self._anode_hv.text(),
+            'anodegrid_hv': self._anodegrid_hv.text(),
             'hv_onoff': self._hv_toggle.value(),
         }
 
@@ -169,9 +170,11 @@ class HVSettings(BaseSettings):
 
             for name, value in values.items():
                 if name == 'cathode_hv':
-                    self._hv_control.set_hv_value('neg', value, prm_id)
+                    self._hv_control.set_hv_value('cathode', value, prm_id)
                 elif name == 'anode_hv':
-                    self._hv_control.set_hv_value('pos', value, prm_id)
+                    self._hv_control.set_hv_value('anode', value, prm_id)
+                elif name == 'anodegrid_hv':
+                    self._hv_control.set_hv_value('anodegrid', value, prm_id)
                 elif name == 'hv_onoff':
                     if value:
                         self._hv_control.hv_on(prm_id)
