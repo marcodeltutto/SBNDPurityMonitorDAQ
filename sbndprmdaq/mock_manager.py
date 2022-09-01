@@ -323,11 +323,10 @@ class MockPrMManager():
 
         if not os.path.exists(self._data_files_path):
             self._logger.error('data_files_path is not a real path.')
-            raise Exception()
+            return
 
         run_file_name = self._data_files_path + '/latest_run_number.txt'
 
-        print('---', os.path.exists(run_file_name))
         if not os.path.exists(run_file_name):
             self._logger.info('Latest run file doesnt exist.')
             f = open(run_file_name, "w")
