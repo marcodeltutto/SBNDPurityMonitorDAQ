@@ -16,9 +16,11 @@ Logging in and setting up
 Login to the purity monitor machine under your user name:
 
 .. code-block:: bash
+
 	ssh username@sbnd-prm-daq01.fnal.gov
 
 .. code-block:: bash
+
 	mkdir work_area
 	cd work_area
 	git clone https://github.com/marcodeltutto/SBNDPurityMonitorDAQ.git
@@ -37,6 +39,7 @@ Run the DAQ
 Firts, check that all the components are visible:
 
 .. code-block:: bash
+
 	python3 check_system_status.py
 
 You should see that all three components (digitizers, MPOD, and arduino) are all found.
@@ -44,6 +47,7 @@ You should see that all three components (digitizers, MPOD, and arduino) are all
 To run the DAQ, simply run:
 
 .. code-block:: bash
+
 	./prm_gui.py
 
 

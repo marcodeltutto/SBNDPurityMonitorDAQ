@@ -4,3 +4,4 @@ argparse
 pyyaml
 qdarkstyle
 pyfirmata
+rich
