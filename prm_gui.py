@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import argparse
 from PyQt5 import QtCore, QtGui, QtWidgets
 import pyqtgraph
@@ -43,6 +44,26 @@ with open(settings) as file:
 print('Config:', yaml.dump(config), sep='\n')
 
 # logger.info(yaml.dump(config))
+
+
+#
+# Check Hertbeat
+#
+heartbeat_file_name = config['data_files_path'] + '/heartbeat.txt'
+
+if os.path.exists(heartbeat_file_name):
+
+    timestamp = 0
+    with open(heartbeat_file_name) as f:
+        for line in f:
+            timestamp = float(line)
+
+        if abs(timestamp - time.time()) < 5:
+            print('timestamp  :', timestamp)
+            print('time.time():', time.time())
+            print('Another DAQ is running on this data directory:', self._data_files_path)
+            print('Either stop the other DAQ, or use a different path.')
+            exit()
 
 
 
