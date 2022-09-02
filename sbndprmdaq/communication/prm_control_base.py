@@ -1,4 +1,3 @@
-import parallel as pyp
 import logging
 
 class PrMControlException(Exception):
