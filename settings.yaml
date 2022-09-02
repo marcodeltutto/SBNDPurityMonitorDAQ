@@ -8,6 +8,7 @@ prm_id_to_ats_systemid:
   3: 3
 
 data_files_path: '/sbnd/data/purity_monitors/'
+# data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'
 # data_files_path: '/Users/mdeltutt/Work/SBND/Purity Monitors/communication/'
 
 arduino_address: '/dev/arduino'

@@ -494,6 +494,8 @@ class MainWindow(QtWidgets.QMainWindow):
             control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
             control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')
 
+            self._prm_manager.heartbeat()
+
             if self._prm_manager.digitizer_busy(control.get_id()):
                 control._digi_status_label.setText('Busy')
                 control._digi_status_label.setStyleSheet("color: red;")

@@ -42,6 +42,8 @@ class PrMManager():
         self._is_running = {}
         self._run_numbers = {}
 
+        self._data_files_path = config['data_files_path']
+
         digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
         for prm_id, digitizer in digitizers.items():
             if digitizer is None:
@@ -58,8 +60,6 @@ class PrMManager():
 
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=len(self._digitizers)))
-
-        self._data_files_path = config['data_files_path']
 
         self._hv_on = False
         self._use_hv = True
@@ -164,6 +164,21 @@ class PrMManager():
     def increment_run_number(self, prm_id):
         self._run_numbers[prm_id] += 1
         self.write_run_numbers()
+
+    def heartbeat(self):
+        '''
+        Writes a timestamp number in heartbeat.txt in the data
+        file directory.
+        '''
+        if self._data_files_path is None:
+            return
+
+        timestamp = time.time()
+
+        heartbeat_file_name = self._data_files_path + '/heartbeat.txt'
+
+        f = open(heartbeat_file_name, "w")
+        f.write(str(timestamp))
 
 
     def get_run_number(self, prm_id):
