@@ -13,6 +13,7 @@ This repository contains the DAQ for the SBND purity monitors.
    :caption: Documentation
 
    setup_instructions
+   output_files
    installation
    running
    ats_drivers_ubuntu
