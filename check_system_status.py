@@ -64,7 +64,8 @@ while proc.poll():
         proc.terminate()
         print('Timeout during command: ', cmd)
 
-if 'WIENER' not in proc.communicate()[0].decode("utf-8"):
+# print(proc.communicate()[0].decode("utf-8"))
+if 'No Such Instance'  in proc.communicate()[0].decode("utf-8"):
     table.add_row("MPOD", "Not Found")
 else:
     table.add_row("MPOD", "Found")
