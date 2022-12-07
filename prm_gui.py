@@ -97,6 +97,13 @@ window.set_manager(manager)
 
 
 #
+# Set a unique font
+#
+font = QtGui.QFont("Tahoma", 8)
+app.setFont(font)
+
+
+#
 # Take it away
 #
 app.exec_()
