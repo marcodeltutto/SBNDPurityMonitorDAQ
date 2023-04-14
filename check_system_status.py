@@ -1,6 +1,5 @@
-# This script has the effect of making DTR and RTS pins not
-# being affected from the port being opened or closed,
-# so they can be used as GPIO pins.
+#! /usr/bin/python3
+# Checks that all PrM systems ara available
 
 
 
@@ -14,10 +13,6 @@ table = Table(title="Check System Status")
 table.add_column("Item", justify="right", style="cyan", no_wrap=True)
 table.add_column("Status", style="magenta")
 # table.add_column("Box Office", justify="right", style="green")
-
-
-
-
 
 
 
