@@ -268,7 +268,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # self._graph_a = self._plot.plot()
         # self._graph_b = self._plot.plot()
         self._plot.setLabel(axis='left', text='Signal [mV]')
-        self._plot.setLabel(axis='bottom', text='Time [ms]')
+        self._plot.setLabel(axis='bottom', text='Time [us]')
+
+        self._infinite_line_1 = pg.InfiniteLine(pos=0)
+        self._infinite_line_2 = pg.InfiniteLine(pos=0)
+        self._plot.addItem(self._infinite_line_1)
+        self._plot.addItem(self._infinite_line_2)
 
         # Connect the checkboxes for plot displaying
         self._show_choice_checkboxes = {
@@ -518,24 +523,33 @@ class MainWindow(QtWidgets.QMainWindow):
             #     print('av of el in data B', np.mean(el))
 
             s_to_ms = 1e3
+            s_to_us = 1e6
             v_to_mv = 1e3
+
+            flash_time = 17 # ns
 
             if 'A' in data and data['A'] is not None:
                 # print('------------------------------ len data', len(data['A']))
                 av_waveform = np.mean(data['A'], axis=0)
+                # av_waveform = data['A'][0]
                 # print('------------------------------ len av_waveform', len(av_waveform))
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_ms
+                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y = av_waveform * v_to_mv
+
+                trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
                 if self._show_graph[control.get_id()]:
                     self._graphs[control.get_id()]['A'].setData(x, y, pen=pg.mkPen('b'))
+                    self._infinite_line_1.setValue(trigger_x)
+                    self._infinite_line_2.setValue(trigger_x + flash_time)
                 else:
                     self._graphs[control.get_id()]['A'].setData([], [])
 
             if 'B' in data and data['B'] is not None:
                 av_waveform = np.mean(data['B'], axis=0)
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_ms
+                # av_waveform = data['B'][0]
+                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y = av_waveform * v_to_mv
                 # self._graph_b.setData(x, y, pen=pg.mkPen('r'))
                 if self._show_graph[control.get_id()]:
