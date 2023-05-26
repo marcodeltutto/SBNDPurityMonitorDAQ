@@ -126,6 +126,16 @@ class ATS310():
         self.prepare_acquisition()
 
 
+    def get_trigger_sample(self):
+        '''
+        Getter for the sample when the trigger happens.
+
+        Returns:
+            int: Sample number when triggered.
+        '''
+        return self._pre_trigger_samples
+
+
     def get_samples_per_second(self):
         '''
         Getter for the samples per seconds the digitizer is acquiring.
@@ -188,11 +198,16 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
-        self._input_range_volts = 400.e-3 # volts
+        # self._input_range_volts = 400.e-3 # volts
+        # self._input_range_volts = 500.e-3 # volts
+        # self._input_range_volts = 1 # volts
+        self._input_range_volts = 2 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_400_MV,
-                                   # ats.INPUT_RANGE_PM_40_MV,
+                                   # ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_500_MV,
+                                   # ats.INPUT_RANGE_PM_1_V,
+                                   ats.INPUT_RANGE_PM_2_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -203,15 +218,17 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_400_MV,
-                                   # ats.INPUT_RANGE_PM_40_MV,
+                                   # ats.INPUT_RANGE_PM_400_MV,
+                                   # ats.INPUT_RANGE_PM_500_MV,
+                                   # ats.INPUT_RANGE_PM_1_V,
+                                   ats.INPUT_RANGE_PM_2_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
         # TODO: Select channel B bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_B, 0)
 
-        # TODO: Select trigger inputs and levels as required.
+        # External trigger
         self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
                                         ats.TRIG_ENGINE_J,
                                         # ats.TRIG_CHAN_A,
@@ -223,6 +240,19 @@ class ATS310():
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         128)
+
+        # Trigger on channel B
+        # self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
+        #                                 ats.TRIG_ENGINE_J,
+        #                                 ats.TRIG_CHAN_B,
+        #                                 # ats.TRIG_EXTERNAL,
+        #                                 ats.TRIGGER_SLOPE_NEGATIVE,
+        #                                 # 150,
+        #                                 120, #200,
+        #                                 ats.TRIG_ENGINE_K,
+        #                                 ats.TRIG_DISABLE,
+        #                                 ats.TRIGGER_SLOPE_POSITIVE,
+        #                                 128)
 
         # TODO: Select external trigger parameters as required.
         # For a 1 V range, 0 is 0 V, 255 is 1 V

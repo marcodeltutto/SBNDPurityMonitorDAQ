@@ -80,21 +80,21 @@ class PrMManager():
 
         self._logger.info('Exiting...')
 
-        for prm_id in self._digitizers.keys():
+        # for prm_id in self._digitizers.keys():
 
-            # Set HV values to 0
-            self._hv_control.set_hv_value('anode', 0, prm_id)
-            self._hv_control.set_hv_value('anodegrid', 0, prm_id)
-            self._hv_control.set_hv_value('cathode', 0, prm_id)
-            self._logger.info('HV is set to 0.')
+        #     # Set HV values to 0
+        #     self._hv_control.set_hv_value('anode', 0, prm_id)
+        #     self._hv_control.set_hv_value('anodegrid', 0, prm_id)
+        #     self._hv_control.set_hv_value('cathode', 0, prm_id)
+        #     self._logger.info('HV is set to 0.')
 
-            # Turn off HV
-            self.hv_off(prm_id)
-            self._logger.info('HV is off.')
+        #     # Turn off HV
+        #     self.hv_off(prm_id)
+        #     self._logger.info('HV is off.')
 
-            # Stop the PrM
-            self._prm_control.stop_prm(prm_id)
-            self._logger.info('PrM is off.')
+        #     # Stop the PrM
+        #     self._prm_control.stop_prm(prm_id)
+        #     self._logger.info('PrM is off.')
 
 
     def digitizer_busy(self, prm_id=1):
@@ -110,6 +110,16 @@ class PrMManager():
         ats310 = self._digitizers[prm_id]
         return ats310.busy()
 
+
+    def ats_trigger_sample(self, prm_id=1):
+        '''
+        returns the sample when the trigger happens.
+
+        Returns:
+            int: Sample number when triggered.
+        '''
+        ats310 = self._digitizers[prm_id]
+        return ats310.get_trigger_sample()
 
     def ats_samples_per_sec(self, prm_id=1):
         '''
