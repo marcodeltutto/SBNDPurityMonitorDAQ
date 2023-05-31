@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>220</width>
-    <height>112</height>
+    <height>96</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@ Lifetime = ?</string>
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>0</y>
+      <y>5</y>
       <width>91</width>
       <height>21</height>
      </rect>
@@ -64,9 +64,9 @@ Lifetime = ?</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>80</y>
+      <y>70</y>
       <width>201</width>
-      <height>21</height>
+      <height>16</height>
      </rect>
     </property>
     <property name="font">

@@ -26,6 +26,15 @@
     <property name="text">
      <string>Start</string>
     </property>
+    <property name="autoDefault">
+     <bool>false</bool>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="_run_status_label">
     <property name="geometry">
@@ -209,29 +218,13 @@
     <property name="geometry">
      <rect>
       <x>240</x>
-      <y>73</y>
+      <y>80</y>
       <width>141</width>
       <height>20</height>
      </rect>
     </property>
     <property name="value">
      <number>24</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="_progress_label">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>50</y>
-      <width>101</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>-</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLCDNumber" name="_lcd_cathode_hv">
@@ -459,6 +452,22 @@
     </property>
     <property name="digitCount">
      <number>7</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="_progress_label">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>56</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

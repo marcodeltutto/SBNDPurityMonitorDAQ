@@ -12,6 +12,10 @@ import qdarkstyle
 from sbndprmdaq.mainwindow import MainWindow
 from sbndprmdaq.prmlogger import get_logging, PrMLogWidget
 
+os.environ["QT_ENABLE_HIGHDPI_SCALING"]   = "1"
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+os.environ["QT_SCALE_FACTOR"]             = "1"
+
 parser = argparse.ArgumentParser(description='SBND Purity Monitor DAQ')
 parser.add_argument('--mock', action='store_true',
                     default=False,
@@ -73,7 +77,7 @@ if os.path.exists(heartbeat_file_name):
 app = QtWidgets.QApplication(sys.argv)
 logs = PrMLogWidget()
 window = MainWindow(logs=logs)
-app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
 window.show()
 
 
@@ -101,6 +105,7 @@ window.set_manager(manager)
 #
 font = QtGui.QFont("Tahoma", 8)
 app.setFont(font)
+
 
 
 #

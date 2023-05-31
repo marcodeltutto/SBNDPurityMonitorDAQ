@@ -252,13 +252,25 @@ class MainWindow(QtWidgets.QMainWindow):
             3: Control(prm_id=3, name='PrM 3', description='Inline'),
         }
         # self._prm_controls[0].setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        # self._prm_controls[1].setStyleSheet("border-color: rgb(0, 0, 0);")
+
+        self._separator_lines = {
+            1: QtWidgets.QFrame(),
+            2: QtWidgets.QFrame(),
+            3: QtWidgets.QFrame(),
+        }
 
         self._graphs = {}
         self._show_graph = {'all': False}
 
-        for control in self._prm_controls.values():
+        for i, control in self._prm_controls.items():
             self.setup_control(control)
             self._controls_layout.addWidget(control)
+
+            self._separator_lines[i].setFrameShape(QtWidgets.QFrame.HLine)
+            self._separator_lines[i].setFrameShadow(QtWidgets.QFrame.Sunken)
+            self._controls_layout.addWidget(self._separator_lines[i])
+
             self._graphs[control.get_id()] = {
                 'A': self._plot.plot(),
                 'B': self._plot.plot(),
@@ -331,7 +343,8 @@ class MainWindow(QtWidgets.QMainWindow):
             control (Control): The purity monitor Control widget.
         '''
         prm_id = control.get_id()
-        control.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        # control.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        # control.setStyleSheet("border-color: rgb(0, 0, 0);")
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
 
@@ -343,7 +356,8 @@ class MainWindow(QtWidgets.QMainWindow):
             control (DataDisply): The purity monitor DataDisplay widget.
         '''
         prm_id = latest_data.get_id()
-        latest_data.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        # latest_data.setStyleSheet("background-color: rgba(0,0,0,0.1);")
+        latest_data.setStyleSheet("QWidget#centralwidget{border: 1px solid #455364; border-radius: 5px;}")
 
 
 

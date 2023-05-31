@@ -63,6 +63,10 @@ class MockPrMManager():
 
         self._logger.info('Exiting.')
 
+    def heartbeat(self):
+
+        return
+
     def digitizer_busy(self, prm_id):
         '''
         Returns the digitizers status
@@ -283,10 +287,11 @@ class MockPrMManager():
             float: The cathode HV.
             float: The anode HV.
         '''
-        cathode_hv = self._hv_control.get_hv_value('neg', prm_id)
-        anode_hv = self._hv_control.get_hv_value('pos', prm_id)
+        cathode_hv = self._hv_control.get_hv_sense_value('cathode', prm_id)
+        anode_hv = self._hv_control.get_hv_sense_value('anode', prm_id)
+        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
 
-        return cathode_hv, anode_hv
+        return cathode_hv, anode_hv, anodegrid_hv
 
     def get_hv_status(self, prm_id):
         '''
@@ -300,11 +305,10 @@ class MockPrMManager():
             bool: Whether the anode HV is on or not.
         '''
         if prm_id == 1:
-            return True, True
+            return True, True, True
         else:
-            return True, False
+            return True, False, False
 
-        return cathode_hv, anode_hv
 
 
     def set_comment(self, comment):
