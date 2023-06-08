@@ -96,6 +96,9 @@ class PrMManager():
         #     self._prm_control.stop_prm(prm_id)
         #     self._logger.info('PrM is off.')
 
+        # Delete digiter log file
+        os.remove('/tmp/ATSApi.log')
+
 
     def digitizer_busy(self, prm_id=1):
         '''
