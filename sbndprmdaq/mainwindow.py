@@ -348,6 +348,16 @@ class MainWindow(QtWidgets.QMainWindow):
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
 
+    def set_start_button_status(self, prm_id=1, status=True):
+        '''
+        Disables the start/stop button for a certain PrM
+
+        Args:
+            prm_id (int): The purity monitor id
+        '''
+        self._prm_controls[prm_id]._start_stop_btn.setDisabled(status)
+
+
     def setup_latest_data(self, latest_data):
         '''
         Sets up a single purity monitor latest-data widget.

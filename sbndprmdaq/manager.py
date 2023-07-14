@@ -542,7 +542,38 @@ class PrMManager():
         self._mode = mode
         self._logger.info('Setting mode to: {mode}'.format(
                           mode=self._mode))
+
+        if self._mode == 'auto':
+            self.periodic_start_prm(prm_id)
+        elif self._mode == 'manual':
+            self._timer.stop()
+
+            # Wait until we have done running
+            while self._is_running[prm_id] == True:
+                time.sleep(0.1)
+
+            self._window.set_start_button_status(prm_id, True)
+
         return
+
+    def periodic_start_prm(self, prm_id=1, time_interval=60):
+        '''
+        Starts purity monitor prm_id every time_interval seconds.
+        Time interval cannot be less than 60 seconds, and if so,
+        it will be set to 60 seconds.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            time_interval (int): The time interaval in seconds.
+        '''
+        if time_interval < 60:
+            time_interval = 60
+
+        self._window.set_start_button_status(prm_id, False)
+
+        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
+        self._timer.start(time_interval * 1000)
+
 
 
     def get_data(self, prm_id):

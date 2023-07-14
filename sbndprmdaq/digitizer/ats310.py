@@ -201,13 +201,15 @@ class ATS310():
         # self._input_range_volts = 400.e-3 # volts
         # self._input_range_volts = 500.e-3 # volts
         # self._input_range_volts = 1 # volts
-        self._input_range_volts = 2 # volts
+        # self._input_range_volts = 2 # volts
+        self._input_range_volts = 5 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
-                                   ats.INPUT_RANGE_PM_2_V,
+                                   # ats.INPUT_RANGE_PM_2_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -221,7 +223,8 @@ class ATS310():
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
-                                   ats.INPUT_RANGE_PM_2_V,
+                                   # ats.INPUT_RANGE_PM_2_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
