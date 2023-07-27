@@ -96,10 +96,14 @@ class ATS310():
 
         # self._board = BoardWrapper(self._board, ATS310Exception)
 
-        self._samples_per_sec = 20000000.0
-        self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
-        # self._samples_per_sec = 2000000.0
-        # self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
+        # self._samples_per_sec = 20000000.0
+        # self._samples_per_sec_id = ats.SAMPLE_RATE_20MSPS
+        # self._samples_per_sec = 10000000.0
+        # self._samples_per_sec_id = ats.SAMPLE_RATE_10MSPS
+        # self._samples_per_sec = 5000000.0
+        # self._samples_per_sec_id = ats.SAMPLE_RATE_5MSPS
+        self._samples_per_sec = 2000000.0
+        self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
 
         # TODO: Select the number of pre-trigger samples
         self._pre_trigger_samples = 512 # #1024
@@ -107,7 +111,9 @@ class ATS310():
 
         # TODO: Select the number of samples per record.
         # self._post_trigger_samples = 4096
-        self._post_trigger_samples = 10240 #1024
+        # self._post_trigger_samples = 10240 #1024 # <--
+        # self._post_trigger_samples = 20000 #1024
+        self._post_trigger_samples = 6000 #1024
 
         # TODO: Select the number of records in the acquisition.
         self._records_per_capture = 1
@@ -198,18 +204,20 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
+        self._input_range_volts = 50.e-3 # volts
         # self._input_range_volts = 400.e-3 # volts
         # self._input_range_volts = 500.e-3 # volts
         # self._input_range_volts = 1 # volts
         # self._input_range_volts = 2 # volts
-        self._input_range_volts = 5 # volts
+        # self._input_range_volts = 5 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
+                                   ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   ats.INPUT_RANGE_PM_5_V,
+                                   # ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -220,11 +228,12 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
+                                   ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   ats.INPUT_RANGE_PM_5_V,
+                                   # ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -300,6 +309,7 @@ class ATS310():
         # buffer must be at least 16 bytes larger than the transfer size.
         self._bytes_per_buffer = (self._bytes_per_sample *
                           (self._samples_per_record + 0))
+        print('self._bytes_per_buffer', self._bytes_per_buffer)
 
         # Set the record size
         self._board.setRecordSize(self._pre_trigger_samples, self._post_trigger_samples)
@@ -480,10 +490,12 @@ class ATS310():
         if self._data['A'] is not None:
             sample_code = np.right_shift(self._data['A'], bit_shift)
             self._data['A'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+            self._data['A'] = self._data['A'].tolist()
 
         if self._data['B'] is not None:
             sample_code = np.right_shift(self._data['B'], bit_shift)
             self._data['B'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
+            self._data['B'] = self._data['B'].tolist()
 
         # sample_value = self._data['A'][0]
         # sample_code = sample_value >> bit_shift
