@@ -16,6 +16,7 @@ from sbndprmdaq.threading_utils import Worker
 # from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
 from sbndprmdaq.communication.hv_control_mpod import HVControlMPOD
+from sbndprmdaq.communication.adpro_control import ADProControl
 
 class PrMManager():
     '''
@@ -57,6 +58,7 @@ class PrMManager():
 
         self._prm_control = PrMControlArduino(self._digitizers.keys(), config=config)
         self._hv_control = HVControlMPOD(self._digitizers.keys(), config=config)
+        self._adpro_control = ADProControl(self._digitizers.keys(), config=config)
 
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=len(self._digitizers)))
@@ -229,6 +231,7 @@ class PrMManager():
         '''
 
         self._prm_control.start_prm(prm_id)
+        self._adpro_control.lamp_on(prm_id)
 
         ats310 = self._digitizers[prm_id]
 
@@ -250,32 +253,46 @@ class PrMManager():
         #
         # Tell the digitizer to start capturing data and check until it completes
         #
-        self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
-        ats310.start_capture()
-        self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
-        status = ats310.check_capture(prm_id, progress_callback)
-        if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
+        data_raw_combined = {
+            'A': [],
+            'B': []
+        }
 
-        progress_callback.emit(prm_id, 'Retrieving Data', 100)
-        data_raw = ats310.get_data()
+        self._repetitions = 1
+        for rep in range(self._repetitions):
+            self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
+            self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
+            ats310.start_capture()
+            self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
+            status = ats310.check_capture(prm_id, progress_callback)
+            if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
+
+            progress_callback.emit(prm_id, 'Retrieving Data', 100)
+            data_raw = ats310.get_data()
+            data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
+            data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
         # print('From manager:', data)
         data = {
             'prm_id': prm_id,
             'status': status,
             'time': datetime.datetime.today(),
-            'A': data_raw['A'],
-            'B': data_raw['B'],
+            'A': data_raw_combined['A'],
+            'B': data_raw_combined['B'],
         }
 
         data_callback.emit(data)
+        print('after data_callback.emit(data)')
 
         self._prm_control.stop_prm(prm_id)
+        self._adpro_control.lamp_off(prm_id)
+        print('PrM stopped')
         # self._window.start_stop_prm(prm_id)
-        if self._mode == 'auto':
+        # if self._mode == 'auto':
 
-            self._window.reset_progress(prm_id, name='Done!', color='#006400')
-            time.sleep(0.5)
-            self._window.reset_progress(prm_id, name='Waiting', color='#ffffff') # dark green
+        #     self._window.reset_progress(prm_id, name='Done!', color='#006400')
+        #     time.sleep(0.5)
+        #     self._window.reset_progress(prm_id, name='Waiting', color='#ffffff') # dark green
+        #     print('UUU')
 
         # Not used
         return data
@@ -292,13 +309,13 @@ class PrMManager():
         print('***************Got data:', data['prm_id'])
 
         if data['status']:
-            print('ok')
             self._data[data['prm_id']] = {
                 'A': data['A'],
                 'B': data['B'],
                 'time': data['time'],
             }
             self.save_data(data['prm_id'])
+            print('Saved data.')
 
     # def _result_callback(self, data):
     #     '''
@@ -411,7 +428,8 @@ class PrMManager():
             for k, v in configs.items():
                 out_dict['config_' + k] = v
 
-        file_name = self._data_files_path
+        # file_name = self._data_files_path
+        file_name = '/home/nfs/mdeltutt/work/purity_monitors/blanche_data_jul2023'
         file_name += '/sbnd_prm'
         file_name += str(prm_id)
         file_name += '_run_'
@@ -506,6 +524,7 @@ class PrMManager():
                           mode=self._mode))
 
         if self._mode == 'auto':
+            self._window.set_start_button_status(prm_id, False)
             self.periodic_start_prm(prm_id)
         elif self._mode == 'manual':
             self._timer.stop()
