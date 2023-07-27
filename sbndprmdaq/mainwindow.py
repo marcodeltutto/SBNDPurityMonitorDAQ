@@ -274,6 +274,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._graphs[control.get_id()] = {
                 'A': self._plot.plot(),
                 'B': self._plot.plot(),
+                'diff': self._plot.plot(),
             }
             self._show_graph[control.get_id()] = False
 
@@ -552,19 +553,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
             flash_time = 17 # ns
 
+            x_a = None
+            y_a = None
+            x_b = None
+            x_b = None
+
             if 'A' in data and data['A'] is not None:
                 # print('------------------------------ len data', len(data['A']))
                 av_waveform = np.mean(data['A'], axis=0)
                 # av_waveform = data['A'][0]
                 # print('------------------------------ len av_waveform', len(av_waveform))
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
-                y = av_waveform * v_to_mv
+                x_a = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
+                y_a = av_waveform * v_to_mv
 
                 trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
                 if self._show_graph[control.get_id()]:
-                    self._graphs[control.get_id()]['A'].setData(x, y, pen=pg.mkPen('b'))
+                    self._graphs[control.get_id()]['A'].setData(x_a, y_a, pen=pg.mkPen('b'))
                     self._infinite_line_1.setValue(trigger_x)
                     self._infinite_line_2.setValue(trigger_x + flash_time)
                 else:
@@ -573,13 +579,22 @@ class MainWindow(QtWidgets.QMainWindow):
             if 'B' in data and data['B'] is not None:
                 av_waveform = np.mean(data['B'], axis=0)
                 # av_waveform = data['B'][0]
-                x = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
-                y = av_waveform * v_to_mv
+                x_b = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
+                y_b = av_waveform * v_to_mv
                 # self._graph_b.setData(x, y, pen=pg.mkPen('r'))
                 if self._show_graph[control.get_id()]:
-                    self._graphs[control.get_id()]['B'].setData(x, y, pen=pg.mkPen('r'))
+                    self._graphs[control.get_id()]['B'].setData(x_b, y_b, pen=pg.mkPen('r'))
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
+
+            # if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
+            #     diff = y_a - y_b
+            #     if self._show_graph[control.get_id()]:
+            #         self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
+            #     else:
+            #         self._graphs[control.get_id()]['diff'].setData([], [])
+
+
 
             qa, qc, tau = self._extract_values(data['A'], data['B'])
 
