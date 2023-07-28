@@ -263,12 +263,18 @@ class PrMManager():
             self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
             self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
             ats310.start_capture()
+            # self._adpro_control.start_capture(prm_id)
             self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
             status = ats310.check_capture(prm_id, progress_callback)
+            # while True:
+            #     status = self._adpro_control.check_capture(prm_id)
+            #     if status == 'true':
+            #         break
             if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
             data_raw = ats310.get_data()
+            # data_raw = self._adpro_control.get_data(prm_id)
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
             data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
         # print('From manager:', data)

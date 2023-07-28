@@ -25,3 +25,38 @@ class ADProControl():
             self._logger.critical('API error: cannot turn lamp off')
 
 
+    def start_capture(self, prm_id):
+
+        response = requests.get(self._url + "/digitizer/start_capture")
+
+        if response.json()['status'] != 'true':
+            self._logger.critical('API error: start_capture failed')
+
+        return response.json()['status']
+
+
+    def check_capture(self, prm_id):
+
+        response = requests.get(self._url + "/digitizer/check_capture")
+
+        # if response.json()['status'] != 'true':
+        #     self._logger.critical('API error: start_capture failed')
+
+        return response.json()['status']
+
+
+    def get_data(self, prm_id):
+
+        response = requests.get(self._url + "/digitizer/get_data")
+
+        # if response.json()['data'] != 'true':
+        #     self._logger.critical('API error: start_capture failed')
+
+        print(type(response.json()['data']))
+        print((response.json()['data']))
+        return
+
+        # return response.json()['status']
+
+
+
