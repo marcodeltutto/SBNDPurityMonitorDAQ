@@ -587,12 +587,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
-            # if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
-            #     diff = y_a - y_b
-            #     if self._show_graph[control.get_id()]:
-            #         self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
-            #     else:
-            #         self._graphs[control.get_id()]['diff'].setData([], [])
+            if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
+                diff = y_a - y_b
+                if self._show_graph[control.get_id()]:
+                    self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
+                else:
+                    self._graphs[control.get_id()]['diff'].setData([], [])
 
 
 
