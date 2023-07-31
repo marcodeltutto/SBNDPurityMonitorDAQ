@@ -262,21 +262,28 @@ class PrMManager():
         for rep in range(self._repetitions):
             self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
             self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
-            ats310.start_capture()
-            # self._adpro_control.start_capture(prm_id)
+            # ats310.start_capture()
+            self._adpro_control.start_capture(prm_id)
             self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
-            status = ats310.check_capture(prm_id, progress_callback)
-            # while True:
-            #     status = self._adpro_control.check_capture(prm_id)
-            #     if status == 'true':
-            #         break
+            # status = ats310.check_capture(prm_id, progress_callback)
+            start = time.time()
+            status = False
+            while 10 > time.time() - start:
+                status = self._adpro_control.check_capture(prm_id)
+                print('status', status)
+                if status == True:
+                    break
             if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
-            data_raw = ats310.get_data()
-            # data_raw = self._adpro_control.get_data(prm_id)
-            data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
-            data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
+            # data_raw = ats310.get_data()
+            data_raw = self._adpro_control.get_data(prm_id)
+            print(data_raw.keys())
+            print(type(data_raw['1']))
+            for k in data_raw.keys():
+                data_raw[k] = [data_raw[k]]
+            data_raw_combined['A'] = data_raw_combined['A'] + data_raw['1']
+            data_raw_combined['B'] = data_raw_combined['B'] + data_raw['2']
         # print('From manager:', data)
         data = {
             'prm_id': prm_id,

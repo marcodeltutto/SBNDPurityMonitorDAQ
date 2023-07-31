@@ -559,10 +559,8 @@ class MainWindow(QtWidgets.QMainWindow):
             x_b = None
 
             if 'A' in data and data['A'] is not None:
-                # print('------------------------------ len data', len(data['A']))
                 av_waveform = np.mean(data['A'], axis=0)
                 # av_waveform = data['A'][0]
-                # print('------------------------------ len av_waveform', len(av_waveform))
                 x_a = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y_a = av_waveform * v_to_mv
 

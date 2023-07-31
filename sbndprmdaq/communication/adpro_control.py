@@ -52,9 +52,7 @@ class ADProControl():
         # if response.json()['data'] != 'true':
         #     self._logger.critical('API error: start_capture failed')
 
-        print(type(response.json()['data']))
-        print((response.json()['data']))
-        return
+        return response.json()['data']
 
         # return response.json()['status']
 

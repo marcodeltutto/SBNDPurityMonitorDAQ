@@ -3,9 +3,19 @@
 test: 'test'
 
 prm_id_to_ats_systemid:
-  1: 2
-  2: 1
-  3: 3
+  1: None
+  2: None
+  3: 1
+
+prm_id_to_adpro_channels:
+  1: [1, 2]
+  2: [3, 4]
+  3: None
+
+prm_id_to_digitizer_type:
+  1: 'adpro'
+  2: 'adpro'
+  3: 'ats310'
 
 data_files_path: '/sbnd/data/purity_monitors/'
 # data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'

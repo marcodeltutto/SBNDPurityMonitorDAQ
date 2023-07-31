@@ -54,6 +54,10 @@ def get_digitizers(prm_id_to_ats_systemid):
     digitizers = {}
     for prm_id, systemid in prm_id_to_ats_systemid.items():
 
+        if systemid is None:
+            logger.info(f'PrM {prm_id} will not use an ATS310 digitizer.')
+            continue
+
         # Check that we have an available digitizer for this systemid
         n_boards = ats.boardsInSystemBySystemID(systemid)
         if n_boards == 1:
@@ -204,17 +208,17 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
-        self._input_range_volts = 50.e-3 # volts
+        # self._input_range_volts = 50.e-3 # volts
         # self._input_range_volts = 400.e-3 # volts
-        # self._input_range_volts = 500.e-3 # volts
+        self._input_range_volts = 500.e-3 # volts
         # self._input_range_volts = 1 # volts
         # self._input_range_volts = 2 # volts
         # self._input_range_volts = 5 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_50_MV,
+                                   # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
-                                   # ats.INPUT_RANGE_PM_500_MV,
+                                   ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
                                    # ats.INPUT_RANGE_PM_5_V,
@@ -228,9 +232,9 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_50_MV,
+                                   # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
-                                   # ats.INPUT_RANGE_PM_500_MV,
+                                   ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
                                    # ats.INPUT_RANGE_PM_5_V,
