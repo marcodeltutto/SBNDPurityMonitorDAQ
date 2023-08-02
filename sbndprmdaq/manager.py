@@ -9,14 +9,15 @@ import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
-from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
-from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
+# from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
+# from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.threading_utils import Worker
 
 # from sbndprmdaq.communication.serial_communicator import Communicator
+from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
 from sbndprmdaq.communication.hv_control_mpod import HVControlMPOD
-from sbndprmdaq.communication.adpro_control import ADProControl
+# from sbndprmdaq.communication.adpro_control import ADProControl
 
 class PrMManager():
     '''
@@ -45,23 +46,19 @@ class PrMManager():
 
         self._data_files_path = config['data_files_path']
 
-        digitizers = get_digitizers(config['prm_id_to_ats_systemid'])
-        for prm_id, digitizer in digitizers.items():
-            if digitizer is None:
-                if self._window is not None:
-                    self._window.missing_digitizer(prm_id)
-                continue
-            self._digitizers[prm_id] = BoardWrapper(digitizer, self._logger, ATS310Exception)
+        self._prm_digitizer = PrMDigitizer(config)
+
+        for prm_id in config['prm_ids']:
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
 
-        self._prm_control = PrMControlArduino(self._digitizers.keys(), config=config)
-        self._hv_control = HVControlMPOD(self._digitizers.keys(), config=config)
-        self._adpro_control = ADProControl(self._digitizers.keys(), config=config)
+        self._prm_control = PrMControlArduino(config['prm_ids'], config=config)
+        self._hv_control = HVControlMPOD(config['prm_ids'], config=config)
+        # self._adpro_control = ADProControl(self._digitizers.keys(), config=config)
 
         self._logger.info('Number of available digitizers: {n_digi}'.format(
-                          n_digi=len(self._digitizers)))
+                          n_digi=self._prm_digitizer.n_digitizers()))
 
         self._hv_on = False
         self._use_hv = True
@@ -112,8 +109,9 @@ class PrMManager():
         Returns:
             bool: True for busy, False otherwise.
         '''
-        ats310 = self._digitizers[prm_id]
-        return ats310.busy()
+        # ats310 = self._digitizers[prm_id]
+        # return ats310.busy()
+        return self._prm_digitizer.digitizer_busy(prm_id)
 
 
     def ats_trigger_sample(self, prm_id=1):
@@ -123,8 +121,9 @@ class PrMManager():
         Returns:
             int: Sample number when triggered.
         '''
-        ats310 = self._digitizers[prm_id]
-        return ats310.get_trigger_sample()
+        # ats310 = self._digitizers[prm_id]
+        # return ats310.get_trigger_sample()
+        return self._prm_digitizer.get_trigger_sample(prm_id)
 
     def ats_samples_per_sec(self, prm_id=1):
         '''
@@ -133,8 +132,9 @@ class PrMManager():
         Returns:
             bool: The digitizer samples per second
         '''
-        ats310 = self._digitizers[prm_id]
-        return ats310.get_samples_per_second()
+        # ats310 = self._digitizers[prm_id]
+        # return ats310.get_samples_per_second()
+        return self._prm_digitizer.get_samples_per_second(prm_id)
 
     def get_n_acquisitions(self, prm_id=1):
         '''
@@ -143,8 +143,9 @@ class PrMManager():
         Returns:
             bool: The digitizer samples per second
         '''
-        ats310 = self._digitizers[prm_id]
-        return ats310.get_number_acquisitions()
+        # ats310 = self._digitizers[prm_id]
+        # return ats310.get_number_acquisitions()
+        return self._prm_digitizer.get_n_acquisitions(prm_id)
 
     def retrieve_run_numbers(self):
         if self._data_files_path is None:
@@ -230,10 +231,10 @@ class PrMManager():
             the data for ch A, the data for ch B NO LONGER USED
         '''
 
-        self._prm_control.start_prm(prm_id)
-        self._adpro_control.lamp_on(prm_id)
+        # self._prm_control.start_prm(prm_id)
+        self._prm_digitizer.lamp_on(prm_id)
 
-        ats310 = self._digitizers[prm_id]
+        # ats310 = self._digitizers[prm_id]
 
         #
         # Wait some time for the HV to stabilize
@@ -263,27 +264,38 @@ class PrMManager():
             self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
             self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
             # ats310.start_capture()
-            self._adpro_control.start_capture(prm_id)
+            # self._adpro_control.start_capture(prm_id)
+            self._prm_digitizer.start_capture(prm_id)
             self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
             # status = ats310.check_capture(prm_id, progress_callback)
-            start = time.time()
-            status = False
-            while 10 > time.time() - start:
-                status = self._adpro_control.check_capture(prm_id)
-                print('status', status)
-                if status == True:
-                    break
+            status = self._prm_digitizer.check_capture(prm_id)
+            # start = time.time()
+            # status = False
+            # while 10 > time.time() - start:
+            #     status = self._adpro_control.check_capture(prm_id)
+            #     print('status', status)
+            #     if status == True:
+            #         break
             if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
             # data_raw = ats310.get_data()
-            data_raw = self._adpro_control.get_data(prm_id)
+            # data_raw = self._adpro_control.get_data(prm_id)
+            data_raw = self._prm_digitizer.get_data(prm_id)
             print(data_raw.keys())
-            print(type(data_raw['1']))
+            # print('1', data_raw['1'])
             for k in data_raw.keys():
-                data_raw[k] = [data_raw[k]]
-            data_raw_combined['A'] = data_raw_combined['A'] + data_raw['1']
-            data_raw_combined['B'] = data_raw_combined['B'] + data_raw['2']
+                if k == '1':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['A'] = data_raw[k]
+                    del data_raw[k]
+                if k == '2':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['B'] = data_raw[k]
+                    del data_raw[k]
+            # print('A', data_raw['A'])
+            data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
+            data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
         # print('From manager:', data)
         data = {
             'prm_id': prm_id,
@@ -297,7 +309,8 @@ class PrMManager():
         print('after data_callback.emit(data)')
 
         self._prm_control.stop_prm(prm_id)
-        self._adpro_control.lamp_off(prm_id)
+        # self._adpro_control.lamp_off(prm_id)
+        self._prm_digitizer.lamp_off(prm_id)
         print('PrM stopped')
         # self._window.start_stop_prm(prm_id)
         # if self._mode == 'auto':
@@ -430,10 +443,15 @@ class PrMManager():
         out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
         out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', prm_id)
 
-        out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
-        out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
-        out_dict['post_trigger_samples'] = self._digitizers[prm_id].get_post_trigger_samples()
-        out_dict['input_range_volts'] = self._digitizers[prm_id].get_input_range_volts()
+        # out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
+        # out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
+        # out_dict['post_trigger_samples'] = self._digitizers[prm_id].get_post_trigger_samples()
+        # out_dict['input_range_volts'] = self._digitizers[prm_id].get_input_range_volts()
+
+        out_dict['samples_per_sec'] = self._prm_digitizer.get_samples_per_second(prm_id)
+        out_dict['pre_trigger_samples'] = self._prm_digitizer.get_pre_trigger_samples(prm_id)
+        out_dict['post_trigger_samples'] = self._prm_digitizer.get_post_trigger_samples(prm_id)
+        out_dict['input_range_volts'] = self._prm_digitizer.get_input_range_volts(prm_id)
 
         # Add the extra configuration
         configs = self._window.get_config_values(prm_id)

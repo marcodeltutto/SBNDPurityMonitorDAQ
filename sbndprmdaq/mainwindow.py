@@ -559,10 +559,17 @@ class MainWindow(QtWidgets.QMainWindow):
             x_b = None
 
             if 'A' in data and data['A'] is not None:
+                # print('len(data[A])', len(data['A']))
+                # print('len(data[A][0])', len(data['A'][0]))
                 av_waveform = np.mean(data['A'], axis=0)
+                # print('len(av_waveform)', len(av_waveform))
                 # av_waveform = data['A'][0]
                 x_a = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y_a = av_waveform * v_to_mv
+                # print('y_a', y_a)
+                # print('type(data[A])', type(data['A']))
+                # print('type(av_waveform)', type(av_waveform))
+                # print('av_waveform.shape', av_waveform.shape)
 
                 trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))

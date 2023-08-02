@@ -245,30 +245,30 @@ class ATS310():
         self._board.setBWLimit(ats.CHANNEL_B, 0)
 
         # External trigger
-        self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
-                                        ats.TRIG_ENGINE_J,
-                                        # ats.TRIG_CHAN_A,
-                                        ats.TRIG_EXTERNAL,
-                                        ats.TRIGGER_SLOPE_POSITIVE,
-                                        # 150,
-                                        140, #200,
-                                        ats.TRIG_ENGINE_K,
-                                        ats.TRIG_DISABLE,
-                                        ats.TRIGGER_SLOPE_POSITIVE,
-                                        128)
-
-        # Trigger on channel B
         # self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
         #                                 ats.TRIG_ENGINE_J,
-        #                                 ats.TRIG_CHAN_B,
-        #                                 # ats.TRIG_EXTERNAL,
-        #                                 ats.TRIGGER_SLOPE_NEGATIVE,
+        #                                 # ats.TRIG_CHAN_A,
+        #                                 ats.TRIG_EXTERNAL,
+        #                                 ats.TRIGGER_SLOPE_POSITIVE,
         #                                 # 150,
-        #                                 120, #200,
+        #                                 140, #200,
         #                                 ats.TRIG_ENGINE_K,
         #                                 ats.TRIG_DISABLE,
         #                                 ats.TRIGGER_SLOPE_POSITIVE,
         #                                 128)
+
+        # Trigger on channel B
+        self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
+                                        ats.TRIG_ENGINE_J,
+                                        ats.TRIG_CHAN_A,
+                                        # ats.TRIG_EXTERNAL,
+                                        ats.TRIGGER_SLOPE_NEGATIVE,
+                                        # 150,
+                                        120, #200,
+                                        ats.TRIG_ENGINE_K,
+                                        ats.TRIG_DISABLE,
+                                        ats.TRIGGER_SLOPE_POSITIVE,
+                                        128)
 
         # TODO: Select external trigger parameters as required.
         # For a 1 V range, 0 is 0 V, 255 is 1 V
@@ -529,6 +529,31 @@ class ATS310():
         Returns the number of acquisitions
         '''
         return self._records_per_capture
+
+
+    def lamp_on(self):
+
+        self._logger.warning('lamp_on ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + "/lamp_control/on")
+
+        if response.json()['status'] != 'on':
+            self._logger.critical('API error: cannot turn lamp on')
+
+
+    def lamp_off(self):
+
+        self._logger.warning('lamp_ff ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + "/lamp_control/off")
+
+        if response.json()['status'] != 'off':
+            self._logger.critical('API error: cannot turn lamp off')
+
 
 
 if __name__ == "__main__":
