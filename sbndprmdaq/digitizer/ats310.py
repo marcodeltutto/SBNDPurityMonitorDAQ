@@ -210,18 +210,18 @@ class ATS310():
         # TODO: Select channel A input parameters as required.
         # self._input_range_volts = 50.e-3 # volts
         # self._input_range_volts = 400.e-3 # volts
-        self._input_range_volts = 500.e-3 # volts
+        # self._input_range_volts = 500.e-3 # volts
         # self._input_range_volts = 1 # volts
         # self._input_range_volts = 2 # volts
-        # self._input_range_volts = 5 # volts
+        self._input_range_volts = 5 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
                                    # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
-                                   ats.INPUT_RANGE_PM_500_MV,
+                                   # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   # ats.INPUT_RANGE_PM_5_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -234,10 +234,10 @@ class ATS310():
                                    ats.DC_COUPLING,
                                    # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
-                                   ats.INPUT_RANGE_PM_500_MV,
+                                   # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   # ats.INPUT_RANGE_PM_5_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -245,30 +245,30 @@ class ATS310():
         self._board.setBWLimit(ats.CHANNEL_B, 0)
 
         # External trigger
-        # self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
-        #                                 ats.TRIG_ENGINE_J,
-        #                                 # ats.TRIG_CHAN_A,
-        #                                 ats.TRIG_EXTERNAL,
-        #                                 ats.TRIGGER_SLOPE_POSITIVE,
-        #                                 # 150,
-        #                                 140, #200,
-        #                                 ats.TRIG_ENGINE_K,
-        #                                 ats.TRIG_DISABLE,
-        #                                 ats.TRIGGER_SLOPE_POSITIVE,
-        #                                 128)
-
-        # Trigger on channel B
         self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
                                         ats.TRIG_ENGINE_J,
-                                        ats.TRIG_CHAN_A,
-                                        # ats.TRIG_EXTERNAL,
-                                        ats.TRIGGER_SLOPE_NEGATIVE,
+                                        # ats.TRIG_CHAN_A,
+                                        ats.TRIG_EXTERNAL,
+                                        ats.TRIGGER_SLOPE_POSITIVE,
                                         # 150,
-                                        120, #200,
+                                        140, #200,
                                         ats.TRIG_ENGINE_K,
                                         ats.TRIG_DISABLE,
                                         ats.TRIGGER_SLOPE_POSITIVE,
                                         128)
+
+        # Trigger on channel B
+        # self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
+        #                                 ats.TRIG_ENGINE_J,
+        #                                 ats.TRIG_CHAN_A,
+        #                                 # ats.TRIG_EXTERNAL,
+        #                                 ats.TRIGGER_SLOPE_NEGATIVE,
+        #                                 # 150,
+        #                                 120, #200,
+        #                                 ats.TRIG_ENGINE_K,
+        #                                 ats.TRIG_DISABLE,
+        #                                 ats.TRIGGER_SLOPE_POSITIVE,
+        #                                 128)
 
         # TODO: Select external trigger parameters as required.
         # For a 1 V range, 0 is 0 V, 255 is 1 V
@@ -521,6 +521,7 @@ class ATS310():
         '''
         Sets the number of acquisitions.
         '''
+        print('Setting n acquistions to', value)
         self._records_per_capture = int(value)
         self._board.setRecordCount(self._records_per_capture)
 
@@ -545,7 +546,7 @@ class ATS310():
 
     def lamp_off(self):
 
-        self._logger.warning('lamp_ff ats310 !!!!!!!!!!!!!!!!')
+        self._logger.warning('lamp_off ats310 !!!!!!!!!!!!!!!!')
 
         import requests
         url = "http://localhost:8000"
@@ -553,6 +554,18 @@ class ATS310():
 
         if response.json()['status'] != 'off':
             self._logger.critical('API error: cannot turn lamp off')
+
+
+    def lamp_frequency(self, freq):
+
+        self._logger.warning('lamp_frequency ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + f"/lamp_frequency/{freq}")
+
+        if response.json()['frequency'] != freq:
+            self._logger.critical(f'API error: cannot set frequency to {freq}')
 
 
 

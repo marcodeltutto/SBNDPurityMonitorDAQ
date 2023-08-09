@@ -69,6 +69,7 @@ class PrMManager():
 
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
+        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
         self._mode = 'manual'
 
         self._comment = 'No comment'
@@ -232,6 +233,7 @@ class PrMManager():
         '''
 
         # self._prm_control.start_prm(prm_id)
+        self._prm_digitizer.lamp_frequency(prm_id, 10)
         self._prm_digitizer.lamp_on(prm_id)
 
         # ats310 = self._digitizers[prm_id]
@@ -583,7 +585,6 @@ class PrMManager():
 
         self._window.set_start_button_status(prm_id, False)
 
-        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
         self._timer.start(time_interval * 1000)
 
 

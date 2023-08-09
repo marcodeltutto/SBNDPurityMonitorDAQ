@@ -26,6 +26,10 @@ class ADProControl():
         # TODO
         return 0
 
+    def set_number_acquisitions(self, n):
+        # TODO
+        return 0
+
     def get_pre_trigger_samples(self):
         # TODO
         return 0
@@ -52,6 +56,14 @@ class ADProControl():
 
         if response.json()['status'] != 'off':
             self._logger.critical('API error: cannot turn lamp off')
+
+
+    def lamp_frequency(self, freq):
+
+        response = requests.get(self._url + f"/lamp_frequency/{freq}")
+
+        if response.json()['frequency'] != freq:
+            self._logger.critical(f'API error: cannot set frequency to {freq}')
 
 
     def start_capture(self):

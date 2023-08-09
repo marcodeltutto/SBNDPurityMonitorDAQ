@@ -115,6 +115,11 @@ class PrMDigitizer():
         prm_id = self._process_prm_id(prm_id)
         return self._digitizers[prm_id].get_number_acquisitions()
 
+    def set_n_acquisitions(self, prm_id, n):
+
+        prm_id = self._process_prm_id(prm_id)
+        return self._digitizers[prm_id].set_number_acquisitions(n)
+
 
     def start_capture(self, prm_id):
 
@@ -143,6 +148,15 @@ class PrMDigitizer():
 
         prm_id = self._process_prm_id(prm_id)
         return self._digitizers[prm_id].lamp_off()
+
+    def lamp_frequency(self, prm_id, freq):
+        '''
+        prm_id PrM ID
+        freq Lamp frequency in Hz
+        '''
+
+        prm_id = self._process_prm_id(prm_id)
+        return self._digitizers[prm_id].lamp_frequency(freq)
 
 
 
