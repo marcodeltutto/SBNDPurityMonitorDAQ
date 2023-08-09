@@ -59,6 +59,10 @@ class MockPrMManager():
         self._data_files_path = config['data_files_path']
         self.retrieve_run_numbers()
 
+        # A timer used to periodically run the PrMs
+        self._timer = QTimer()
+        self._mode = 'manual'
+
     def exit(self):
 
         self._logger.info('Exiting.')
@@ -101,9 +105,10 @@ class MockPrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        # Tell the parallel communicator to start the purity monitor
-        self._comm.start_prm()
-        self._prm_control.start_prm()
+        # # Tell the parallel communicator to start the purity monitor
+        # self._comm.start_prm()
+        # self._prm_control.start_prm()
+        self._is_running[prm_id] = True
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
@@ -132,9 +137,10 @@ class MockPrMManager():
             prm_id (int): The purity monitor ID.
         '''
         worker = Worker(self.capture_data, prm_id=prm_id)
-        worker.signals.result.connect(self._result_callback)
+        # worker.signals.result.connect(self._result_callback)
         worker.signals.finished.connect(self._thread_complete)
         worker.signals.progress.connect(self._thread_progress)
+        worker.signals.data.connect(self._thread_data)
 
         self._threadpool.start(worker)
         self._logger.info('Thread started for prm_id {prm_id}.'.format(prm_id=prm_id))
@@ -254,6 +260,7 @@ class MockPrMManager():
         '''
         self._comm.hv_off()
 
+
     def set_mode(self, prm_id, mode):
         '''
         Sets the mode (auto, manual).
@@ -262,7 +269,44 @@ class MockPrMManager():
             prm_id (int): The purity monitor ID.
             mode (int): The desired mode.
         '''
-        print('Mode for', prm_id, 'set to', mode)
+        self._mode = mode
+        self._logger.info('Setting mode to: {mode}'.format(
+                          mode=self._mode))
+
+        if self._mode == 'auto':
+            self.periodic_start_prm(prm_id)
+        elif self._mode == 'manual':
+            self._timer.stop()
+
+            # Wait until we have done running
+            while self._is_running[prm_id] == True:
+                time.sleep(0.1)
+
+            self._window.set_start_button_status(prm_id, True)
+
+        return
+
+    def periodic_start_prm(self, prm_id=1, time_interval=60):
+        '''
+        Starts purity monitor prm_id every time_interval seconds.
+        Time interval cannot be less than 60 seconds, and if so,
+        it will be set to 60 seconds.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            time_interval (int): The time interaval in seconds.
+        '''
+        if time_interval < 60:
+            time_interval = 60
+
+        self._window.set_start_button_status(prm_id, False)
+
+        self._timer.timeout.connect(lambda: self.periodic_start_prm(prm_id))
+        self._timer.start(time_interval * 1000)
+
+    def periodic_start_prm(self, prm_id=1):
+        print('periodic_start_prm', time.strftime("%H:%M:%S", time.localtime()))
+        self.start_prm(prm_id)
 
     def get_data(self, prm_id):
         '''
@@ -345,7 +389,7 @@ class MockPrMManager():
                     print('PrM:', prm_id, 'Run No:', run_no)
 
     def get_run_number(self, prm_id):
-        print('run no', self._run_numbers[prm_id])
+        # print('run no', self._run_numbers[prm_id])
         return self._run_numbers[prm_id]
 
 
