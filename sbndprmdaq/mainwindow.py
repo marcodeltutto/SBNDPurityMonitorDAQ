@@ -406,7 +406,8 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_manager = manager
         self._hv_settings.set_hv_control(self._prm_manager._hv_control)
-        self._digitizer_settings.set_digitizer_control(self._prm_manager._prm_digitizer)
+        # self._digitizer_settings.set_digitizer_control(self._prm_manager._prm_digitizer)
+        self._digitizer_settings.set_manager(self._prm_manager)
 
     def set_progress(self, prm_id, name, perc, **kwargs):
         '''
@@ -522,6 +523,7 @@ class MainWindow(QtWidgets.QMainWindow):
                            cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff)
 
             control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
+            control._lcd_n_repetitions.display(f'{self._prm_manager.get_n_repetitions(control.get_id())}')
             control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')
 
             self._prm_manager.heartbeat()

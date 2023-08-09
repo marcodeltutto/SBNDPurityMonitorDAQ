@@ -74,6 +74,8 @@ class PrMManager():
 
         self._comment = 'No comment'
 
+        self._repetitions = 1
+
         self.retrieve_run_numbers()
 
     def exit(self):
@@ -98,6 +100,7 @@ class PrMManager():
 
         # Delete digiter log file
         os.remove('/tmp/ATSApi.log')
+
 
 
     def digitizer_busy(self, prm_id=1):
@@ -147,6 +150,14 @@ class PrMManager():
         # ats310 = self._digitizers[prm_id]
         # return ats310.get_number_acquisitions()
         return self._prm_digitizer.get_n_acquisitions(prm_id)
+
+    def get_n_repetitions(self, prm_id=1):
+
+        return self._repetitions
+
+    def set_n_repetitions(self, n):
+        self._repetitions = n
+        self._logger.info(f'Number of repetitions set to {self._repetitions}')
 
     def retrieve_run_numbers(self):
         if self._data_files_path is None:
@@ -261,7 +272,6 @@ class PrMManager():
             'B': []
         }
 
-        self._repetitions = 1
         for rep in range(self._repetitions):
             self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
             self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
