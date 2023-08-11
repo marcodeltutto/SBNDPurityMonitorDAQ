@@ -58,8 +58,8 @@ class SinglePrMDigitizerSettings(QtWidgets.QMainWindow):
 
     def get_values(self):
         return {
-            'number_acquisitions': self._n_acquisitions.text(),
-            'number_repetitions': self._n_repetitions.text(),
+            'number_acquisitions': int(self._n_acquisitions.text()),
+            'number_repetitions': int(self._n_repetitions.text()),
         }
 
 

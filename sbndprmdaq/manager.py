@@ -43,6 +43,7 @@ class PrMManager():
         self._data = {}
         self._is_running = {}
         self._run_numbers = {}
+        self._repetitions = {}
 
         self._data_files_path = config['data_files_path']
 
@@ -52,6 +53,7 @@ class PrMManager():
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
+            self._repetitions[prm_id] = 1
 
         self._prm_control = PrMControlArduino(config['prm_ids'], config=config)
         self._hv_control = HVControlMPOD(config['prm_ids'], config=config)
@@ -69,12 +71,9 @@ class PrMManager():
 
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
-        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
         self._mode = 'manual'
 
         self._comment = 'No comment'
-
-        self._repetitions = 1
 
         self.retrieve_run_numbers()
 
@@ -153,11 +152,11 @@ class PrMManager():
 
     def get_n_repetitions(self, prm_id=1):
 
-        return self._repetitions
+        return self._repetitions[prm_id]
 
-    def set_n_repetitions(self, n):
-        self._repetitions = n
-        self._logger.info(f'Number of repetitions set to {self._repetitions}')
+    def set_n_repetitions(self, prm_id, n):
+        self._repetitions[prm_id] = n
+        self._logger.info(f'Number of repetitions for PrM {prm_id} set to {self._repetitions[prm_id]}')
 
     def retrieve_run_numbers(self):
         if self._data_files_path is None:
@@ -272,7 +271,7 @@ class PrMManager():
             'B': []
         }
 
-        for rep in range(self._repetitions):
+        for rep in range(self._repetitions[prm_id]):
             self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
             self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
             # ats310.start_capture()
@@ -595,6 +594,7 @@ class PrMManager():
 
         self._window.set_start_button_status(prm_id, False)
 
+        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
         self._timer.start(time_interval * 1000)
 
 
