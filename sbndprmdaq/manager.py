@@ -470,8 +470,8 @@ class PrMManager():
             for k, v in configs.items():
                 out_dict['config_' + k] = v
 
-        # file_name = self._data_files_path
-        file_name = '/home/nfs/mdeltutt/work/purity_monitors/blanche_data_jul2023'
+        file_name = self._data_files_path
+        # file_name = '/home/nfs/mdeltutt/work/purity_monitors/blanche_data_jul2023'
         file_name += '/sbnd_prm'
         file_name += str(prm_id)
         file_name += '_run_'
