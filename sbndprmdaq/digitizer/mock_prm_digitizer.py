@@ -27,9 +27,9 @@ class MockPrMDigitizer():
                 self._logger.critical('Digitizer option not recognized: {digitizer_type}.')
 
             if digitizer is None:
-                if self._window is not None:
-                    self._window.missing_digitizer(prm_id)
-                    self._digitizers[prm_id] = None
+                # if self._window is not None:
+                #     self._window.missing_digitizer(prm_id)
+                #     self._digitizers[prm_id] = None
                 continue
 
             self._digitizers[prm_id] = digitizer

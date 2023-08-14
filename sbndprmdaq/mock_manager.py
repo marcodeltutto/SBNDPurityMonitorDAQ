@@ -13,6 +13,7 @@ from sbndprmdaq.digitizer.mock_ats310 import MockATS310, get_digitizers
 from sbndprmdaq.communication.mock_communicator import MockCommunicator
 from sbndprmdaq.threading_utils import Worker
 
+from sbndprmdaq.communication.mock_hv_control import MockHVControl
 from sbndprmdaq.digitizer.mock_prm_digitizer import MockPrMDigitizer
 
 class MockPrMManager():
@@ -31,7 +32,7 @@ class MockPrMManager():
 
         self._comm = MockCommunicator()
         # self._prm_control = MockPrMControl(prm_ids=[1,2,3], config=config)
-        # self._hv_control = MockHVControl(prm_ids=[1,2,3], config=config)
+        self._hv_control = MockHVControl(prm_ids=[1,2,3], config=config)
         self._prm_digitizer = MockPrMDigitizer(config)
 
         self._window = window
