@@ -1,11 +1,8 @@
 
 import logging
 
-# import sbndprmdaq.digitizer.atsapi as ats
-# from sbndprmdaq.digitizer.ats310 import ATS310
-# from sbndprmdaq.digitizer.adpro_control import ADProControl
 
-class PrMDigitizer():
+class MockPrMDigitizer():
 
     def __init__(self, config=None):
 
