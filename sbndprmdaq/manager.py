@@ -34,10 +34,7 @@ class PrMManager():
             data_files_path (str): The path where files will be saved (optional).
         '''
         self._logger = logging.getLogger(__name__)
-        # self._ats310 = ATS310()
-        # self._ats310 = BoardWrapper(self._ats310, self._logger, ATS310Exception)
         self._window = window
-        # self._comm = Communicator()
 
         self._digitizers = {}
         self._data = {}
