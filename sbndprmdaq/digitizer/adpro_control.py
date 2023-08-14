@@ -16,6 +16,8 @@ class ADProControl():
         self._start_api(config)
         self._ssh_forward(config)
 
+        # self._channels = config['prm_id_to_adpro_channels'][prm_id]
+
 
     def _start_api(self, config):
 
@@ -29,7 +31,7 @@ class ADProControl():
 
         command = 'cd adpro_api '
         command += '/home/digilent/.local/bin/uvicorn main:app --reload'
-        stdin, stdout, stderr = client.exec_command(command)
+        stdin, stdout, stderr = self._ssh.exec_command(command)
         self._logger.info('Executed' + command + 'on' + config['adpro_ip'])
 
 
@@ -101,7 +103,7 @@ class ADProControl():
 
         response = requests.get(self._url + f"/lamp_frequency/{freq}")
 
-        if response.json()['frequency'] != freq:
+        if int(response.json()['frequency']) != freq:
             self._logger.critical(f'API error: cannot set frequency to {freq}')
 
 

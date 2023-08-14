@@ -27,7 +27,7 @@ class PrMDigitizer():
                 continue
 
             if digitizer_type == 'adpro':
-                digitizer = self._get_adpro_digitizer(channels=config['prm_id_to_adpro_channels'][prm_id])
+                digitizer = self._get_adpro_digitizer(prm_id, config) #channels=config['prm_id_to_adpro_channels'][prm_id])
             elif digitizer_type == 'ats310':
                 digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id])
             else:
@@ -44,8 +44,8 @@ class PrMDigitizer():
     def n_digitizers(self):
         return len(self._digitizers)
 
-    def _get_adpro_digitizer(self, channels):
-        return ADProControl()
+    def _get_adpro_digitizer(self, prm_id, config):
+        return ADProControl(prm_ids=None, config=config)
 
     def _get_ats310_digitizer(self, systemid):
 

@@ -293,7 +293,6 @@ class PrMManager():
             # data_raw = ats310.get_data()
             # data_raw = self._adpro_control.get_data(prm_id)
             data_raw = self._prm_digitizer.get_data(prm_id)
-            print(data_raw.keys())
             # print('1', data_raw['1'])
             for k in data_raw.keys():
                 if k == '1':
@@ -317,12 +316,10 @@ class PrMManager():
         }
 
         data_callback.emit(data)
-        print('after data_callback.emit(data)')
 
         self._prm_control.stop_prm(prm_id)
         # self._adpro_control.lamp_off(prm_id)
         self._prm_digitizer.lamp_off(prm_id)
-        print('PrM stopped')
         # self._window.start_stop_prm(prm_id)
         # if self._mode == 'auto':
 
