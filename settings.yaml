@@ -43,6 +43,11 @@ prm_id_to_adpro_channels:
 #   3: [3, 4]
 ###################################
 
+adpro_ip: "192.168.2.10"
+adpro_username: "digilent"
+adpro_password: "digilent"
+adpro_port: "8000"
+
 data_files_path: '/sbnd/data/purity_monitors/'
 # data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'
 # data_files_path: '/Users/mdeltutt/Work/SBND/Purity Monitors/communication/'

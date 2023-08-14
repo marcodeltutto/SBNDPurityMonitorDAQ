@@ -1,6 +1,9 @@
 import logging
 import time
+
 import requests
+import paramiko
+from sshtunnel import SSHTunnelForwarder
 
 class ADProControl():
 
@@ -8,7 +11,43 @@ class ADProControl():
 
         self._logger = logging.getLogger(__name__)
 
-        self._url = "http://localhost:8000"
+        # self._url = "http://localhost:8000"
+
+        self._start_api(config)
+        self._ssh_forward(config)
+
+
+    def _start_api(self, config):
+
+        self._logger.info('Starting API on ADPro')
+
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._ssh.connect(config['adpro_ip'],
+                          username=config['adpro_username'],
+                          password=config['adpro_password'])
+
+        command = 'cd adpro_api '
+        command += '/home/digilent/.local/bin/uvicorn main:app --reload'
+        stdin, stdout, stderr = client.exec_command(command)
+        self._logger.info('Executed' + command + 'on' + config['adpro_ip'])
+
+
+    def _ssh_forward(self, config):
+
+        self._logger.info('Starting SSH forwarding for ADPro')
+
+        self._server = SSHTunnelForwarder(config['adpro_ip'],
+                                          ssh_username=config['adpro_username'],
+                                          ssh_password=config['adpro_password'],
+                                          remote_bind_address=('127.0.0.1', config['adpro_port']))
+
+        self._server.start()
+
+        self._url = 'http://127.0.0.1:' + str(self._server.local_bind_port)
+
+        self._logger.info(f'ADPro API available at {self._url}')
+
 
     def busy(self):
         # TODO
