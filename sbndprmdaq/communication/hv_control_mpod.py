@@ -26,6 +26,7 @@ class HVControlMPOD(HVControlBase):
 
         # Check if the HV crate is on or off
         self._logger.info('HV Crate is on? {status}'.format(status=self.is_crate_on()))
+        self._logger.info('prm_ids {prm_ids}'.format(prm_ids=prm_ids))
 
         if not self.is_crate_on():
             # Turn crate on

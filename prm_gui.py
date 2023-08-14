@@ -65,7 +65,7 @@ if os.path.exists(heartbeat_file_name):
         if abs(timestamp - time.time()) < 5:
             print('timestamp  :', timestamp)
             print('time.time():', time.time())
-            print('Another DAQ is running on this data directory:', self._data_files_path)
+            print('Another DAQ is running on this data directory:', config['data_files_path'])
             print('Either stop the other DAQ, or use a different path.')
             exit()
 

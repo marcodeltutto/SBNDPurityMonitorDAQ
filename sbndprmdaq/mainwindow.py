@@ -406,7 +406,8 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_manager = manager
         self._hv_settings.set_hv_control(self._prm_manager._hv_control)
-        self._digitizer_settings.set_digitizer_control(self._prm_manager._digitizers)
+        # self._digitizer_settings.set_digitizer_control(self._prm_manager._prm_digitizer)
+        self._digitizer_settings.set_manager(self._prm_manager)
 
     def set_progress(self, prm_id, name, perc, **kwargs):
         '''
@@ -522,6 +523,7 @@ class MainWindow(QtWidgets.QMainWindow):
                            cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff)
 
             control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
+            control._lcd_n_repetitions.display(f'{self._prm_manager.get_n_repetitions(control.get_id())}')
             control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')
 
             self._prm_manager.heartbeat()
@@ -559,12 +561,17 @@ class MainWindow(QtWidgets.QMainWindow):
             x_b = None
 
             if 'A' in data and data['A'] is not None:
-                # print('------------------------------ len data', len(data['A']))
+                # print('len(data[A])', len(data['A']))
+                # print('len(data[A][0])', len(data['A'][0]))
                 av_waveform = np.mean(data['A'], axis=0)
+                # print('len(av_waveform)', len(av_waveform))
                 # av_waveform = data['A'][0]
-                # print('------------------------------ len av_waveform', len(av_waveform))
                 x_a = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y_a = av_waveform * v_to_mv
+                # print('y_a', y_a)
+                # print('type(data[A])', type(data['A']))
+                # print('type(av_waveform)', type(av_waveform))
+                # print('av_waveform.shape', av_waveform.shape)
 
                 trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
@@ -587,12 +594,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
-            if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
-                diff = y_a - y_b
-                if self._show_graph[control.get_id()]:
-                    self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
-                else:
-                    self._graphs[control.get_id()]['diff'].setData([], [])
+            # if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
+            #     diff = y_a - y_b
+            #     if self._show_graph[control.get_id()]:
+            #         self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
+            #     else:
+            #         self._graphs[control.get_id()]['diff'].setData([], [])
 
 
 
