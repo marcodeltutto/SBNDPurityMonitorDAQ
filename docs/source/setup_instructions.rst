@@ -12,6 +12,43 @@ You need an account on the appropriate cluster. Fill out a `Test Stand Service R
 
 Logging in and setting up
 ---------------
+Make sure you have been added to `sbndprm` account (ask Marco).
+
+From terminal (you must be connected to the `fgz` network, or use a VPN):
+
+.. code-block:: bash
+
+	ssh -L 8443:localhost:443 sbndprm@sbnd-prm-daq01.fnal.gov
+
+Then, go to the following link on your browser:
+
+`https://localhost:8443 <https://localhost:8443>`_
+
+The DAQ may already be running. If not, open a terminal and then:
+
+.. code-block:: bash
+
+	cd
+	cd SBNDPurityMonitorDAQ
+	./check_system_status.py
+	./prm_gui.py
+
+Output files
+____________
+
+Output files for each run are automatically saved in the sbnddata area: ``/sbnd/data/purity_monitors/``.
+
+Setting the HV values
+---------------
+
+With the DAQ open, click on Menu, then HV Settings. You will be able to set the HV values for the Anode,
+Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings
+before exiting. The sensed HV values are displayed on the main DAQ window.
+
+
+
+Logging in and setting up (OLD)
+---------------
 
 Login to the purity monitor machine under your user name:
 
@@ -33,7 +70,7 @@ Open the ``settings.yaml`` file and modify the ``data_files_path`` field to poin
 ``/home/nfs/username/work_area/data/``. Make sure this directory exists.
 
 
-Run the DAQ
+Run the DAQ (OLD)
 ---------------
 
 Firts, check that all the components are visible:
@@ -49,14 +86,6 @@ To run the DAQ, simply run:
 .. code-block:: bash
 
 	./prm_gui.py
-
-
-Setting the HV values
----------------
-
-With the DAQ open, click on Menu, then HV Settings. You will be able to set the HV values for the Anode,
-Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings
-before exiting. The sensed HV values are displayed on the main DAQ window.
 
 
 
