@@ -4,7 +4,7 @@
 
 
 
-
+import os
 from rich.console import Console
 from rich.table import Table
 
@@ -84,4 +84,4 @@ else:
 console = Console()
 console.print(table)
 
-
+os.remove('/tmp/ATSApi.log')
