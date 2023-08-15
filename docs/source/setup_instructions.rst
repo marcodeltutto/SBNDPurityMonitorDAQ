@@ -45,6 +45,22 @@ With the DAQ open, click on Menu, then HV Settings. You will be able to set the 
 Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings
 before exiting. The sensed HV values are displayed on the main DAQ window.
 
+Changing Display Resolution
+___________________________
+
+To change the resolution of the VNC display, from the VNC session on your browser, type ``xrandr`` which will show
+all the available resolution, select the 1920x1200 by specifing the line number with option ``-s``. For example,
+if 1920x1200 appears on the second line, do:
+
+.. code-block:: bash
+
+	xrandr -s 2
+
+Running ``xrandr`` again should show your selection by adding a ``*`` next to 1920x1200.
+
+If this doesn't change anything, click on the little noVNC arrorw on the left border of the browser.
+Then `Settings > Scaling Mode > Local Scaling`. Finally, refresh your bowser page.
+
 
 
 Logging in and setting up (OLD)
