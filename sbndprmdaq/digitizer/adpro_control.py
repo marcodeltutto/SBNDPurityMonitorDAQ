@@ -13,8 +13,8 @@ class ADProControl():
 
         # self._url = "http://localhost:8000"
 
-        self._start_api(config)
         self._ssh_forward(config)
+        self._start_api(config)
 
         # self._channels = config['prm_id_to_adpro_channels'][prm_id]
 
@@ -84,6 +84,7 @@ class ADProControl():
         return 0
 
     def lamp_on(self):
+
 
         response = requests.get(self._url + "/lamp_control/on")
 
