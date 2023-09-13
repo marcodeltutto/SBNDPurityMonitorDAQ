@@ -54,6 +54,10 @@ def get_digitizers(prm_id_to_ats_systemid):
     digitizers = {}
     for prm_id, systemid in prm_id_to_ats_systemid.items():
 
+        if systemid is None:
+            logger.info(f'PrM {prm_id} will not use an ATS310 digitizer.')
+            continue
+
         # Check that we have an available digitizer for this systemid
         n_boards = ats.boardsInSystemBySystemID(systemid)
         if n_boards == 1:
@@ -204,20 +208,20 @@ class ATS310():
                                     0)
 
         # TODO: Select channel A input parameters as required.
-        self._input_range_volts = 50.e-3 # volts
+        # self._input_range_volts = 50.e-3 # volts
         # self._input_range_volts = 400.e-3 # volts
         # self._input_range_volts = 500.e-3 # volts
         # self._input_range_volts = 1 # volts
         # self._input_range_volts = 2 # volts
-        # self._input_range_volts = 5 # volts
+        self._input_range_volts = 5 # volts
         self._board.inputControlEx(ats.CHANNEL_A,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_50_MV,
+                                   # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   # ats.INPUT_RANGE_PM_5_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -228,12 +232,12 @@ class ATS310():
         # TODO: Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
-                                   ats.INPUT_RANGE_PM_50_MV,
+                                   # ats.INPUT_RANGE_PM_50_MV,
                                    # ats.INPUT_RANGE_PM_400_MV,
                                    # ats.INPUT_RANGE_PM_500_MV,
                                    # ats.INPUT_RANGE_PM_1_V,
                                    # ats.INPUT_RANGE_PM_2_V,
-                                   # ats.INPUT_RANGE_PM_5_V,
+                                   ats.INPUT_RANGE_PM_5_V,
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
@@ -256,7 +260,7 @@ class ATS310():
         # Trigger on channel B
         # self._board.setTriggerOperation(ats.TRIG_ENGINE_OP_J,
         #                                 ats.TRIG_ENGINE_J,
-        #                                 ats.TRIG_CHAN_B,
+        #                                 ats.TRIG_CHAN_A,
         #                                 # ats.TRIG_EXTERNAL,
         #                                 ats.TRIGGER_SLOPE_NEGATIVE,
         #                                 # 150,
@@ -517,6 +521,7 @@ class ATS310():
         '''
         Sets the number of acquisitions.
         '''
+        print('Setting n acquistions to', value)
         self._records_per_capture = int(value)
         self._board.setRecordCount(self._records_per_capture)
 
@@ -525,6 +530,43 @@ class ATS310():
         Returns the number of acquisitions
         '''
         return self._records_per_capture
+
+
+    def lamp_on(self):
+
+        self._logger.warning('lamp_on ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + "/lamp_control/on")
+
+        if response.json()['status'] != 'on':
+            self._logger.critical('API error: cannot turn lamp on')
+
+
+    def lamp_off(self):
+
+        self._logger.warning('lamp_off ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + "/lamp_control/off")
+
+        if response.json()['status'] != 'off':
+            self._logger.critical('API error: cannot turn lamp off')
+
+
+    def lamp_frequency(self, freq):
+
+        self._logger.warning('lamp_frequency ats310 !!!!!!!!!!!!!!!!')
+
+        import requests
+        url = "http://localhost:8000"
+        response = requests.get(url + f"/lamp_frequency/{freq}")
+
+        if response.json()['frequency'] != freq:
+            self._logger.critical(f'API error: cannot set frequency to {freq}')
+
 
 
 if __name__ == "__main__":

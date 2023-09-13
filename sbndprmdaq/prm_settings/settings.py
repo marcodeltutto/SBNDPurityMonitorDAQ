@@ -58,7 +58,8 @@ class SinglePrMDigitizerSettings(QtWidgets.QMainWindow):
 
     def get_values(self):
         return {
-            'number_acquisitions': self._n_acquisitions.text(),
+            'number_acquisitions': int(self._n_acquisitions.text()),
+            'number_repetitions': int(self._n_repetitions.text()),
         }
 
 
@@ -203,8 +204,12 @@ class DigitizerSettings(BaseSettings):
             self.setup_settings(s)
             self._settings_layout.addWidget(s)
 
-    def set_digitizer_control(self, digitizer):
-        self._digitizers = digitizer
+    # def set_digitizer_control(self, digitizer):
+    #     self._prm_digitizers = digitizer
+
+    def set_manager(self, prm_manager):
+        self._manager = prm_manager
+        self._prm_digitizers = prm_manager._prm_digitizer
 
     def get_prm(prm_id=1):
         return self._prm_settings[prm_id]
@@ -226,12 +231,11 @@ class DigitizerSettings(BaseSettings):
         for prm_id, values in values.items():
             print(prm_id, values)
 
-            if prm_id not in self._digitizers:
-                continue
-
             for name, value in values.items():
                 if name == 'number_acquisitions':
-                    self._digitizers[prm_id].set_number_acquisitions(value)
+                    self._prm_digitizers.set_n_acquisitions(prm_id, value)
+                elif name == 'number_repetitions':
+                    self._manager.set_n_repetitions(prm_id, value)
                 else:
                     print(name, value)
                     raise Exception('Not an option')
