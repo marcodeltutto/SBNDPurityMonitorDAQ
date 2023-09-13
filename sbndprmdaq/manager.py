@@ -36,6 +36,8 @@ class PrMManager():
         self._logger = logging.getLogger(__name__)
         self._window = window
 
+        self._config = config
+
         self._digitizers = {}
         self._data = {}
         self._is_running = {}
@@ -432,16 +434,10 @@ class PrMManager():
             # np.savetxt(file_name, self._data[ch], delimiter=',')
             # self._logger.info(f'Saving data for ch {ch} to file ' + file_name)
 
-            out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
-
-        if self._hv_on:
-            hv_status = 'on'
-        else:
-            hv_status = 'off'
+            out_dict[f'ch_{ch}'] = self._data[prm_id][ch].tolist()
 
         out_dict['run'] = self._run_numbers[prm_id]
         out_dict['date'] = timestr
-        out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
         out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', prm_id)
@@ -472,9 +468,16 @@ class PrMManager():
         file_name += str(self._run_numbers[prm_id])
         file_name += '_data_'
         file_name += timestr
-        file_name += '.npz'
+        # file_name += '.npz'
 
-        np.savez(file_name, **out_dict)
+        # Save to numpy archive
+        if self._config['save_to_npz']:
+            np.savez(file_name + '.npz', **out_dict)
+
+        # Save to txt format
+        if self._config['save_to_txt']:
+            with open(file_name + '.txt', 'w') as file:
+                file.write(json.dumps(out_dict))
 
 
     def set_comment(self, comment):
