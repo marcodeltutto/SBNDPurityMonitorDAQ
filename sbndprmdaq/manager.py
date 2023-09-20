@@ -161,7 +161,7 @@ class PrMManager():
             return
 
         if not os.path.exists(self._data_files_path):
-            self._logger.error('data_files_path is not a real path.')
+            self._logger.error('data_files_path' + self._data_files_path + 'is not a real path.')
             raise Exception()
 
         run_file_name = self._data_files_path + '/latest_run_number.txt'
