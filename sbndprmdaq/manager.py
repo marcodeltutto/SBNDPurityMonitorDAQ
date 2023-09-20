@@ -52,7 +52,7 @@ class PrMManager():
             self._run_numbers[prm_id] = None
             self._repetitions[prm_id] = 1
 
-        self._prm_control = PrMControlArduino(config['prm_ids'], config=config)
+        # self._prm_control = PrMControlArduino(config['prm_ids'], config=config)
         self._hv_control = HVControlMPOD(config['prm_ids'], config=config)
         # self._adpro_control = ADProControl(self._digitizers.keys(), config=config)
 
@@ -314,7 +314,7 @@ class PrMManager():
 
         data_callback.emit(data)
 
-        self._prm_control.stop_prm(prm_id)
+        # self._prm_control.stop_prm(prm_id)
         # self._adpro_control.lamp_off(prm_id)
         self._prm_digitizer.lamp_off(prm_id)
         # self._window.start_stop_prm(prm_id)
@@ -521,8 +521,9 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         # self._comm.stop_prm()
-        self._prm_control.stop_prm(prm_id)
+        # self._prm_control.stop_prm(prm_id)
         # self.hv_off()
+        return
 
 
     def hv_on(self, prm_id=1):
