@@ -13,11 +13,13 @@ From terminal (you must be connected to the `fgz` network, or use a VPN):
 
 .. code-block:: bash
 
-	ssh -L 8443:localhost:443 sbndprm@sbnd-prm-daq01.fnal.gov
+	ssh -L 8443:sbnd-prm01.fnal.gov:443 sbnd@sbnd-gateway01.fnal.gov
 
 Then, go to the following link on your browser:
 
 `https://localhost:8443 <https://localhost:8443>`_
+
+Click connect and enter password (ask Marco).
 
 The DAQ may already be running. If not, open a terminal and then:
 
@@ -60,7 +62,6 @@ Then `Settings > Scaling Mode > Local Scaling`. Finally, refresh your bowser pag
 Opening your account on the purity monitor server
 -------------------------------------------------
 
-
 Prerequisites
 
 You need an account on the appropriate cluster. Fill out a `Test Stand Service Request Form <https://fermi.servicenowservices.com/wp/?id=evg_sc_cat_item&sys_id=b0a7f0b46f8ec200c6df5d412e3ee4b6&spa=1>`_ on Fermilab ServiceNow and ask that you be added to the SBND's SBND-PRM-DAQ01 machine. For Short description use "Request access to SBND's purity monitor server". Under "Please describe the request" specify that you would like to be added to the SBN DAQ clusters at DAB, PAB, and ND.
@@ -72,7 +73,7 @@ Login to the purity monitor machine under your user name:
 
 .. code-block:: bash
 
-	ssh username@sbnd-prm-daq01.fnal.gov
+	ssh username@sbnd-prm01.fnal.gov
 
 .. code-block:: bash
 
@@ -86,7 +87,6 @@ Login to the purity monitor machine under your user name:
 
 Open the ``settings.yaml`` file and modify the ``data_files_path`` field to point to your area, for example
 ``/home/nfs/username/work_area/data/``. Make sure this directory exists.
-
 
 Run the DAQ
 
