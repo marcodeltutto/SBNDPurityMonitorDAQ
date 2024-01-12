@@ -4,4 +4,9 @@ argparse
 pyyaml
 qdarkstyle
 pyfirmata
+paramiko
+sshtunnel
 rich
+
+# Documentation
+sphinx-rtd-theme
