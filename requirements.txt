@@ -7,6 +7,3 @@ pyfirmata
 paramiko
 sshtunnel
 rich
-
-# Documentation
-sphinx-rtd-theme
