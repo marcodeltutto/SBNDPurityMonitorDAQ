@@ -1,11 +1,13 @@
 import logging
 import time
 
+from digitizer_base import DigitizerBase
+
 import requests
 import paramiko
 from sshtunnel import SSHTunnelForwarder
 
-class ADProControl():
+class ADProControl(DigitizerBase):
 
     def __init__(self, prm_ids=None, config=None):
 
@@ -32,7 +34,7 @@ class ADProControl():
         command = 'cd adpro_api '
         command += '/home/digilent/.local/bin/uvicorn main:app --reload'
         stdin, stdout, stderr = self._ssh.exec_command(command)
-        self._logger.info('Executed' + command + 'on' + config['adpro_ip'])
+        self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
 
 
     def _ssh_forward(self, config):
@@ -153,5 +155,6 @@ class ADProControl():
         return data
 
 
-
+if __name__ == "__main__":
+    adpro = ADProControl()
 
