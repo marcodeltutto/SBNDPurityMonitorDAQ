@@ -1,7 +1,7 @@
 Setup Instructions
 ===================
 
-This page contains setup instructions to run the DAQ on SBND's ``sbnd-prm-daq01`` server.
+This page contains setup instructions to run the DAQ on SBND's ``sbnd-prm01`` server.
 
 
 

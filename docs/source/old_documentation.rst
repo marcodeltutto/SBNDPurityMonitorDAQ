@@ -1,5 +1,23 @@
+Old Documentation
+=================
+
+
+FNAL DAQ Systems
+---------------------
+
+
+Check here https://appora-cert.fnal.gov/pls/cert/sysadmin.search using your Fermilab ID if you are an administrator of the computer.
+
+If not, go to http://appora.fnal.gov/pls/default/node_registration.html and register yourself as administrator.
+
+Check here: http://appora.fnal.gov/misnet/systemName.html, with MAC address.
+
+List all Fermilab clusters: https://appora-cert.fnal.gov/pls/cert/sysadmin.cluster_list
+Add computer to cluster "SWS-SBND-TESTSTAND": https://appora-cert.fnal.gov/pls/cert/sysadmin.show_cluster?this_cluster_id=427422
+
+
 Fermilab Kerberos on Ubuntu
-===========================================
+---------------------------
 
 Tested with 20.04.1 LTS.
 
@@ -82,4 +100,54 @@ and include the appropriate principals which are allowed to log into the account
 .. code-block:: bash
 
     mdeltutt@FNAL.GOV
+
+
+
+SL7 Setup
+--------
+
+Bla 
+
+.. code-block:: bash
+	sudo yum install qtcreator
+
+
+.. code-block:: bash
+
+	yum install gcc openssl-devel bzip2-devel libffi-devel -y
+	curl -O https://www.python.org/ftp/python/3.8.1/Python-3.8.1.tgz
+	tar -xzf Python-3.8.1.tgz
+	cd Python-3.8.1/
+	./configure --enable-optimizations
+	make
+
+
+Ubuntu Setup
+-----------
+
+.. code-block:: bash
+
+    sudo apt-get install python3-distutils
+    sudo apt-get install python3-apt
+
+    sudo apt-get install curl
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    sudo python3 get-pip.py
+
+
+Get python packages:
+
+.. code-block:: bash
+
+    sudo apt-get install --reinstall libxcb-xinerama0
+
+
+Get the parallel port to work:
+
+.. code-block:: bash
+
+    sudo chmod a+rw /dev/parport0
+    sudo chmod 666 /dev/parport0
+    sudo rmmod lp
+
 

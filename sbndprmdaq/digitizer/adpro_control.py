@@ -1,7 +1,7 @@
 import logging
 import time
 
-from digitizer_base import DigitizerBase
+from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 
 import requests
 import paramiko
