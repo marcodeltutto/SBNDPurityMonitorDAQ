@@ -8,6 +8,7 @@ import time
 import logging
 import copy
 
+from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 import sbndprmdaq.digitizer.atsapi as ats
 
 
@@ -29,52 +30,7 @@ class ATS310Exception(Exception):
         super(ATS310Exception, self).__init__(self._message)
 
 
-def get_digitizers(prm_id_to_ats_systemid):
-    '''
-    Returns all the available digitizers.
-
-    Args:
-        prm_id_to_ats_systemid (dict): A dictionary from PrM ID to digitized systemId.
-
-    Returns:
-        list: A list of digitizers
-    '''
-    logger = logging.getLogger(__name__)
-
-    n_systems = ats.numOfSystems()
-    n_boards = ats.boardsFound()
-
-    logger.info(f'Number of ATS systems: {n_systems}.')
-    logger.info(f'Number of ATS boards: {n_boards}.')
-
-    boards_per_system = []
-    for i in range(n_systems):
-        boards_per_system.append(ats.boardsInSystemBySystemID(i+1))
-
-    digitizers = {}
-    for prm_id, systemid in prm_id_to_ats_systemid.items():
-
-        if systemid is None:
-            logger.info(f'PrM {prm_id} will not use an ATS310 digitizer.')
-            continue
-
-        # Check that we have an available digitizer for this systemid
-        n_boards = ats.boardsInSystemBySystemID(systemid)
-        if n_boards == 1:
-            ats310 = ATS310(systemId=systemid, boardId=1)
-        else:
-            ats310 = None
-        digitizers[prm_id] = ats310
-
-    # digitizers = []
-    # for i in range(n_systems):
-    #     ats310 = ATS310(systemId=i+1, boardId=1)
-    #     digitizers.append(ats310)
-
-    return digitizers
-
-
-class ATS310():
+class ATS310(DigitizerBase):
     '''
     This class controls an ATS310 digitizer.
     '''
@@ -185,10 +141,9 @@ class ATS310():
         return self._input_range_volts
 
 
-    # Configures a board for acquisition
     def configure_board(self):
         '''
-        Configures the board.
+        Configures the board for acquisition
         '''
         # TODO: Select clock parameters as required to generate this
         # sample rate
@@ -207,7 +162,7 @@ class ATS310():
                                     ats.CLOCK_EDGE_RISING,
                                     0)
 
-        # TODO: Select channel A input parameters as required.
+        # Select channel A input parameters as required.
         # self._input_range_volts = 50.e-3 # volts
         # self._input_range_volts = 400.e-3 # volts
         # self._input_range_volts = 500.e-3 # volts
@@ -225,11 +180,11 @@ class ATS310():
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
-        # TODO: Select channel A bandwidth limit as required.
+        # Select channel A bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_A, 0)
 
 
-        # TODO: Select channel B input parameters as required.
+        # Select channel B input parameters as required.
         self._board.inputControlEx(ats.CHANNEL_B,
                                    ats.DC_COUPLING,
                                    # ats.INPUT_RANGE_PM_50_MV,
@@ -241,7 +196,7 @@ class ATS310():
                                    # ats.IMPEDANCE_50_OHM)
                                    ats.IMPEDANCE_1M_OHM)
 
-        # TODO: Select channel B bandwidth limit as required.
+        # Select channel B bandwidth limit as required.
         self._board.setBWLimit(ats.CHANNEL_B, 0)
 
         # External trigger
@@ -270,17 +225,17 @@ class ATS310():
         #                                 ats.TRIGGER_SLOPE_POSITIVE,
         #                                 128)
 
-        # TODO: Select external trigger parameters as required.
+        # Select external trigger parameters as required.
         # For a 1 V range, 0 is 0 V, 255 is 1 V
         # 0 is -1 V, 128 is 0 V, 255 is 1 V
         self._board.setExternalTrigger(ats.DC_COUPLING, ats.ETR_1V) #ats.ETR_TTL) # could be ETR_5V
 
-        # TODO: Set trigger delay as required.
+        # Set trigger delay as required.
         self._trigger_delay_sec = 0
         self._trigger_delay_samples = int(self._trigger_delay_sec * self._samples_per_sec + 0.5)
         self._board.setTriggerDelay(self._trigger_delay_samples)
 
-        # TODO: Set trigger timeout as required.
+        # Set trigger timeout as required.
         #
         # NOTE: The board will wait for a for this amount of time for a
         # trigger event.  If a trigger event does not arrive, then the
@@ -567,6 +522,52 @@ class ATS310():
         if response.json()['frequency'] != freq:
             self._logger.critical(f'API error: cannot set frequency to {freq}')
 
+
+
+
+def get_digitizers(prm_id_to_ats_systemid):
+    '''
+    Returns all the available digitizers.
+
+    Args:
+        prm_id_to_ats_systemid (dict): A dictionary from PrM ID to digitized systemId.
+
+    Returns:
+        list: A list of digitizers
+    '''
+    logger = logging.getLogger(__name__)
+
+    n_systems = ats.numOfSystems()
+    n_boards = ats.boardsFound()
+
+    logger.info(f'Number of ATS systems: {n_systems}.')
+    logger.info(f'Number of ATS boards: {n_boards}.')
+
+    boards_per_system = []
+    for i in range(n_systems):
+        boards_per_system.append(ats.boardsInSystemBySystemID(i+1))
+
+    digitizers = {}
+    for prm_id, systemid in prm_id_to_ats_systemid.items():
+
+        if systemid is None:
+            logger.info(f'PrM {prm_id} will not use an ATS310 digitizer.')
+            continue
+
+        # Check that we have an available digitizer for this systemid
+        n_boards = ats.boardsInSystemBySystemID(systemid)
+        if n_boards == 1:
+            ats310 = ATS310(systemId=systemid, boardId=1)
+        else:
+            ats310 = None
+        digitizers[prm_id] = ats310
+
+    # digitizers = []
+    # for i in range(n_systems):
+    #     ats310 = ATS310(systemId=i+1, boardId=1)
+    #     digitizers.append(ats310)
+
+    return digitizers
 
 
 if __name__ == "__main__":

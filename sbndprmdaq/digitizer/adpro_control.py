@@ -8,36 +8,32 @@ import paramiko
 from sshtunnel import SSHTunnelForwarder
 
 class ADProControl(DigitizerBase):
+    '''
+    This class controls the Analog Discovery Pro digitizer
+    '''
 
     def __init__(self, prm_ids=None, config=None):
+        '''
+        Contructor.
+
+        Args:
+            prm_ids (list): List of PrM IDs (unused).
+            config (dict): The configuration dictionary.
+        '''
 
         self._logger = logging.getLogger(__name__)
-
-        # self._url = "http://localhost:8000"
 
         self._ssh_forward(config)
         self._start_api(config)
 
-        # self._channels = config['prm_id_to_adpro_channels'][prm_id]
-
-
-    def _start_api(self, config):
-
-        self._logger.info('Starting API on ADPro')
-
-        self._ssh = paramiko.SSHClient()
-        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._ssh.connect(config['adpro_ip'],
-                          username=config['adpro_username'],
-                          password=config['adpro_password'])
-
-        command = 'cd adpro_api '
-        command += '/home/digilent/.local/bin/uvicorn main:app --reload'
-        stdin, stdout, stderr = self._ssh.exec_command(command)
-        self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
-
 
     def _ssh_forward(self, config):
+        '''
+        Open an SSH tunnel with the Analog Discovery Pro.
+
+        Args:
+            config (dict): The configuration dictionary.
+        '''
 
         self._logger.info('Starting SSH forwarding for ADPro')
 
@@ -51,6 +47,28 @@ class ADProControl(DigitizerBase):
         self._url = 'http://127.0.0.1:' + str(self._server.local_bind_port)
 
         self._logger.info(f'ADPro API available at {self._url}')
+
+
+    def _start_api(self, config):
+        '''
+        Starts the Analog Discovery Pro API on the ditizer itself.
+
+        Args:
+            config (dict): The configuration dictionary.
+        '''
+
+        self._logger.info('Starting API on ADPro')
+
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._ssh.connect(config['adpro_ip'],
+                          username=config['adpro_username'],
+                          password=config['adpro_password'])
+
+        command = 'cd adpro_api '
+        command += '/home/digilent/.local/bin/uvicorn main:app --reload'
+        stdin, stdout, stderr = self._ssh.exec_command(command)
+        self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
 
 
     def busy(self):
