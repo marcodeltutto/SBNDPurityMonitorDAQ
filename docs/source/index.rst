@@ -14,16 +14,12 @@ This repository contains the DAQ for the SBND purity monitors.
 
    setup_instructions
    output_files
-   connect_via_vnc
+   adpro_digitizer
+   ats_digitizer
    installation
    running
-   ats_drivers_ubuntu
-   ats_drivers_sl7
-   ubuntu_setup
-   scientific_linux_setup
-   kerberos_ubuntu
-   fnal_daq_systems
-   usb_serial_persistent_name
+   arduino
+   connect_via_vnc
 
 
 .. toctree::

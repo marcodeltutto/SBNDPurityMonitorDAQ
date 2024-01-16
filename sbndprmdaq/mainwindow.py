@@ -1,7 +1,11 @@
+'''
+Contains the main GUI elements
+'''
+
 import os
 import logging
 import numpy as np
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 import pyqtgraph as pg
@@ -67,10 +71,12 @@ class Control(QtWidgets.QMainWindow):
 
     def is_running(self):
         '''
+        Returns True if the PrM is running
         '''
         return self._running
 
 
+    #pylint: disable=too-many-arguments, too-many-branches
     def update(self, hv_cathode=None, hv_anode=None, hv_anodegrid=None,
                      cathode_hv_onoff=None, anode_hv_onoff=None, anodegrid_hv_onoff=None):
         '''
@@ -130,13 +136,13 @@ class Control(QtWidgets.QMainWindow):
         '''
         name = str(name)
         if perc > 100 or perc < 0:
-            raise Exception('perc can pnly be between 0 and 100')
+            raise ValueError('Percentage can only be between 0 and 100')
 
         self._progress_label.setText(name)
         self._progress_bar.setValue(perc)
 
         if 'color' in kwargs:
-            self._progress_label.setStyleSheet("color: " + kwargs['color']);
+            self._progress_label.setStyleSheet("color: " + kwargs['color'])
 
 
     def reset_progress(self, name=None, **kwargs):
@@ -155,7 +161,7 @@ class Control(QtWidgets.QMainWindow):
             self._progress_label.setText('')
 
         if 'color' in kwargs:
-            self._progress_label.setStyleSheet("color: " + kwargs['color']);
+            self._progress_label.setStyleSheet("color: " + kwargs['color'])
 
 
 
@@ -193,6 +199,7 @@ class DataDisplay(QtWidgets.QMainWindow):
         '''
         return self._id
 
+    # pylint: disable=invalid-name
     def set_latest_data(self, qa, qc, tau, time):
         '''
         Sets the latest data for display.
@@ -208,6 +215,7 @@ class DataDisplay(QtWidgets.QMainWindow):
         self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
 
 
+# pylint: disable=too-many-instance-attributes
 class MainWindow(QtWidgets.QMainWindow):
     '''
     The main window.
@@ -322,6 +330,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._can_exit = True
 
+    # pylint: disable=invalid-name
     def closeEvent(self, event):
         '''
         Override closeEvent. This is called when user closes the window.
@@ -366,9 +375,9 @@ class MainWindow(QtWidgets.QMainWindow):
         Args:
             control (DataDisply): The purity monitor DataDisplay widget.
         '''
-        prm_id = latest_data.get_id()
         # latest_data.setStyleSheet("background-color: rgba(0,0,0,0.1);")
-        latest_data.setStyleSheet("QWidget#centralwidget{border: 1px solid #455364; border-radius: 5px;}")
+        style = "QWidget#centralwidget{border: 1px solid #455364; border-radius: 5px;}"
+        latest_data.setStyleSheet(style)
 
 
 
@@ -522,7 +531,7 @@ class MainWindow(QtWidgets.QMainWindow):
             control.update(cathode_hv, anode_hv, anodegrid_hv,\
                            cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff)
 
-            control._lcd_n_acquisitions.display(f'{self._prm_manager.get_n_acquisitions(control.get_id())}')
+            control._lcd_n_acquisitions.display(f'{self._prm_manager.get_number_acquisitions(control.get_id())}')
             control._lcd_n_repetitions.display(f'{self._prm_manager.get_n_repetitions(control.get_id())}')
             control._lcd_run.display(f'{self._prm_manager.get_run_number(control.get_id())}')
 
@@ -636,29 +645,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_comment(self):
         '''
+        A QInputDialog appears is called
         '''
         comment, _ = QtWidgets.QInputDialog.getText(
              self, 'Input Dialog', 'Enter your comment:')
         self._prm_manager.set_comment(comment)
 
 
-
     def get_config_values(self, prm_id=1):
         '''
+        Gets config values
         '''
         self._config_form.get_values(prm_id)
-
-    # def save_settings(self, values):
-    #     for prm_id, values in values.items():
-    #         print(prm_id, values)
-
-    #         for name, value in values.items():
-    #             if name == 'cathode_hv':
-    #                 self._prm_manager._hv_control.set_hv_value('neg', value, prm_id)
-    #             elif name == 'anode_hv':
-    #                 self._prm_manager._hv_control.set_hv_value('pos', value, prm_id)
-    #             else:
-    #                 print(name, value)
-    #                 raise Exception('Not an option')
-
-

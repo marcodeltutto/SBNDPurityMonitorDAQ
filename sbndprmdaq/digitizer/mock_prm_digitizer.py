@@ -1,141 +1,88 @@
 
-import logging
+from .prm_digitizer import PrMDigitizer, DigitizerBase
+import datetime
+import numpy as np
+
+class MockDigitizer(DigitizerBase):
+
+    def busy(self):
+        '''Returns true is the digitizer is busy'''
+        return 1
+
+    def get_trigger_sample(self):
+        '''Returns the number of samples when the trigger happens'''
+        return 1
+
+    def get_samples_per_second(self):
+        '''Returns the number of samples acquired per second'''
+        return 1
+
+    def set_samples_per_second(self, n):
+        '''Sets he number of samples acquired per second'''
+        print('set_samples_per_second')
+
+    def get_number_acquisitions(self):
+        '''Returnes the number of triggers acquired'''
+        return 1
+
+    def set_number_acquisitions(self, n):
+        '''Sets the number of triggers acquired'''
+        print('set_number_acquisitions')
+
+    def get_pre_trigger_samples(self):
+        '''Returns the number of samples before the trigges'''
+        return 1
+
+    def get_post_trigger_samples(self):
+        '''Returns the number of samples after the trigges'''
+        return 1
+
+    def get_input_range_volts(self):
+        '''Returns the range in Volts'''
+        return 1
+
+    def lamp_on(self):
+        '''Turns on the flash lamp'''
+        return 1
+
+    def lamp_off(self):
+        '''Turns off the flash lamp'''
+        return 1
+
+    def lamp_frequency(self, freq):
+        '''Sets the flash lamp frequency'''
+        return 1
+
+    def start_capture(self):
+        '''Starts the data capture'''
+        return 1
+
+    def check_capture(self):
+        '''Returns true if data has been captured'''
+        return 1
+
+    def get_data(self):
+        '''Returns the captured data'''
+        records_per_capture=1
+        sample_size=4096
+        data = {
+            'prm_id': 1,
+            'status': True,
+            'time': datetime.datetime.today(),
+            'A': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)] * records_per_capture,
+            'B': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)] * records_per_capture
+        }
+        return data
 
 
-class MockPrMDigitizer():
-
-    def __init__(self, config=None):
-
-        self._logger = logging.getLogger(__name__)
-        self._digitizers = {}
-
-        self._bounded_prms = {}
-
-        for prm_id, digitizer_type in config['prm_id_to_digitizer_type'].items():
-            self._logger.info(f"Setting up PrM {prm_id} with digitizer {digitizer_type}.")
-
-            if prm_id in config['bound_prms']:
-                self._logger.info(f"PrM {prm_id} is controlled and digitized via PrM {config['bound_prms'][prm_id]}.")
-                self._bounded_prms[prm_id] = config['bound_prms'][prm_id]
-                continue
-
-            if digitizer_type == 'adpro':
-                digitizer = self._get_adpro_digitizer(prm_id, config) #channels=config['prm_id_to_adpro_channels'][prm_id])
-            elif digitizer_type == 'ats310':
-                digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id])
-            else:
-                self._logger.critical('Digitizer option not recognized: {digitizer_type}.')
-
-            if digitizer is None:
-                # if self._window is not None:
-                #     self._window.missing_digitizer(prm_id)
-                #     self._digitizers[prm_id] = None
-                continue
-
-            self._digitizers[prm_id] = digitizer
-
-    def n_digitizers(self):
-        return len(self._digitizers)
+class MockPrMDigitizer(PrMDigitizer):
 
     def _get_adpro_digitizer(self, prm_id, config):
-        return None
+        '''
+        '''
+        return MockDigitizer()
 
     def _get_ats310_digitizer(self, systemid):
-        return None
-
-    def _process_prm_id(self, prm_id):
-        if prm_id in self._digitizers:
-            return prm_id
-
-        if prm_id in self._bounded_prms:
-            if self._bounded_prms[prm_id] in self._digitizers:
-                # self._logger.info(f'Asked for prm_id {prm_id}. Returning digitizer for prm_id {self._bounded_prms[prm_id]}')
-                return self._bounded_prms[prm_id]
-
-        self._logger.error(f'PrM {prm_id} not available.')
-        raise Exception()
-
-    def digitizer_busy(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].busy()
-
-
-    def get_trigger_sample(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_trigger_sample()
-
-
-    def get_samples_per_second(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_samples_per_second()
-
-
-    def get_pre_trigger_samples(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_pre_trigger_samples()
-
-    def get_post_trigger_samples(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_post_trigger_samples()
-
-    def get_input_range_volts(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_input_range_volts()
-
-
-    def get_n_acquisitions(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_number_acquisitions()
-
-    def set_n_acquisitions(self, prm_id, n):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].set_number_acquisitions(n)
-
-
-    def start_capture(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].start_capture()
-
-
-    def check_capture(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].check_capture()
-
-
-    def get_data(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].get_data()
-
-
-    def lamp_on(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].lamp_on()
-
-    def lamp_off(self, prm_id):
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].lamp_off()
-
-    def lamp_frequency(self, prm_id, freq):
         '''
-        prm_id PrM ID
-        freq Lamp frequency in Hz
         '''
-
-        prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].lamp_frequency(freq)
-
-
-
+        return MockDigitizer()

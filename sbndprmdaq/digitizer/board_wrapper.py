@@ -119,7 +119,6 @@ class BoardWrapper:
             if ret in return_statues:
                 if return_statues[ret] == "ApiSuccess":
                     return ret
-                else:
                     raise self.ExceptionType(self._logger, 'ATS310 Failed: ' + return_statues[ret])
 
             else:

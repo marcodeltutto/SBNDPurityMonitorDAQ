@@ -28,7 +28,7 @@ class Worker(QRunnable):
     '''
     Worker thread. Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
     '''
-    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-few-public-methods,bare-except
 
     def __init__(self, fn, *args, **kwargs):
         '''
@@ -39,8 +39,8 @@ class Worker(QRunnable):
             args: Arguments to pass to the callback function.
             kwargs: Arguments to pass to the callback function.
         '''
-        # pylint: disable=invalid-name
-        super(Worker, self).__init__()
+        ####### pylint: disable=invalid-name
+        super().__init__()
 
         # Store constructor arguments (re-used for processing)
         self.fn = fn
@@ -57,6 +57,7 @@ class Worker(QRunnable):
         '''
         Initialise the runner function with passed args, kwargs.
         '''
+        result = {'prm_id': None, 'status': None}
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
@@ -65,8 +66,7 @@ class Worker(QRunnable):
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            None
+        # else:
             # self.signals.result.emit(result)  # Return the result of the processing
         finally:
             self.signals.finished.emit(result['prm_id'], result['status'])  # Done

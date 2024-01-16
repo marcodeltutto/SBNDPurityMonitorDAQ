@@ -25,22 +25,32 @@ class Toggle(QtWidgets.QPushButton):
         self.setCheckable(True)
         self.setMinimumWidth(66)
         self.setMinimumHeight(22)
-        self._name = None
+        self._name = name
         self._name1 = None
         self._name2 = None
         self._simple_option = False
 
     def setName(self, name):
+        '''
+        Sets the Toggle name
+        '''
         self._name = name
         self._name1 = None
         self._name2 = None
 
     def setNames(self, name1, name2):
+        '''
+        Sets the Toggle names
+        '''
         self._name1 = name1
         self._name2 = name2
         self._name = None
 
     def isSimpleOption(self, so=True):
+        '''
+        Sets if this Toggle is a simple option (shown in grey)
+        or if a red/green toggle is needed.
+        '''
         self._simple_option = so
 
     def paintEvent(self, event):
