@@ -50,11 +50,11 @@ class PrMDigitizer(DigitizerBase):
                 self._logger.critical('Digitizer option not recognized: {digitizer_type}.')
                 digitizer = None
 
-            if digitizer is None:
-                if self._window is not None:
-                    self._window.missing_digitizer(prm_id)
-                    self._digitizers[prm_id] = None
-                continue
+            # if digitizer is None:
+            #     if self._window is not None:
+            #         self._window.missing_digitizer(prm_id)
+            #         self._digitizers[prm_id] = None
+            #     continue
 
             self._digitizers[prm_id] = digitizer
 
@@ -95,6 +95,9 @@ class PrMDigitizer(DigitizerBase):
         return ats310
 
     def n_digitizers(self):
+        '''
+        Returns the number of currently set digitizers
+        '''
         return len(self._digitizers)
 
     def _process_prm_id(self, prm_id):
@@ -137,20 +140,20 @@ class PrMDigitizer(DigitizerBase):
         prm_id = self._process_prm_id(prm_id)
         return self._digitizers[prm_id].get_samples_per_second()
 
-    def set_samples_per_second(self, n, prm_id=1):
+    def set_samples_per_second(self, samples, prm_id=1):
 
         prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].set_samples_per_second(n)
+        return self._digitizers[prm_id].set_samples_per_second(samples)
 
     def get_number_acquisitions(self, prm_id=1):
 
         prm_id = self._process_prm_id(prm_id)
         return self._digitizers[prm_id].get_number_acquisitions()
 
-    def set_number_acquisitions(self, n, prm_id=1):
+    def set_number_acquisitions(self, n_acquisitions, prm_id=1):
 
         prm_id = self._process_prm_id(prm_id)
-        return self._digitizers[prm_id].set_number_acquisitions(n)
+        return self._digitizers[prm_id].set_number_acquisitions(n_acquisitions)
 
     def get_pre_trigger_samples(self, prm_id=1):
 

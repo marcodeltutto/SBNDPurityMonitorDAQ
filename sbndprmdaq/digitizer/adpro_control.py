@@ -118,9 +118,9 @@ class ADProControl(DigitizerBase):
 
         return requests.get(self._url + "/digitizer/samples_per_second", timeout=self._to).json()['samples_per_second']
 
-    def set_samples_per_second(self):
+    def set_samples_per_second(self, samples):
 
-        return requests.get(self._url + "/digitizer/set_samples_per_second", timeout=self._to).json()['set_samples_per_second']
+        return requests.get(self._url + f"/digitizer/set_samples_per_second/{samples}", timeout=self._to).json()['set_samples_per_second']
 
 
     def get_number_acquisitions(self):
@@ -128,9 +128,9 @@ class ADProControl(DigitizerBase):
         return requests.get(self._url + "/digitizer/number_acquisitions", timeout=self._to).json()['number_acquisitions']
 
 
-    def set_number_acquisitions(self, n):
+    def set_number_acquisitions(self, n_acquisitions):
 
-        return requests.get(self._url + "/digitizer/set_number_acquisitions", timeout=self._to).json()['set_number_acquisitions']
+        return requests.get(self._url + f"/digitizer/set_number_acquisitions{n_acquisitions}", timeout=self._to).json()['set_number_acquisitions']
 
 
     def get_pre_trigger_samples(self):

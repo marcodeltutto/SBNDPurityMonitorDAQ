@@ -1,3 +1,6 @@
+'''
+Contains a wrapper for the ATS digitizer class
+'''
 
 return_statues = {
     512: "ApiSuccess",
@@ -119,14 +122,13 @@ class BoardWrapper:
             if ret in return_statues:
                 if return_statues[ret] == "ApiSuccess":
                     return ret
-                    raise self.ExceptionType(self._logger, 'ATS310 Failed: ' + return_statues[ret])
+                raise self.ExceptionType(self._logger, 'ATS310 Failed: ' + return_statues[ret])
 
-            else:
-                raise self.ExceptionType(self._logger, f'Unkown return code {ret}')
+            raise self.ExceptionType(self._logger, f'Unkown return code {ret}')
 
         except self.ExceptionType as error:
             self._logger.error(error)
-            raise Exception() # FIXME
+            raise Exception() from error
 
 
     def __init__(self, instance, logger, ExceptionType):
