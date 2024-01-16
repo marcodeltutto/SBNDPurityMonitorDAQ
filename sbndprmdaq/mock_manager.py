@@ -26,3 +26,6 @@ class MockPrMManager(PrMManager):
 
     def heartbeat(self):
         pass
+
+    def exit(self):
+        pass

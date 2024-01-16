@@ -4,7 +4,10 @@ Contains an overall digitizer control class
 import logging
 
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
-import sbndprmdaq.digitizer.atsapi as ats
+try:
+    import sbndprmdaq.digitizer.atsapi as ats
+except:
+    pass
 from sbndprmdaq.digitizer.ats310 import ATS310
 from sbndprmdaq.digitizer.adpro_control import ADProControl
 

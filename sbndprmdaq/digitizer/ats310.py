@@ -11,8 +11,10 @@ import numpy as np
 
 
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
-import sbndprmdaq.digitizer.atsapi as ats
-
+try:
+    import sbndprmdaq.digitizer.atsapi as ats
+except:
+    pass
 
 class ATS310Exception(Exception):
     """
