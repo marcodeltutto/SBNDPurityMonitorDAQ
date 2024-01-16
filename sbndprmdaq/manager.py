@@ -9,16 +9,11 @@ import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
-# from sbndprmdaq.digitizer.ats310 import get_digitizers, ATS310Exception #, ATS310,
-# from sbndprmdaq.digitizer.board_wrapper import BoardWrapper
 from sbndprmdaq.threading_utils import Worker
-
-# from sbndprmdaq.communication.serial_communicator import Communicator
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
-from sbndprmdaq.communication.prm_control_arduino import PrMControlArduino
 from sbndprmdaq.communication.hv_control_mpod import HVControlMPOD
-# from sbndprmdaq.communication.adpro_control import ADProControl
 
+#pylint: disable=too-many-public-methods
 class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
@@ -44,17 +39,11 @@ class PrMManager():
 
         self._data_files_path = config['data_files_path']
 
-        self._prm_digitizer = PrMDigitizer(config)
-
         for prm_id in config['prm_ids']:
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
             self._repetitions[prm_id] = 1
-
-        # self._prm_control = PrMControlArduino(config['prm_ids'], config=config)
-        self._hv_control = HVControlMPOD(config['prm_ids'], config=config)
-        # self._adpro_control = ADProControl(self._digitizers.keys(), config=config)
 
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=self._prm_digitizer.n_digitizers()))
@@ -74,7 +63,20 @@ class PrMManager():
 
         self.retrieve_run_numbers()
 
+        self._set_digitizer_and_hv(config)
+
+    def _set_digitizer_and_hv(self, config):
+        '''
+        Sets the PrMDigitizer and HVControlMPOD
+        '''
+        self._prm_digitizer = PrMDigitizer(config)
+        self._hv_control = HVControlMPOD(config['prm_ids'], config=config)
+
+
     def exit(self):
+        '''
+        Called at exit event
+        '''
 
         self._logger.info('Exiting...')
 
@@ -111,7 +113,7 @@ class PrMManager():
         '''
         # ats310 = self._digitizers[prm_id]
         # return ats310.busy()
-        return self._prm_digitizer.digitizer_busy(prm_id)
+        return self._prm_digitizer.busy(prm_id)
 
 
     def ats_trigger_sample(self, prm_id=1):
@@ -136,7 +138,7 @@ class PrMManager():
         # return ats310.get_samples_per_second()
         return self._prm_digitizer.get_samples_per_second(prm_id)
 
-    def get_n_acquisitions(self, prm_id=1):
+    def get_number_acquisitions(self, prm_id=1):
         '''
         Returns the digitizer number of acquisitions
 
@@ -145,7 +147,7 @@ class PrMManager():
         '''
         # ats310 = self._digitizers[prm_id]
         # return ats310.get_number_acquisitions()
-        return self._prm_digitizer.get_n_acquisitions(prm_id)
+        return self._prm_digitizer.get_number_acquisitions(prm_id)
 
     def get_n_repetitions(self, prm_id=1):
 
@@ -172,7 +174,7 @@ class PrMManager():
                 self._run_numbers[k] = -1
             self.write_run_numbers()
         else:
-            with open(run_file_name) as f:
+            with open(run_file_name, encoding="utf-8") as f:
                 for line in f:
                     prm_id = line.split()[0]
                     run_no = line.split()[1]
@@ -181,7 +183,7 @@ class PrMManager():
 
     def write_run_numbers(self):
         run_file_name = self._data_files_path + '/latest_run_number.txt'
-        f = open(run_file_name, "w")
+        f = open(run_file_name, "w", encoding="utf-8")
         for k, v in self._run_numbers.items():
             f.write(str(k) + ' ' + str(v) + '\n')
 
@@ -201,7 +203,7 @@ class PrMManager():
 
         heartbeat_file_name = self._data_files_path + '/heartbeat.txt'
 
-        f = open(heartbeat_file_name, "w")
+        f = open(heartbeat_file_name, "w", encoding="utf-8")
         f.write(str(timestamp))
 
 
@@ -240,7 +242,7 @@ class PrMManager():
         '''
 
         # self._prm_control.start_prm(prm_id)
-        self._prm_digitizer.lamp_frequency(prm_id, 10)
+        self._prm_digitizer.lamp_frequency(10, prm_id)
         self._prm_digitizer.lamp_on(prm_id)
 
         # ats310 = self._digitizers[prm_id]
@@ -567,12 +569,11 @@ class PrMManager():
             self._timer.stop()
 
             # Wait until we have done running
-            while self._is_running[prm_id] == True:
+            while self._is_running[prm_id]:
                 time.sleep(0.1)
 
             self._window.set_start_button_status(prm_id, True)
 
-        return
 
     def periodic_start_prm(self, prm_id=1, time_interval=300):
         '''
@@ -584,8 +585,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             time_interval (int): The time interaval in seconds.
         '''
-        if time_interval < 60:
-            time_interval = 60
+        time_interval = max(time_interval, 60)
 
         self._window.set_start_button_status(prm_id, False)
 
@@ -641,8 +641,3 @@ class PrMManager():
         anodegrid_hv = self._hv_control.get_hv_status('anodegrid', prm_id)
 
         return cathode_hv, anode_hv, anodegrid_hv
-
-
-
-
-

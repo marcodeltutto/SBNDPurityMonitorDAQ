@@ -1,4 +1,8 @@
+'''
+Contains Base abstract class for PrM control module
+'''
 import logging
+from abc import ABC, abstractmethod
 
 class PrMControlException(Exception):
     '''
@@ -15,10 +19,10 @@ class PrMControlException(Exception):
         '''
         self._message = message
         logger.critical(self._message)
-        super(PrMControlException, self).__init__(self._message)
+        super().__init__(self._message)
 
 
-class PrMControlBase():
+class PrMControlBase(ABC):
     '''
     The communicator class that deals with the parallel port.
     '''
@@ -36,23 +40,26 @@ class PrMControlBase():
 
         if prm_ids is None:
             raise PrMControlException(self._logger,
-                f'Need to set prm_ids.')
+                'Need to set prm_ids.')
+
+        if config is None:
+            raise PrMControlException(self._logger,
+                'Need to set config.')
 
         self._logger.info('PrMControlBase created.')
 
 
+    @abstractmethod
     def start_prm(self, prm_id=None):
         '''
         Turns the PrM ON.
         '''
-        print('To be implemented')
-        return
+        pass
 
 
+    @abstractmethod
     def stop_prm(self, prm_id=None):
         '''
         Turns the PrM OFF.
         '''
-        print('To be implemented')
-        return
-
+        pass

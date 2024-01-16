@@ -1,12 +1,14 @@
+'''
+Contains class to control the ATS310 digitizer
+'''
 from __future__ import division
 import ctypes
-import numpy as np
-import os
-import signal
-import sys
 import time
 import logging
 import copy
+
+import numpy as np
+
 
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 import sbndprmdaq.digitizer.atsapi as ats
@@ -27,7 +29,7 @@ class ATS310Exception(Exception):
         '''
         self._message = message
         logger.critical(self._message)
-        super(ATS310Exception, self).__init__(self._message)
+        super().__init__(self._message)
 
 
 class ATS310(DigitizerBase):
@@ -65,24 +67,24 @@ class ATS310(DigitizerBase):
         self._samples_per_sec = 2000000.0
         self._samples_per_sec_id = ats.SAMPLE_RATE_2MSPS
 
-        # TODO: Select the number of pre-trigger samples
+        # Select the number of pre-trigger samples
         self._pre_trigger_samples = 512 # #1024
         # self._pre_trigger_samples = 256
 
-        # TODO: Select the number of samples per record.
+        # Select the number of samples per record.
         # self._post_trigger_samples = 4096
         # self._post_trigger_samples = 10240 #1024 # <--
         # self._post_trigger_samples = 20000 #1024
         self._post_trigger_samples = 6000 #1024
 
-        # TODO: Select the number of records in the acquisition.
+        # Select the number of records in the acquisition.
         self._records_per_capture = 1
 
-        # TODO: Select the amount of time to wait for the acquisition to
+        # Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
         self._acquisition_timeout_sec = 30
 
-        # TODO: Select the active channels.
+        # Select the active channels.
         self._channels = ats.CHANNEL_A | ats.CHANNEL_B
         self._channel_count = 0
         for c in ats.channels:
@@ -387,7 +389,7 @@ class ATS310(DigitizerBase):
                                  record + 1,                    # Record (1-indexed)
                                  -self._pre_trigger_samples,    # Pre-trigger samples
                                  self._samples_per_record)      # Samples per record
-                bytesTransferred += self._bytes_per_record;
+                bytesTransferred += self._bytes_per_record
 
                 # Records are arranged in the buffer as follows:
                 # R0A, R1A, R2A ... RnA, R0B, R1B, R2B ...

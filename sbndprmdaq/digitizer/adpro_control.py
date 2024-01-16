@@ -1,11 +1,15 @@
+'''
+Contains class to control Analog Discovery Pro digitizer
+'''
 import logging
 import time
-
-from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 
 import requests
 import paramiko
 from sshtunnel import SSHTunnelForwarder
+
+from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
+
 
 class ADProControl(DigitizerBase):
     '''
@@ -25,6 +29,8 @@ class ADProControl(DigitizerBase):
 
         self._ssh_forward(config)
         self._start_api(config)
+
+        self._to = 10 # timeout for requests
 
 
     def _ssh_forward(self, config):
@@ -72,41 +78,52 @@ class ADProControl(DigitizerBase):
 
 
     def busy(self):
-        # TODO
-        return False
+
+        return requests.get(self._url + "/digitizer/busy", timeout=self._to).json()['busy']
+
 
     def get_trigger_sample(self):
-        # TODO
-        return 1000
+
+        return requests.get(self._url + "/digitizer/trigger_sample", timeout=self._to).json()['trigger_sample']
+
 
     def get_samples_per_second(self):
-        # TODO
-        return 2000000.0
+
+        return requests.get(self._url + "/digitizer/samples_per_second", timeout=self._to).json()['samples_per_second']
+
+    def set_samples_per_second(self):
+
+        return requests.get(self._url + "/digitizer/set_samples_per_second", timeout=self._to).json()['set_samples_per_second']
+
 
     def get_number_acquisitions(self):
-        # TODO
-        return 0
+
+        return requests.get(self._url + "/digitizer/number_acquisitions", timeout=self._to).json()['number_acquisitions']
+
 
     def set_number_acquisitions(self, n):
-        # TODO
-        return 0
+
+        return requests.get(self._url + "/digitizer/set_number_acquisitions", timeout=self._to).json()['set_number_acquisitions']
+
 
     def get_pre_trigger_samples(self):
-        # TODO
-        return 0
+
+        return requests.get(self._url + "/digitizer/pre_trigger_samples", timeout=self._to).json()['pre_trigger_samples']
+
 
     def get_post_trigger_samples(self):
-        # TODO
-        return 0
+
+        return requests.get(self._url + "/digitizer/post_trigger_samples", timeout=self._to).json()['post_trigger_samples']
+
 
     def get_input_range_volts(self):
-        # TODO
-        return 0
+
+        return requests.get(self._url + "/digitizer/input_range_volts", timeout=self._to).json()['input_range_volts']
+
 
     def lamp_on(self):
 
-
-        response = requests.get(self._url + "/lamp_control/on")
+        response = requests.get(self._url + "/lamp_control/on", timeout=self._to)
 
         if response.json()['status'] != 'on':
             self._logger.critical('API error: cannot turn lamp on')
@@ -114,7 +131,7 @@ class ADProControl(DigitizerBase):
 
     def lamp_off(self):
 
-        response = requests.get(self._url + "/lamp_control/off")
+        response = requests.get(self._url + "/lamp_control/off", timeout=self._to)
 
         if response.json()['status'] != 'off':
             self._logger.critical('API error: cannot turn lamp off')
@@ -122,7 +139,7 @@ class ADProControl(DigitizerBase):
 
     def lamp_frequency(self, freq):
 
-        response = requests.get(self._url + f"/lamp_frequency/{freq}")
+        response = requests.get(self._url + f"/lamp_frequency/{freq}", timeout=self._to)
 
         if int(response.json()['frequency']) != freq:
             self._logger.critical(f'API error: cannot set frequency to {freq}')
@@ -132,10 +149,10 @@ class ADProControl(DigitizerBase):
 
         self._logger.info('Starting capture')
 
-        response = requests.get(self._url + "/digitizer/start_capture")
+        response = requests.get(self._url + "/digitizer/start_capture", timeout=self._to)
 
         print(response.json()['status'])
-        if response.json()['status'] != True:
+        if not response.json()['status']:
             self._logger.critical('API error: start_capture failed')
 
         return response.json()['status']
@@ -144,9 +161,8 @@ class ADProControl(DigitizerBase):
     def check_capture(self):
 
         start = time.time()
-        status = False
         while 10 > time.time() - start:
-            response = requests.get(self._url + "/digitizer/check_capture")
+            response = requests.get(self._url + "/digitizer/check_capture", timeout=self._to)
             if response.json()['status']:
                 return True
 
@@ -155,7 +171,7 @@ class ADProControl(DigitizerBase):
 
     def get_data(self):
 
-        response = requests.get(self._url + "/digitizer/get_data")
+        response = requests.get(self._url + "/digitizer/get_data", timeout=self._to)
 
         # if response.json()['data'] != 'true':
         #     self._logger.critical('API error: start_capture failed')

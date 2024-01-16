@@ -1,3 +1,6 @@
+'''
+Contains base class for HV control
+'''
 import logging
 
 class HVControlException(Exception):
@@ -15,7 +18,7 @@ class HVControlException(Exception):
         '''
         self._message = message
         logger.critical(self._message)
-        super(HVControlException, self).__init__(self._message)
+        super().__init__(self._message)
 
 
 class HVControlBase():
@@ -35,7 +38,7 @@ class HVControlBase():
 
         if prm_ids is None:
             raise HVControlException(self._logger,
-                f'Need to set prm_ids.')
+                'Need to set prm_ids.')
 
         self._logger.info('HVControl created.')
 
@@ -44,7 +47,6 @@ class HVControlBase():
         Returns True if the crate is ON
         '''
         print('To be implemented')
-        return
 
 
     def hv_on(self, prm_id=1):
@@ -52,7 +54,6 @@ class HVControlBase():
         Turn the HV ON.
         '''
         print('To be implemented')
-        return
 
 
     def hv_off(self, prm_id=1):
@@ -60,5 +61,3 @@ class HVControlBase():
         Turn the HV OFF.
         '''
         print('To be implemented')
-        return
-

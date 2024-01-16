@@ -22,6 +22,11 @@ class DigitizerBase(ABC):
         pass
 
     @abstractmethod
+    def set_samples_per_second(self, n):
+        '''Sets he number of samples acquired per second'''
+        pass
+
+    @abstractmethod
     def get_number_acquisitions(self):
         '''Returnes the number of triggers acquired'''
         pass
