@@ -30,7 +30,6 @@ It will ask you to set a password.
 
 On your Windows machine, create an ssh tunnel via:
 
-
 .. code-block:: bash
 
 	ssh -L 5902:localhost:5902 username@sbnd-prm-daq01.fnal.gov

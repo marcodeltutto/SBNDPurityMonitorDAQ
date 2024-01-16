@@ -89,5 +89,3 @@ class MockHVControl(HVControlBase):
         '''
         return True
 
-
-

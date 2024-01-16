@@ -1,3 +1,6 @@
+'''
+The purity monitor mock communicator (for testing).
+'''
 import logging
 
 class MockCommunicator():
@@ -17,7 +20,6 @@ class MockCommunicator():
         self._logger = logging.getLogger(__name__)
         self._logger.info('Fake parallel communicator created.')
         self._prm_id = prm_id
-        return
 
     def start_prm(self):
         '''
