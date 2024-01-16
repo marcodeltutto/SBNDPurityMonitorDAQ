@@ -1,7 +1,7 @@
 import logging
 import time
 
-from digitizer_base import DigitizerBase
+from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 
 import requests
 import paramiko
@@ -53,9 +53,9 @@ class ADProControl(DigitizerBase):
         self._logger.info(f'ADPro API available at {self._url}')
 
 
-    def busy(self):
+    #def busy(self):
         # TODO
-        return False
+     #   return False
 
     def get_trigger_sample(self):
         # TODO
