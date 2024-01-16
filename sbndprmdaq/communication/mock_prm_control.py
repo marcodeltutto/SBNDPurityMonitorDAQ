@@ -1,7 +1,5 @@
 from .prm_control_base import *
 
-import pyfirmata
-
 class MockPrMControl(PrMControlBase):
     '''
     Controls the PrM via an arduino.

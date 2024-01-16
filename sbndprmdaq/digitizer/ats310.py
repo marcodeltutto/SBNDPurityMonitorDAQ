@@ -9,7 +9,7 @@ import copy
 
 import numpy as np
 
-
+from sbndprmdaq.digitizer.lamp_control_arduino import LampControlArduino
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 try:
     import sbndprmdaq.digitizer.atsapi as ats
@@ -94,6 +94,8 @@ class ATS310(DigitizerBase):
 
         self.configure_board()
         self.prepare_acquisition()
+
+        self._lamp_control = LampControlArduino()
 
 
     def get_trigger_sample(self):
@@ -500,42 +502,24 @@ class ATS310(DigitizerBase):
         '''
         return self._records_per_capture
 
-
     def lamp_on(self):
-
-        self._logger.warning('lamp_on ats310 !!!!!!!!!!!!!!!!')
-
-        import requests
-        url = "http://localhost:8000"
-        response = requests.get(url + "/lamp_control/on")
-
-        if response.json()['status'] != 'on':
-            self._logger.critical('API error: cannot turn lamp on')
-
+        '''
+        Turns on the lamp
+        '''
+        self._lamp_control.lamp_on()
 
     def lamp_off(self):
-
-        self._logger.warning('lamp_off ats310 !!!!!!!!!!!!!!!!')
-
-        import requests
-        url = "http://localhost:8000"
-        response = requests.get(url + "/lamp_control/off")
-
-        if response.json()['status'] != 'off':
-            self._logger.critical('API error: cannot turn lamp off')
+        '''
+        Turns off the lamp
+        '''
+        self._lamp_control.lamp_off()
 
 
     def lamp_frequency(self, freq):
-
-        self._logger.warning('lamp_frequency ats310 !!!!!!!!!!!!!!!!')
-
-        import requests
-        url = "http://localhost:8000"
-        response = requests.get(url + f"/lamp_frequency/{freq}")
-
-        if response.json()['frequency'] != freq:
-            self._logger.critical(f'API error: cannot set frequency to {freq}')
-
+        '''
+        Sets the flashing frequency.
+        '''
+        self._lamp_control.lamp_freq(freq)
 
 
 
