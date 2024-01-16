@@ -2,6 +2,7 @@
 
 [![tests](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/actions/workflows/test.yml/badge.svg)](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/sbndpuritymonitordaq/badge/?version=latest)](https://sbndpuritymonitordaq.readthedocs.io/en/latest/?badge=latest)
+![pylint](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/actions/workflows/plint.yml/badge.svg)
 
 This project is documented [here](https://sbndpuritymonitordaq.readthedocs.io/en/latest/).
 
