@@ -2,6 +2,7 @@
 Contains base class for HV control
 '''
 import logging
+from abc import ABC, abstractmethod
 
 class HVControlException(Exception):
     '''
@@ -21,7 +22,7 @@ class HVControlException(Exception):
         super().__init__(self._message)
 
 
-class HVControlBase():
+class HVControlBase(ABC):
     '''
     A base class to control the HV.
     '''
@@ -40,24 +41,24 @@ class HVControlBase():
             raise HVControlException(self._logger,
                 'Need to set prm_ids.')
 
+        self._config = config
+
         self._logger.info('HVControl created.')
 
+    @abstractmethod
     def is_crate_on(self):
         '''
         Returns True if the crate is ON
         '''
-        print('To be implemented')
 
-
+    @abstractmethod
     def hv_on(self, prm_id=1):
         '''
         Turn the HV ON.
         '''
-        print('To be implemented')
 
-
+    @abstractmethod
     def hv_off(self, prm_id=1):
         '''
         Turn the HV OFF.
         '''
-        print('To be implemented')
