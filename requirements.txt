@@ -6,4 +6,5 @@ qdarkstyle
 pyfirmata
 paramiko
 sshtunnel
+requests
 rich
