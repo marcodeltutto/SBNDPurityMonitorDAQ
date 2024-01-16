@@ -44,6 +44,8 @@ class PrMManager():
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
             self._repetitions[prm_id] = 1
+        
+        self._set_digitizer_and_hv(config)
 
         self._logger.info('Number of available digitizers: {n_digi}'.format(
                           n_digi=self._prm_digitizer.n_digitizers()))
@@ -63,7 +65,6 @@ class PrMManager():
 
         self.retrieve_run_numbers()
 
-        self._set_digitizer_and_hv(config)
 
     def _set_digitizer_and_hv(self, config):
         '''

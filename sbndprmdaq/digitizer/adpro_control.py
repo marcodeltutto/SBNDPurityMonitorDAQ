@@ -71,11 +71,38 @@ class ADProControl(DigitizerBase):
                           username=config['adpro_username'],
                           password=config['adpro_password'])
 
-        command = 'cd adpro_api '
-        command += '/home/digilent/.local/bin/uvicorn main:app --reload'
+        # stdin, stdout, stderr = self._ssh.exec_command(command)
+
+        # command = 'cd adpro_api; '
+        #command =  'sudo su; '
+        #stdin, stdout, stderr = self._ssh.exec_command(command)
+        #self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
+        #command =  'export PYTHONPATH=/home/digilent/.local/lib/python3.7/site-packages/:$PYTHONPATH; '
+        command =  'cd /home/digilent/AnalogDiscoveryPro; '
+        command += 'sudo /home/digilent/.local/bin/uvicorn main:app --reload'
+        print('Executing command:', command)
         stdin, stdout, stderr = self._ssh.exec_command(command)
         self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
+        # self._logger.info('Errors:' + ' '.join(stderr.readlines()))
+        # self._logger.info('Out:' + ' '.join(stdout.readlines()))
+        self._logger.info('Waiting for ADPro API to start...')
+        
+        time.sleep(8)
+        while not self._check_digitizer():
+            time.sleep(1)
+        self._logger.info('ADPro API ready.')
 
+
+    def _check_digitizer(self):
+
+        try:
+            response = requests.get(self._url + "/is_online/", timeout=0.5)
+            if response.json()['is_online']:
+                return True
+        except:
+            return False
+
+        return False
 
     def busy(self):
 

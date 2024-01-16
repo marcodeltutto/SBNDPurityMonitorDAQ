@@ -62,7 +62,8 @@ arduino_prm1_pin: 7
 arduino_prm2_pin: 7
 arduino_prm3_pin: 7
 
-mpod_ip: "192.168.0.25"
+# mpod_ip: "192.168.0.25"
+mpod_ip: "10.226.35.154"
 mpod_prm1_cathode_ch: 100
 mpod_prm1_anode_ch: 200
 mpod_prm1_anodegrid_ch: 201

@@ -113,6 +113,16 @@ class ATS310(DigitizerBase):
         '''
         return self._samples_per_sec
 
+    def set_samples_per_second(self, n):
+        '''
+        Sets the samples per seconds the digitizer is acquiring.
+
+        Args:
+            n (int): Number of samples per second
+        '''
+        print('To be implemented')
+        self._samples_per_sec = n
+
     def get_pre_trigger_samples(self):
         '''
         Getter for the number of pre trigger samples.
