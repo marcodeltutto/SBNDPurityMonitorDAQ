@@ -1,9 +1,16 @@
+'''
+Contains a mock PrM digitizer class for testing purposed
+'''
 
-from .prm_digitizer import PrMDigitizer, DigitizerBase
 import datetime
 import numpy as np
+from .prm_digitizer import PrMDigitizer, DigitizerBase
+
 
 class MockDigitizer(DigitizerBase):
+    '''
+    A mock PrM digitizer class for testing purposed
+    '''
 
     def busy(self):
         '''Returns true is the digitizer is busy'''
@@ -17,17 +24,17 @@ class MockDigitizer(DigitizerBase):
         '''Returns the number of samples acquired per second'''
         return 1
 
-    def set_samples_per_second(self, n):
+    def set_samples_per_second(self, samples):
         '''Sets he number of samples acquired per second'''
-        print('set_samples_per_second')
+        print('set_samples_per_second to', samples)
 
     def get_number_acquisitions(self):
         '''Returnes the number of triggers acquired'''
         return 1
 
-    def set_number_acquisitions(self, n):
+    def set_number_acquisitions(self, n_acquisitions):
         '''Sets the number of triggers acquired'''
-        print('set_number_acquisitions')
+        print('set_number_acquisitions to', n_acquisitions)
 
     def get_pre_trigger_samples(self):
         '''Returns the number of samples before the trigges'''
@@ -76,13 +83,18 @@ class MockDigitizer(DigitizerBase):
 
 
 class MockPrMDigitizer(PrMDigitizer):
+    '''
+    A MockPrMDigitizer class for testing purposes
+    '''
 
     def _get_adpro_digitizer(self, prm_id, config):
         '''
+        Overrides
         '''
         return MockDigitizer()
 
     def _get_ats310_digitizer(self, systemid):
         '''
+        Overrides
         '''
         return MockDigitizer()
