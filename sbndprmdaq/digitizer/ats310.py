@@ -39,7 +39,7 @@ class ATS310(DigitizerBase):
     This class controls an ATS310 digitizer.
     '''
 
-    def __init__(self, systemId=1, boardId=1):
+    def __init__(self, systemId=1, boardId=1, config=None):
         '''
         Constructor.
 
@@ -95,8 +95,16 @@ class ATS310(DigitizerBase):
         self.configure_board()
         self.prepare_acquisition()
 
+<<<<<<< Updated upstream
         self._lamp_control = LampControlArduino()
 
+=======
+<<<<<<< Updated upstream
+=======
+        self._lamp_control = LampControlArduino(config)
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
     def get_trigger_sample(self):
         '''

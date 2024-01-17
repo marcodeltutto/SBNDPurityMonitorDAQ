@@ -45,7 +45,7 @@ class PrMDigitizer(DigitizerBase):
             if digitizer_type == 'adpro':
                 digitizer = self._get_adpro_digitizer(prm_id, config) #channels=config['prm_id_to_adpro_channels'][prm_id])
             elif digitizer_type == 'ats310':
-                digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id])
+                digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id], config)
             else:
                 self._logger.critical('Digitizer option not recognized: {digitizer_type}.')
                 digitizer = None
@@ -69,7 +69,7 @@ class PrMDigitizer(DigitizerBase):
         '''
         return ADProControl(prm_ids=None, config=config)
 
-    def _get_ats310_digitizer(self, systemid):
+    def _get_ats310_digitizer(self, systemid, config):
         '''
         Returns an ATS310 Digitzer object. There are multiple
         ATS310 boards in the server, and the systemid allows us to
@@ -90,7 +90,7 @@ class PrMDigitizer(DigitizerBase):
         # Check that we have an available digitizer for this systemid
         n_boards = ats.boardsInSystemBySystemID(systemid)
         if n_boards == 1:
-            ats310 = ATS310(systemId=systemid, boardId=1)
+            ats310 = ATS310(systemId=systemid, boardId=1, config)
 
         return ats310
 
