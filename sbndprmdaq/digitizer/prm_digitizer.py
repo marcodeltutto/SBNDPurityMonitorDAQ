@@ -45,7 +45,7 @@ class PrMDigitizer(DigitizerBase):
             if digitizer_type == 'adpro':
                 digitizer = self._get_adpro_digitizer(prm_id, config) #channels=config['prm_id_to_adpro_channels'][prm_id])
             elif digitizer_type == 'ats310':
-                digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id], systemid=config)
+                digitizer = self._get_ats310_digitizer(systemid=config['prm_id_to_ats_systemid'][prm_id], config=config)
             else:
                 self._logger.critical('Digitizer option not recognized: {digitizer_type}.')
                 digitizer = None
