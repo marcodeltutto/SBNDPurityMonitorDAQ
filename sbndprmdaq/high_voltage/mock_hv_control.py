@@ -21,7 +21,7 @@ class MockHVControl(HVControlBase):
         self._logger.info('MockHVControl created.')
 
         self._prm_ids = prm_ids
-        self._hvs = []
+        self._hvs = {}
         for prm_id in self._prm_ids:
             self._hvs[prm_id] = {
                 'anode': 0,
