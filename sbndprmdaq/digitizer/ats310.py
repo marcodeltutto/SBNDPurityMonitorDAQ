@@ -95,16 +95,8 @@ class ATS310(DigitizerBase):
         self.configure_board()
         self.prepare_acquisition()
 
-<<<<<<< Updated upstream
-        self._lamp_control = LampControlArduino()
-
-=======
-<<<<<<< Updated upstream
-=======
         self._lamp_control = LampControlArduino(config)
 
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
     def get_trigger_sample(self):
         '''
