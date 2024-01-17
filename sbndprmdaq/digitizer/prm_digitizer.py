@@ -90,7 +90,7 @@ class PrMDigitizer(DigitizerBase):
         # Check that we have an available digitizer for this systemid
         n_boards = ats.boardsInSystemBySystemID(systemid)
         if n_boards == 1:
-            ats310 = ATS310(systemId=systemid, boardId=1, config)
+            ats310 = ATS310(systemId=systemid, boardId=1, config=config)
 
         return ats310
 
