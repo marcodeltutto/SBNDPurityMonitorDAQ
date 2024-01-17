@@ -2,7 +2,7 @@
 The purity monitor mock manager (for testing).
 '''
 
-from sbndprmdaq.communication.mock_hv_control import MockHVControl
+from sbndprmdaq.high_voltage.mock_hv_control import MockHVControl
 from sbndprmdaq.digitizer.mock_prm_digitizer import MockPrMDigitizer
 from .manager import PrMManager
 

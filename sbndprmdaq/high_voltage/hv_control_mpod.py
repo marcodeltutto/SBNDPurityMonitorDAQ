@@ -145,8 +145,8 @@ class HVControlMPOD(HVControlBase):
         '''
         Sets HV value
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
         '''
 
         if item == 'anode':
@@ -166,9 +166,9 @@ class HVControlMPOD(HVControlBase):
         '''
         Returns the HV set values
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
         '''
         ret = None
         if item == 'anode':
