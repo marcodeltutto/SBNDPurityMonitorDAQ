@@ -1,8 +1,12 @@
-from .hv_control_base import *
+'''
+Contains a mock class for testing purposes
+'''
+
+from .hv_control_base import HVControlBase
 
 class MockHVControl(HVControlBase):
     '''
-    Controls the HV via the MPODmini.
+    A mock class HV control class for testing purposes
     '''
 
     def __init__(self, prm_ids=None, config=None):
@@ -12,12 +16,18 @@ class MockHVControl(HVControlBase):
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        super(MockHVControl, self).__init__(prm_ids=prm_ids, config=config)
+        super().__init__(prm_ids=prm_ids, config=config)
 
         self._logger.info('MockHVControl created.')
 
-
-
+        self._prm_ids = prm_ids
+        self._hvs = []
+        for prm_id in self._prm_ids:
+            self._hvs[prm_id] = {
+                'anode': 0,
+                'cathode': 0,
+                'anodegrid': 0
+            }
 
     def is_crate_on(self):
         '''
@@ -33,8 +43,6 @@ class MockHVControl(HVControlBase):
         '''
         self._logger.info('HV ON.')
 
-        return
-
 
     def hv_off(self, prm_id=1):
         '''
@@ -42,50 +50,47 @@ class MockHVControl(HVControlBase):
         '''
         self._logger.info('HV OFF.')
 
-        return
 
-
-    def set_hv_value(self, posneg, value, prm_id=1):
+    def set_hv_value(self, item, value, prm_id=1):
         '''
         Sets HV value
 
-        args:
-        posneg: 'pos' or 'neg'
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
+            value: the HV value
         '''
+        self._hvs[prm_id][item] = value
         self._logger.info('HV value set.')
 
-        return
 
-
-    def get_hv_value(self, posneg, prm_id):
+    def get_hv_value(self, item, prm_id):
         '''
         Returns the HV set values
 
-        args:
-        posneg: 'pos' or 'neg'
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
         '''
+        return self._hvs[prm_id][item]
 
-        return 9999
 
-    def get_hv_sense_value(self, posneg, prm_id):
+    def get_hv_sense_value(self, item, prm_id):
         '''
         Returns the HV sensed values
 
-        args:
-        posneg: 'pos' or 'neg'
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
         '''
+        return self._hvs[prm_id][item]
 
-        return 9999
-
-    def get_hv_status(self, posneg, prm_id):
+    def get_hv_status(self, item, prm_id):
         '''
         Returns wheter the HV is on or off
 
-        args:
-        posneg: 'pos' or 'neg'
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
         '''
-        return True
-
+        return self._hvs[prm_id][item] != 0
