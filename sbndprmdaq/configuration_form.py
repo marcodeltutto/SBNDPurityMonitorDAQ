@@ -1,10 +1,22 @@
+'''
+Contains a class to store PrM configuration
+'''
 from PyQt5 import QtWidgets
 
+#pylint: disable=invalid-name,too-many-instance-attributes
 class Form(QtWidgets.QDialog):
+    '''
+    A form to store PrM configuration
+    '''
 
-    # constructor
     def __init__(self, parent=None):
-        super(Form, self).__init__(parent)
+        '''
+        Contructor
+
+        Args:
+            parent (QtWidgets): the parent widget
+        '''
+        super().__init__(parent)
 
         # setting window title
         self.setWindowTitle("Purity Monitor Configuration")
@@ -44,8 +56,10 @@ class Form(QtWidgets.QDialog):
         self._output = [{}, {}, {}]
 
 
-    # get info method called when form is accepted
     def get_info(self, prm_id=1):
+        '''
+        Get info method called when form is accepted
+        '''
 
         prm = prm_id - 1
 
@@ -66,7 +80,6 @@ class Form(QtWidgets.QDialog):
             'flash_lamp_frequency': self._flash_lamp_frequency[prm].text(),
             'flash_lamp_settings': self._flash_lamp_settings[prm].currentText(),
             'flash_lamp_trigger': self._flash_lamp_trigger[prm].text(),
-            'flash_lamp': self._flash_lamp[prm].text(),
 
             'pm_elec': self._pm_elec[prm].currentText(),
             'pm_elec_cha': self._pm_elec_cha[prm].currentText(),
@@ -84,6 +97,9 @@ class Form(QtWidgets.QDialog):
         self.close()
 
     def get_values(self, prm_id=None):
+        '''
+        Returns the values of the form
+        '''
 
         if prm_id is None:
             return self._output
@@ -92,6 +108,9 @@ class Form(QtWidgets.QDialog):
 
 
     def create_buttons(self):
+        '''
+        Creates the buttons in the form
+        '''
 
         # creating a dialog button for ok and cancel
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
@@ -103,6 +122,9 @@ class Form(QtWidgets.QDialog):
         self.buttonBox.rejected.connect(self.reject)
 
     def setup(self):
+        '''
+        Sets up theform
+        '''
 
         # self._form_layouts = [QtWidgets.QFormLayout()] * 3
 
@@ -137,6 +159,9 @@ class Form(QtWidgets.QDialog):
         self._hv_crate = [QtWidgets.QComboBox(), QtWidgets.QComboBox(), QtWidgets.QComboBox()]
 
     def config(self, prm_id):
+        '''
+        Configures the form
+        '''
 
         self._location[prm_id-1].addItems(["SBN-ND", "PAB", "Other"])
         self._vessel[prm_id-1].addItems(["SBND", "Rocket", "Other"])
@@ -168,12 +193,11 @@ class Form(QtWidgets.QDialog):
 
         self._hv_crate[prm_id-1].addItems(["Module 1", "Module 2", "Module 3"])
 
-    def defaults(self, prm_id):
-        return
 
-
-    # creat form method
     def create_form(self, prm_id=1):
+        '''
+        Creates the forms
+        '''
 
         prm = prm_id - 1
 
@@ -211,8 +235,5 @@ class Form(QtWidgets.QDialog):
 
 
         self.config(prm_id)
-        self.defaults(prm_id)
 
         self._tabs[prm].setLayout(layout)
-
-
