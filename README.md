@@ -11,7 +11,7 @@ This project is documented [here](https://sbndpuritymonitordaq.readthedocs.io/en
 ./prm_gui.py
 ```
 
-If running without a parallel/serial port, and without digitizer, for testing purposes:
+If running without digitizer and HV modules, for testing purposes:
 ```
 ./prm_gui.py --mock
 ```
@@ -20,3 +20,8 @@ If running without a parallel/serial port, and without digitizer, for testing pu
 ```
 pytest tests
 ```
+
+## Workflow
+
+![sbndprmdaq](https://github.com/marcodeltutto/SBNDPurityMonitorDAQ/assets/17006198/c4d45e5e-8a90-423d-8393-ece922e33f7c)
+
