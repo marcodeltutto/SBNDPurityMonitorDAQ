@@ -93,7 +93,7 @@ class MockPrMDigitizer(PrMDigitizer):
         '''
         return MockDigitizer()
 
-    def _get_ats310_digitizer(self, systemid):
+    def _get_ats310_digitizer(self, systemid, config=None):
         '''
         Overrides
         '''

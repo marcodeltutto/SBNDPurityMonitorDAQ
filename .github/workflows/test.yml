@@ -23,5 +23,5 @@ jobs:
     - name: Test
       env:
         QT_DEBUG_PLUGINS: 1
-      run: xvfb-run pytest -s -v tests
+      run: xvfb-run pytest -s -v tests -W ignore::DeprecationWarning
     - run: echo "🍏 This job's status is ${{ job.status }}."
