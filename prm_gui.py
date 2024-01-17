@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+'''
+The main DAQ GUI driver
+'''
+
 import os
 import sys
 import time
 import argparse
-from PyQt5 import QtCore, QtGui, QtWidgets
-import pyqtgraph
+from PyQt5 import QtGui, QtWidgets
 import yaml
 import qdarkstyle
 
@@ -43,7 +46,7 @@ logger.info('SBND Purity Monitor starts.')
 #
 settings = os.path.join(os.path.dirname(__file__), 'settings.yaml')
 
-with open(settings) as file:
+with open(settings, encoding="utf-8") as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
 print('Config:', yaml.dump(config), sep='\n')
 
@@ -57,17 +60,16 @@ heartbeat_file_name = config['data_files_path'] + '/heartbeat.txt'
 
 if os.path.exists(heartbeat_file_name):
 
-    timestamp = 0
-    with open(heartbeat_file_name) as f:
+    with open(heartbeat_file_name, encoding="utf-8") as f:
         for line in f:
-            timestamp = float(line)
+            time_stamp = float(line)
 
-        if abs(timestamp - time.time()) < 5:
-            print('timestamp  :', timestamp)
+        if abs(time_stamp - time.time()) < 5:
+            print('timestamp  :', time_stamp)
             print('time.time():', time.time())
             print('Another DAQ is running on this data directory:', config['data_files_path'])
             print('Either stop the other DAQ, or use a different path.')
-            exit()
+            sys.exit(0)
 
 
 
