@@ -49,8 +49,9 @@ adpro_username: "digilent"
 adpro_password: "digilent"
 adpro_port: 8000
 
+data_files_path: '/home/nfs/sbndprm/purity_monitor_data/'
+# data_files_path: '/home/nfs/mdeltutt/prm_data/'
 # data_files_path: '/sbnd/data/purity_monitors/'
-data_files_path: '/home/nfs/mdeltutt/prm_data'
 # data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'
 # data_files_path: '/Users/mdeltutt/Work/SBND/Purity Monitors/communication/'
 
