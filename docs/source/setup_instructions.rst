@@ -30,17 +30,20 @@ The DAQ may already be running. If not, open a terminal and then:
 	./check_system_status.py
 	./prm_gui.py
 
+
 Output files
 ____________
 
 Output files for each run are automatically saved in the sbnddata area: ``/sbnd/data/purity_monitors/``.
 
+
 Setting the HV values
----------------
+----------------------
 
 With the DAQ open, click on Menu, then HV Settings. You will be able to set the HV values for the Anode,
 Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings
 before exiting. The sensed HV values are displayed on the main DAQ window.
+
 
 Changing Display Resolution
 ___________________________
@@ -73,6 +76,7 @@ Login to the purity monitor machine under your user name:
 
 .. code-block:: bash
 
+	ssh username@sbnd-gateway01.fnal.gov
 	ssh username@sbnd-prm01.fnal.gov
 
 .. code-block:: bash
