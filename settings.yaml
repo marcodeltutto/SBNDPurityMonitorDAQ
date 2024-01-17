@@ -56,9 +56,8 @@ data_files_path: '/home/nfs/mdeltutt/prm_data'
 
 
 arduino_address: '/dev/arduino'
-# arduino_address: '/dev/cu.usbmodem143301'
 arduino_pin: 7
-
+disable_arduino: True
 
 # mpod_ip: "192.168.0.25"
 mpod_ip: "10.226.35.154"

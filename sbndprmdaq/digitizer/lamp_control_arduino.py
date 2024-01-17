@@ -27,8 +27,15 @@ class LampControlArduino():
         if 'arduino_address' not in config:
             raise ValueError(self._logger, 'Missing arduino_address in config.')
 
+        if 'disable_arduino' not in config:
+            raise ValueError(self._logger, 'Missing disable_arduino in config.')
+
         self._logger.info(f"Trying to talk to Arduino at address {config['arduino_address']}")
-        self._board = pyfirmata.Arduino(config['arduino_address'])
+        if not config['disable_arduino']:
+            self._board = pyfirmata.Arduino(config['arduino_address'])
+        else:
+            self._board = None
+
         self._logger.info("Connection with Arduino established.")
 
         #
@@ -39,7 +46,8 @@ class LampControlArduino():
             raise AttributeError(self._logger,
                                  'Missing arduino_pin in config.')
         self._pin = config['arduino_pin']
-        self._board.digital[self._pin].write(0)
+        if self._board is not None:
+            self._board.digital[self._pin].write(0)
         self._logger.info("Arduino pins set to 0.")
 
         self._logger.info('LampControlArduino created.')
@@ -49,14 +57,21 @@ class LampControlArduino():
         '''
         Turns on the lamp
         '''
-        self._board.digital[self._pin].write(1)
+        if self._board is not None:
+            self._board.digital[self._pin].write(1)
+        else:
+            self._logger.info('lamp_on.')
+
 
 
     def lamp_off(self):
         '''
         Turns off the lamp
         '''
-        self._board.digital[self._pin].write(0)
+        if self._board is not None:
+            self._board.digital[self._pin].write(0)
+        else:
+            self._logger.info('lamp_off.')
 
 
     def lamp_freq(self, freq):
