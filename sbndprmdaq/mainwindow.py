@@ -1,6 +1,7 @@
 '''
 Contains the main GUI elements
 '''
+#pylint: disable=protected-access,too-many-locals,too-many-statements
 
 import os
 import logging
@@ -558,7 +559,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # for el in data['B']:
             #     print('av of el in data B', np.mean(el))
 
-            s_to_ms = 1e3
+            # s_to_ms = 1e3
             s_to_us = 1e6
             v_to_mv = 1e3
 
@@ -630,7 +631,7 @@ class MainWindow(QtWidgets.QMainWindow):
             float: The extracted Qc.
             float: The extracted Lifetime.
         '''
-        return 1, 2, 3
+        return a, b, 0
 
     def missing_digitizer(self, prm_id):
         '''
