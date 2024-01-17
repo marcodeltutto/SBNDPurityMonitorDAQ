@@ -29,8 +29,8 @@ class HVControlMPOD(HVControlBase):
         self._mpod_ip = config['mpod_ip']
 
         # Check if the HV crate is on or off
-        self._logger.info('HV Crate is on? {status}'.format(status=self.is_crate_on()))
-        self._logger.info('prm_ids {prm_ids}'.format(prm_ids=prm_ids))
+        self._logger.info(f'HV Crate is on? {self.is_crate_on()}')
+        self._logger.info(f'prm_ids {prm_ids}')
 
         if not self.is_crate_on():
             # Turn crate on
@@ -59,6 +59,7 @@ class HVControlMPOD(HVControlBase):
 
         self._logger.info('HVControlMPOD created.')
 
+    #pylint: disable=invalid-name
     def _set_cmd(self, name='sysMainSwitch.', ch='0', t='i', value='0'):
         cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c guru "
         cmd += self._mpod_ip + ' '
@@ -66,7 +67,7 @@ class HVControlMPOD(HVControlBase):
         cmd += ch + ' '
         cmd += t + ' '
         cmd += value
-        self._logger.info('Subprocess: ' + cmd)
+        self._logger.info(f'Subprocess: {cmd}')
         # subprocess.run(cmd.split())
 
         # Start a subprocess
@@ -144,8 +145,8 @@ class HVControlMPOD(HVControlBase):
         '''
         Sets HV value
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
         '''
 
         if item == 'anode':
@@ -165,9 +166,9 @@ class HVControlMPOD(HVControlBase):
         '''
         Returns the HV set values
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
         '''
         ret = None
         if item == 'anode':

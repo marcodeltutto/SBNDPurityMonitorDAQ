@@ -11,7 +11,7 @@ from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
-from sbndprmdaq.communication.hv_control_mpod import HVControlMPOD
+from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
 
 #pylint: disable=too-many-public-methods
 class PrMManager():
@@ -44,18 +44,16 @@ class PrMManager():
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
             self._repetitions[prm_id] = 1
-        
+
         self._set_digitizer_and_hv(config)
 
-        self._logger.info('Number of available digitizers: {n_digi}'.format(
-                          n_digi=self._prm_digitizer.n_digitizers()))
+        self._logger.info(f'Number of available digitizers: {self._prm_digitizer.n_digitizers()}')
 
         self._hv_on = False
         self._use_hv = True
 
         self._threadpool = QThreadPool()
-        self._logger.info('Number of available threads: {n_thread}'.format(
-                          n_thread=self._threadpool.maxThreadCount()))
+        self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
 
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
@@ -151,44 +149,58 @@ class PrMManager():
         return self._prm_digitizer.get_number_acquisitions(prm_id)
 
     def get_n_repetitions(self, prm_id=1):
-
+        '''
+        Returns the number of repetitions currently set
+        '''
         return self._repetitions[prm_id]
 
-    def set_n_repetitions(self, prm_id, n):
-        self._repetitions[prm_id] = n
+    def set_n_repetitions(self, prm_id, repetitions):
+        '''
+        Sets the number of repetitions
+        '''
+        self._repetitions[prm_id] = repetitions
         self._logger.info(f'Number of repetitions for PrM {prm_id} set to {self._repetitions[prm_id]}')
 
     def retrieve_run_numbers(self):
+        '''
+        Retrieves the latest run number from file
+        '''
         if self._data_files_path is None:
             self._logger.warning('Cannot retrieve run number as data_files_path is not set.')
             return
 
         if not os.path.exists(self._data_files_path):
-            self._logger.error('data_files_path' + self._data_files_path + 'is not a real path.')
-            raise Exception()
+            self._logger.error(f'data_files_path {self._data_files_path} is not a real path.')
+            raise RuntimeError()
 
         run_file_name = self._data_files_path + '/latest_run_number.txt'
 
         if not os.path.exists(run_file_name):
             self._logger.info('Latest run file doesnt exist.')
-            for k, v in self._run_numbers.items():
-                self._run_numbers[k] = -1
+            for key in self._run_numbers:
+                self._run_numbers[key] = -1
             self.write_run_numbers()
         else:
-            with open(run_file_name, encoding="utf-8") as f:
-                for line in f:
+            with open(run_file_name, encoding="utf-8") as run_file:
+                for line in run_file:
                     prm_id = line.split()[0]
                     run_no = line.split()[1]
                     print('PrM:', prm_id, 'Run No:', run_no)
                     self._run_numbers[int(prm_id)] = int(run_no)
 
     def write_run_numbers(self):
+        '''
+        Writes run numbers to file
+        '''
         run_file_name = self._data_files_path + '/latest_run_number.txt'
-        f = open(run_file_name, "w", encoding="utf-8")
-        for k, v in self._run_numbers.items():
-            f.write(str(k) + ' ' + str(v) + '\n')
+        with open(run_file_name, "w", encoding="utf-8") as file:
+            for key, value in self._run_numbers.items():
+                file.write(str(key) + ' ' + str(value) + '\n')
 
     def increment_run_number(self, prm_id):
+        '''
+        Increments the run number by 1 and writes it to file
+        '''
         self._run_numbers[prm_id] += 1
         self.write_run_numbers()
 
@@ -204,11 +216,14 @@ class PrMManager():
 
         heartbeat_file_name = self._data_files_path + '/heartbeat.txt'
 
-        f = open(heartbeat_file_name, "w", encoding="utf-8")
-        f.write(str(timestamp))
+        with open(heartbeat_file_name, "w", encoding="utf-8") as file:
+            file.write(str(timestamp))
 
 
     def get_run_number(self, prm_id):
+        '''
+        Returns the current run number
+        '''
         return self._run_numbers[prm_id]
 
 
@@ -227,7 +242,7 @@ class PrMManager():
         # worker.setAutoDelete(False)
 
         self._threadpool.start(worker)
-        self._logger.info('Thread started for prm_id {prm_id}.'.format(prm_id=prm_id))
+        self._logger.info(f'Thread started for prm_id {prm_id}.')
 
 
     def capture_data(self, prm_id, progress_callback=None, data_callback=None):
@@ -242,17 +257,15 @@ class PrMManager():
             the data for ch A, the data for ch B NO LONGER USED
         '''
 
-        # self._prm_control.start_prm(prm_id)
         self._prm_digitizer.lamp_frequency(10, prm_id)
         self._prm_digitizer.lamp_on(prm_id)
 
-        # ats310 = self._digitizers[prm_id]
 
         #
         # Wait some time for the HV to stabilize
         #
         purity_mon_wake_time = 4 # seconds
-        self._logger.info('Awaking {prm_id} for {sec} seconds.'.format(prm_id=prm_id, sec=purity_mon_wake_time))
+        self._logger.info(f'Awaking {prm_id} for {purity_mon_wake_time} seconds.')
         start = time.time()
         while purity_mon_wake_time > time.time() - start:
             perc = (time.time() - start) / purity_mon_wake_time * 100
@@ -272,28 +285,15 @@ class PrMManager():
         }
 
         for rep in range(self._repetitions[prm_id]):
-            self._logger.info('*** Repetition number {rep}.'.format(rep=rep))
-            self._logger.info('Start capture for  {prm_id}.'.format(prm_id=prm_id))
-            # ats310.start_capture()
-            # self._adpro_control.start_capture(prm_id)
+            self._logger.info(f'*** Repetition number {rep}.')
+            self._logger.info('Start capture for  {prm_id}.')
             self._prm_digitizer.start_capture(prm_id)
-            self._logger.info('Check capture for  {prm_id}.'.format(prm_id=prm_id))
-            # status = ats310.check_capture(prm_id, progress_callback)
+            self._logger.info(f'Check capture for  {prm_id}.')
             status = self._prm_digitizer.check_capture(prm_id)
-            # start = time.time()
-            # status = False
-            # while 10 > time.time() - start:
-            #     status = self._adpro_control.check_capture(prm_id)
-            #     print('status', status)
-            #     if status == True:
-            #         break
-            if not status: print('!!!!!!!!!!!!!!!!! check_capture failed')
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
-            # data_raw = ats310.get_data()
-            # data_raw = self._adpro_control.get_data(prm_id)
             data_raw = self._prm_digitizer.get_data(prm_id)
-            # print('1', data_raw['1'])
+
             for k in data_raw.keys():
                 if k == '1':
                     data_raw[k] = [data_raw[k]]
@@ -303,10 +303,12 @@ class PrMManager():
                     data_raw[k] = [data_raw[k]]
                     data_raw['B'] = data_raw[k]
                     del data_raw[k]
-            # print('A', data_raw['A'])
+
+            # Combine data in case we are doing multiple repetitions
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
             data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
-        # print('From manager:', data)
+
+        # Pack all the data in a dictionary
         data = {
             'prm_id': prm_id,
             'status': status,
@@ -315,25 +317,16 @@ class PrMManager():
             'B': data_raw_combined['B'],
         }
 
+        # Send the data for saving
         data_callback.emit(data)
 
-        # self._prm_control.stop_prm(prm_id)
-        # self._adpro_control.lamp_off(prm_id)
         self._prm_digitizer.lamp_off(prm_id)
-        # self._window.start_stop_prm(prm_id)
-        # if self._mode == 'auto':
-
-        #     self._window.reset_progress(prm_id, name='Done!', color='#006400')
-        #     time.sleep(0.5)
-        #     self._window.reset_progress(prm_id, name='Waiting', color='#ffffff') # dark green
-        #     print('UUU')
 
         # Not used
         return data
 
 
     def _thread_data(self, data):
-
         '''
         This method is called at the end of every thread and receives the acquired data.
 
@@ -350,24 +343,6 @@ class PrMManager():
             }
             self.save_data(data['prm_id'])
             print('Saved data.')
-
-    # def _result_callback(self, data):
-    #     '''
-    #     This method is called at the end of every thread and receives the acquired data.
-
-    #     Args:
-    #         data (dict): The acquired data.
-    #     '''
-    #     print('Got data:', data['prm_id'])
-
-    #     if data['status']:
-    #         print('ok')
-    #         self._data[data['prm_id']] = {
-    #             'A': data['A'],
-    #             'B': data['B'],
-    #             'time': data['time'],
-    #         }
-    #         self.save_data(data['prm_id'])
 
 
     def _thread_progress(self, prm_id, name, progress):
@@ -390,7 +365,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             status (bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info('Thread completed for prm_id {prm_id}.'.format(prm_id=prm_id))
+        self._logger.info(f'Thread completed for prm_id {prm_id}.')
         # self._window.start_stop_prm(prm_id)
 
         if status:
@@ -401,12 +376,6 @@ class PrMManager():
         QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
 
         self._is_running[prm_id] = False
-
-        # if self._mode == 'auto':
-        #     time_interval = 20
-        # #     import threading
-        # #     threading.Timer(time_interval, lambda: self.start_prm(prm_id)).start()
-        #     QTimer.singleShot(time_interval * 1000, lambda: self.start_io_thread(prm_id))
 
 
     def save_data(self, prm_id=1):
@@ -431,10 +400,6 @@ class PrMManager():
             return
 
         for ch in self._data[prm_id].keys():
-            # file_name = self._data_files_path + '/sbnd_prm_data_' + timestr + '_' + ch + '.csv'
-            # np.savetxt(file_name, self._data[ch], delimiter=',')
-            # self._logger.info(f'Saving data for ch {ch} to file ' + file_name)
-
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
 
         if self._hv_on:
@@ -481,10 +446,16 @@ class PrMManager():
 
 
     def set_comment(self, comment):
+        '''
+        Sets a comment that will appear in the output file
+        '''
         self._comment = comment
 
 
     def is_running(self, prm_id):
+        '''
+        Returns True if run is ongoing for prm_id
+        '''
         return self._is_running[prm_id]
 
 
@@ -498,16 +469,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
 
-        # Tell the parallel communicator to start the purity monitor
-        # self._comm.start_prm()
-        # self._prm_control.start_prm(prm_id)
-
         self._is_running[prm_id] = True
-
-        # if self._use_hv:
-        #     self.hv_on(prm_id)
-        # else:
-        #     self.hv_off(prm_id)
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
@@ -523,10 +485,6 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        # self._comm.stop_prm()
-        # self._prm_control.stop_prm(prm_id)
-        # self.hv_off()
-        return
 
 
     def hv_on(self, prm_id=1):
@@ -560,8 +518,7 @@ class PrMManager():
             mode (int): The desired mode.
         '''
         self._mode = mode
-        self._logger.info('Setting mode to: {mode}'.format(
-                          mode=self._mode))
+        self._logger.info(f'Setting mode to: {self._mode}')
 
         if self._mode == 'auto':
             self._window.set_start_button_status(prm_id, False)
@@ -607,6 +564,7 @@ class PrMManager():
         '''
         return self._data[prm_id]
 
+
     def get_hv(self, prm_id):
         '''
         Returns the HV values for the cathode and anode
@@ -624,6 +582,7 @@ class PrMManager():
         anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
 
         return cathode_hv, anode_hv, anodegrid_hv
+
 
     def get_hv_status(self, prm_id):
         '''
