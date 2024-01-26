@@ -445,7 +445,7 @@ class PrMManager():
         )
         dir_name = os.path.join(self._data_files_path, run_name)
         os.mkdir(dir_name)
-        
+
         # All in one zipped numpy file
         if self._save_as_npz:
             np.savez(os.path.join(dir_name, run_name + '.npz'), **out_dict)
@@ -454,11 +454,11 @@ class PrMManager():
         if self._save_as_txt:
             for k, v in out_dict.items():
                 file_name = os.path.join(dir_name, run_name + '_' + k + '.txt')
-                if type(v) == list:
+                if isinstance(v, list):
                     v = np.stack(v)
                     np.savetxt(file_name, v[...,np.newaxis] if v.ndim == 1 else v)
                 else:
-                    with open(file_name, 'w') as f:
+                    with open(file_name, 'w', encoding='utf-8') as f:
                         f.write(str(v))
 
 
