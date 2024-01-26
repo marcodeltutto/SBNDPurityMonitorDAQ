@@ -24,7 +24,7 @@ parser.add_argument('--mock', action='store_true',
                     default=False,
                     help='If true, runs a mock application for debugging purposes.')
 parser.add_argument('--datafiles',
-                    default='/home/mdeltutt/prm_data',
+                    default='',
                     help='Path where data files will be saved.')
 parser.add_argument('--logfile',
                     default='prm_log.txt',
@@ -48,6 +48,8 @@ settings = os.path.join(os.path.dirname(__file__), 'settings.yaml')
 
 with open(settings, encoding="utf-8") as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
+if args.datafiles:
+    config["data_files_path"] = args.datafiles
 print('Config:', yaml.dump(config), sep='\n')
 
 # logger.info(yaml.dump(config))
