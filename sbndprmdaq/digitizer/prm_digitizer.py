@@ -6,7 +6,7 @@ import logging
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 try:
     import sbndprmdaq.digitizer.atsapi as ats
-except:
+except ImportError:
     pass
 from sbndprmdaq.digitizer.ats310 import ATS310
 from sbndprmdaq.digitizer.adpro_control import ADProControl
@@ -58,6 +58,7 @@ class PrMDigitizer(DigitizerBase):
 
             self._digitizers[prm_id] = digitizer
 
+    #pylint: disable=unused-argument
     def _get_adpro_digitizer(self, prm_id, config):
         '''
         Returns an ADProControl Digitzer. Right now, we assume this is
@@ -121,7 +122,7 @@ class PrMDigitizer(DigitizerBase):
                 return self._bounded_prms[prm_id]
 
         self._logger.error(f'PrM {prm_id} not available.')
-        raise Exception()
+        raise ValueError()
 
     def busy(self, prm_id=1):
 

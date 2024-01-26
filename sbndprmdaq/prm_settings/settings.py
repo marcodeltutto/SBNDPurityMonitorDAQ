@@ -22,7 +22,7 @@ class SinglePrMHVSettings(QtWidgets.QMainWindow):
         self._description = description
         self._name_label.setText(self._name)
         self._description_label.setText(description)
-        self._hv_toggle.setName('HV')
+        self._hv_toggle.set_name('HV')
 
     def get_id(self):
         return self._id

@@ -30,7 +30,7 @@ class Toggle(QtWidgets.QPushButton):
         self._name2 = None
         self._simple_option = False
 
-    def setName(self, name):
+    def set_name(self, name):
         '''
         Sets the Toggle name
         '''
@@ -38,7 +38,7 @@ class Toggle(QtWidgets.QPushButton):
         self._name1 = None
         self._name2 = None
 
-    def setNames(self, name1, name2):
+    def set_names(self, name1, name2):
         '''
         Sets the Toggle names
         '''
@@ -46,12 +46,12 @@ class Toggle(QtWidgets.QPushButton):
         self._name2 = name2
         self._name = None
 
-    def isSimpleOption(self, so=True):
+    def is_simple_option(self, simple_option=True):
         '''
         Sets if this Toggle is a simple option (shown in grey)
         or if a red/green toggle is needed.
         '''
-        self._simple_option = so
+        self._simple_option = simple_option
 
     def paintEvent(self, event):
         #pylint: disable=invalid-name
@@ -106,7 +106,7 @@ class Toggle(QtWidgets.QPushButton):
         - value: (bool) the value to set
         '''
         if value is None:
-            return
+            return None
         return self.setChecked(value)
 
     def value(self):
