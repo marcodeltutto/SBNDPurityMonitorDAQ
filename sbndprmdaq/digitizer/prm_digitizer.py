@@ -6,7 +6,7 @@ import logging
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 try:
     import sbndprmdaq.digitizer.atsapi as ats
-except ImportError:
+except OSError:
     pass
 from sbndprmdaq.digitizer.ats310 import ATS310
 from sbndprmdaq.digitizer.adpro_control import ADProControl

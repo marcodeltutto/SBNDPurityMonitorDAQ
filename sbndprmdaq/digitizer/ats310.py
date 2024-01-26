@@ -13,7 +13,7 @@ from sbndprmdaq.digitizer.lamp_control_arduino import LampControlArduino
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 try:
     import sbndprmdaq.digitizer.atsapi as ats
-except ImportError:
+except OSError:
     pass
 
 #pylint: disable=invalid-name,too-many-instance-attributes
