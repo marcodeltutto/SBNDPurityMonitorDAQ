@@ -443,23 +443,20 @@ class PrMManager():
             '_data_' +
             timestr
         )
-        dir_name = os.path.join(self._data_files_path, run_name)
-        os.mkdir(dir_name)
 
-        # All in one zipped numpy file
         if self._save_as_npz:
-            np.savez(os.path.join(dir_name, run_name + '.npz'), **out_dict)
+            np.savez(os.path.join(self._data_files_path, run_name + '.npz'), **out_dict)
 
-        # Split into multiple text files
         if self._save_as_txt:
-            for k, v in out_dict.items():
-                file_name = os.path.join(dir_name, run_name + '_' + k + '.txt')
-                if isinstance(v, list):
-                    v = np.stack(v)
-                    np.savetxt(file_name, v[...,np.newaxis] if v.ndim == 1 else v)
-                else:
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(str(v))
+            file_name = os.path.join(self._data_files_path, run_name + '.txt')
+            with open(file_name, 'w', encoding='utf-8') as f:
+                for k, v in out_dict.items():
+                    if isinstance(v, list):
+                        v = np.stack(v) # assuming list of arrays
+                        v_str = str(v.tolist()).replace(" ", "")
+                        f.write(k + '=' + v_str + '\n')
+                    else:
+                        f.write(k + '=' + str(v) + '\n')
 
 
     def set_comment(self, comment):
