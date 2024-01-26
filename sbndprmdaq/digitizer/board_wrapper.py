@@ -96,6 +96,7 @@ class BoardWrapper:
     extra arguments:
     """
 
+    #pylint: disable=broad-exception-raised
     def _wrap(self, func, is_ats_func, *args, **kwargs):
         """
         Wrapper function. This implements the try-catch statement
@@ -130,9 +131,11 @@ class BoardWrapper:
             self._logger.error(error)
             raise Exception() from error
 
+        return None
+
 
     def __init__(self, instance, logger, ExceptionType):
-        #pylint: disable=invalid-name
+        #pylint: disable=invalid-name,unnecessary-lambda-assignment
         """
         Constructor.
         It implements public methods by wrapping that of 'instance' within

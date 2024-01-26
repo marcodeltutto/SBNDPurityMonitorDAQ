@@ -50,8 +50,8 @@ class Control(QtWidgets.QMainWindow):
         self._description = description
         self._name_label.setText(self._name)
         self._description_label.setText(description)
-        self._mode_toggle.setNames('Auto', 'Manual')
-        self._mode_toggle.isSimpleOption()
+        self._mode_toggle.set_names('Auto', 'Manual')
+        self._mode_toggle.is_simple_option()
         self._running = False
 
         self._progress_bar.setValue(0)

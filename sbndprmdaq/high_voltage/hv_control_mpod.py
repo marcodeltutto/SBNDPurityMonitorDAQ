@@ -50,7 +50,9 @@ class HVControlMPOD(HVControlBase):
               or (f'mpod_prm{prm_id}_anodegrid_ch' not in config) \
               or (f'mpod_prm{prm_id}_cathode_ch' not in config):
                 raise HVControlException(self._logger,
-                                         f'Missing mpod_prm{prm_id}_anode_ch or mpod_prm{prm_id}_anodegrid_ch or mpod_prm{prm_id}_cathode_ch in config.')
+                                         f'Missing mpod_prm{prm_id}_anode_ch \
+                                         or mpod_prm{prm_id}_anodegrid_ch \
+                                         or mpod_prm{prm_id}_cathode_ch in config.')
             self._anode_channels[prm_id] = config[f'mpod_prm{prm_id}_anode_ch']
             self._anodegrid_channels[prm_id] = config[f'mpod_prm{prm_id}_anodegrid_ch']
             self._cathode_channels[prm_id] = config[f'mpod_prm{prm_id}_cathode_ch']
@@ -68,16 +70,15 @@ class HVControlMPOD(HVControlBase):
         cmd += t + ' '
         cmd += value
         self._logger.info(f'Subprocess: {cmd}')
-        # subprocess.run(cmd.split())
 
         # Start a subprocess
         start = time.time()
-        proc = subprocess.Popen(cmd.split())
-        while proc.poll():
-            time.sleep(0.1)
-            if time.time() - start > 5:
-                proc.terminate()
-                raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
+        with subprocess.Popen(cmd.split()) as proc:
+            while proc.poll():
+                time.sleep(0.1)
+                if time.time() - start > 5:
+                    proc.terminate()
+                    raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
 
         # cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/  -m +WIENER-CRATE-MIB -c private 192.168.0.25  sysMainSwitch.0 i 1".format()
 
@@ -90,12 +91,13 @@ class HVControlMPOD(HVControlBase):
 
         # Start a subprocess
         start = time.time()
-        proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-        while proc.poll():
-            time.sleep(0.1)
-            if time.time() - start > 5:
-                proc.terminate()
-                raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
+
+        with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE) as proc:
+            while proc.poll():
+                time.sleep(0.1)
+                if time.time() - start > 5:
+                    proc.terminate()
+                    raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
 
         return proc.communicate()[0].decode("utf-8")
 

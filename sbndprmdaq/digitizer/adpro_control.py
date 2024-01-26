@@ -16,6 +16,7 @@ class ADProControl(DigitizerBase):
     This class controls the Analog Discovery Pro digitizer
     '''
 
+    #pylint: disable=unused-argument
     def __init__(self, prm_ids=None, config=None):
         '''
         Contructor.
@@ -55,6 +56,7 @@ class ADProControl(DigitizerBase):
         self._logger.info(f'ADPro API available at {self._url}')
 
 
+    #pylint: disable=unused-variable
     def _start_api(self, config):
         '''
         Starts the Analog Discovery Pro API on the ditizer itself.
@@ -82,17 +84,18 @@ class ADProControl(DigitizerBase):
         command += 'sudo /home/digilent/.local/bin/uvicorn main:app --reload'
         print('Executing command:', command)
         stdin, stdout, stderr = self._ssh.exec_command(command)
-        self._logger.info('Executed ' + command + ' on ' + config['adpro_ip'])
+        self._logger.info(f"Executed {command} on {config['adpro_ip']}")
         # self._logger.info('Errors:' + ' '.join(stderr.readlines()))
         # self._logger.info('Out:' + ' '.join(stdout.readlines()))
         self._logger.info('Waiting for ADPro API to start...')
-        
+
         time.sleep(8)
         while not self._check_digitizer():
             time.sleep(1)
         self._logger.info('ADPro API ready.')
 
 
+    #pylint: disable=bare-except
     def _check_digitizer(self):
 
         try:
@@ -218,4 +221,3 @@ class ADProControl(DigitizerBase):
 
 if __name__ == "__main__":
     adpro = ADProControl()
-

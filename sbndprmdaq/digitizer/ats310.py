@@ -13,8 +13,10 @@ from sbndprmdaq.digitizer.lamp_control_arduino import LampControlArduino
 from sbndprmdaq.digitizer.digitizer_base import DigitizerBase
 try:
     import sbndprmdaq.digitizer.atsapi as ats
-except:
+except OSError:
     pass
+
+#pylint: disable=invalid-name,too-many-instance-attributes
 
 class ATS310Exception(Exception):
     """
@@ -97,6 +99,13 @@ class ATS310(DigitizerBase):
 
         self._lamp_control = LampControlArduino(config)
 
+        # Start time of acquisition
+        self._start = None
+
+        # Will store acquired data
+        self._data = None
+
+
 
     def get_trigger_sample(self):
         '''
@@ -117,7 +126,7 @@ class ATS310(DigitizerBase):
         '''
         return self._samples_per_sec
 
-    def set_samples_per_second(self, n):
+    def set_samples_per_second(self, samples):
         '''
         Sets the samples per seconds the digitizer is acquiring.
 
@@ -125,7 +134,7 @@ class ATS310(DigitizerBase):
             n (int): Number of samples per second
         '''
         print('To be implemented')
-        self._samples_per_sec = n
+        self._samples_per_sec = samples
 
     def get_pre_trigger_samples(self):
         '''
@@ -161,7 +170,7 @@ class ATS310(DigitizerBase):
         '''
         Configures the board for acquisition
         '''
-        # TODO: Select clock parameters as required to generate this
+        # Select clock parameters as required to generate this
         # sample rate
         #
         # For example: if self._samples_per_sec is 100e6 (100 MS/s), then you can
@@ -273,6 +282,7 @@ class ATS310(DigitizerBase):
         '''
         Prepares for the acquisition.
         '''
+        #pylint: disable=unused-variable
 
         # Compute the number of bytes per record and per buffer
         memory_size_samples, bits_per_sample = self._board.getChannelInfo()
@@ -302,7 +312,7 @@ class ATS310(DigitizerBase):
         self._start = time.time() # Keep track of when acquisition started
         self._board.startCapture() # Start the acquisition
         self._logger.info(f'Capturing data from ATS digitized with id {self._system_id}, board id: {self._board_id}.')
-        print("Capturing %d record. Press <enter> to abort" % self._records_per_capture)
+        print(f"Capturing {self._records_per_capture} record.")
 
         return True
 
@@ -315,6 +325,8 @@ class ATS310(DigitizerBase):
             prm_id (int): The purity monitor ID (for logging).
             progress_callback (function): The callback for progress (for logging).
         '''
+        #pylint: disable=unused-variable
+
         self._capture_success = False
 
         status = False
@@ -350,11 +362,10 @@ class ATS310(DigitizerBase):
         #     time.sleep(10e-3)
 
         captureTime_sec = time.time() - self._start
-        recordsPerSec = 0
+        # recordsPerSec = 0
         if captureTime_sec > 0:
             recordsPerSec = self._records_per_capture / captureTime_sec
-        print("Captured %d records in %f rec (%f records/sec)" %
-              (self._records_per_capture, captureTime_sec, recordsPerSec))
+        print("Captured {self._records_per_capture} records in {captureTime_sec} rec ({recordsPerSec} records/sec)")
         self._capture_success = True
 
         return True
@@ -378,7 +389,7 @@ class ATS310(DigitizerBase):
         if not self._capture_success:
             return self._data
 
-        buffersCompleted = 0
+        # buffersCompleted = 0
         bytesTransferred = 0
 
         sample_type = ctypes.c_uint8
@@ -388,7 +399,7 @@ class ATS310(DigitizerBase):
         buffer = ats.DMABuffer(self._board.handle, sample_type, self._bytes_per_buffer + 16)
 
         # Transfer the records from on-board memory to our buffer
-        print("Transferring %d records..." % self._records_per_capture)
+        print(f"Transferring {self._records_per_capture} records...")
 
         for record in range(self._records_per_capture):
             if ats.enter_pressed():
@@ -441,8 +452,7 @@ class ATS310(DigitizerBase):
         bytesPerSec = 0
         if transferTime_sec > 0:
             bytesPerSec = bytesTransferred / transferTime_sec
-        print("Transferred %d bytes (%f bytes per sec)" %
-              (bytesTransferred, bytesPerSec))
+        print(f"Transferred {bytesTransferred} bytes ({bytesPerSec} bytes per sec)")
 
         del buffer
 
@@ -456,6 +466,7 @@ class ATS310(DigitizerBase):
         '''
         Converts self._data from ADC to volts
         '''
+        #pylint: disable=no-member
 
         bit_shift = int(4)
         bits_per_sample = int(12)
@@ -488,12 +499,12 @@ class ATS310(DigitizerBase):
         '''
         return self._board.busy()
 
-    def set_number_acquisitions(self, value):
+    def set_number_acquisitions(self, n_acquisitions):
         '''
         Sets the number of acquisitions.
         '''
-        print('Setting n acquistions to', value)
-        self._records_per_capture = int(value)
+        print('Setting n acquistions to', n_acquisitions)
+        self._records_per_capture = int(n_acquisitions)
         self._board.setRecordCount(self._records_per_capture)
 
     def get_number_acquisitions(self):
@@ -572,13 +583,13 @@ if __name__ == "__main__":
     # board = ats.Board(systemId = 1, boardId = 1)
     # ConfigureBoard(board)
     # AcquireData(board)
-    prm_id_to_ats_systemid = {
+    prm_id_to_ats_systemid_ = {
         1: 1,
         2: 2,
         3: 3
     }
 
-    digitizers = get_digitizers(prm_id_to_ats_systemid)
+    digitizers_ = get_digitizers(prm_id_to_ats_systemid_)
 
     my_ats310 = ATS310()
     my_ats310.start_capture()

@@ -13,7 +13,7 @@ from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
 
-#pylint: disable=too-many-public-methods
+#pylint: disable=too-many-public-methods,too-many-branches
 class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
