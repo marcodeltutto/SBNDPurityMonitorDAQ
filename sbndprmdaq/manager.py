@@ -38,6 +38,8 @@ class PrMManager():
         self._repetitions = {}
 
         self._data_files_path = config['data_files_path']
+        self._save_as_npz = config['save_as_npz']
+        self._save_as_txt = config['save_as_txt']
 
         for prm_id in config['prm_ids']:
             self._data[prm_id] = None
@@ -391,6 +393,9 @@ class PrMManager():
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
             return
+        if not self._save_as_npz and not self._save_as_txt:
+            self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
+            return
 
         out_dict = {}
 
@@ -432,17 +437,26 @@ class PrMManager():
             for k, v in configs.items():
                 out_dict['config_' + k] = v
 
-        file_name = self._data_files_path
-        # file_name = '/home/nfs/mdeltutt/work/purity_monitors/blanche_data_jul2023'
-        file_name += '/sbnd_prm'
-        file_name += str(prm_id)
-        file_name += '_run_'
-        file_name += str(self._run_numbers[prm_id])
-        file_name += '_data_'
-        file_name += timestr
-        file_name += '.npz'
+        run_name = (
+            'sbnd_prm' + str(prm_id) +
+            '_run_' + str(self._run_numbers[prm_id]) +
+            '_data_' +
+            timestr
+        )
 
-        np.savez(file_name, **out_dict)
+        if self._save_as_npz:
+            np.savez(os.path.join(self._data_files_path, run_name + '.npz'), **out_dict)
+
+        if self._save_as_txt:
+            file_name = os.path.join(self._data_files_path, run_name + '.txt')
+            with open(file_name, 'w', encoding='utf-8') as f:
+                for k, v in out_dict.items():
+                    if isinstance(v, list):
+                        v = np.stack(v) # assuming list of arrays
+                        v_str = str(v.tolist()).replace(" ", "")
+                        f.write(k + '=' + v_str + '\n')
+                    else:
+                        f.write(k + '=' + str(v) + '\n')
 
 
     def set_comment(self, comment):
