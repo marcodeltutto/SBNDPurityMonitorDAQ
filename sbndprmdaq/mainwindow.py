@@ -478,16 +478,17 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_controls[prm_id].set_progress(name, perc, **kwargs)
 
-    def reset_progress(self, prm_id, name=None, **kwargs):
+    def reset_progress(self, prm_ids, name=None, **kwargs):
         '''
         Resets the progress in the progress bar.
 
         Args:
-            prm_id (int): The purity monitor ID.
+            prm_ids (list): The list of purity monitor IDs.
             name (str): The name of the current task.
             color (hex): The color of the text.
         '''
-        self._prm_controls[prm_id].reset_progress(name, **kwargs)
+        for prm_id in prm_ids:
+            self._prm_controls[prm_id].reset_progress(name, **kwargs)
 
 
     def start_stop_prm(self, prm_id):

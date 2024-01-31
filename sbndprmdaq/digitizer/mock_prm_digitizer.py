@@ -68,7 +68,7 @@ class MockDigitizer(DigitizerBase):
 
     def check_capture(self):
         '''Returns true if data has been captured'''
-        return 1
+        return True
 
     def get_data(self):
         '''Returns the captured data'''
