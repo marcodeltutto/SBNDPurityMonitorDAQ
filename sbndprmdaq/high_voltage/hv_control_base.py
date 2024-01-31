@@ -22,6 +22,7 @@ class HVControlException(Exception):
         super().__init__(self._message)
 
 
+#pylint: disable=invalid-name
 class HVControlBase(ABC):
     '''
     A base class to control the HV.
@@ -46,7 +47,7 @@ class HVControlBase(ABC):
         self._logger.info('HVControl created.')
 
     @abstractmethod
-    def is_crate_on(self):
+    def is_crate_on(self, ip):
         '''
         Returns True if the crate is ON
         '''

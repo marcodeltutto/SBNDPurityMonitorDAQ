@@ -29,7 +29,7 @@ class MockHVControl(HVControlBase):
                 'anodegrid': 0
             }
 
-    def is_crate_on(self):
+    def is_crate_on(self, ip):
         '''
         Returns True if the crate is ON
         '''
