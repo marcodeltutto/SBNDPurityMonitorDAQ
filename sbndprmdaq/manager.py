@@ -13,7 +13,7 @@ from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
 
-#pylint: disable=too-many-public-methods,too-many-branches
+#pylint: disable=too-many-public-methods,too-many-branches,too-many-statements
 class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
@@ -279,8 +279,7 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             progress_callback (fn): The callback function to be called to show progress (optional)
         Returns:
-            dict: A dictionary containing the prm_id, the status,
-            the data for ch A, the data for ch B NO LONGER USED
+            dict: A dictionary containing the prm_ids processed, and the statuses
         '''
 
         #
@@ -319,7 +318,9 @@ class PrMManager():
         #
         data_raw_combined = {
             'A': [],
-            'B': []
+            'B': [],
+            'C': [],
+            'D': []
         }
 
         for rep in range(self._repetitions[prm_id]):
@@ -341,10 +342,23 @@ class PrMManager():
                     data_raw[k] = [data_raw[k]]
                     data_raw['B'] = data_raw[k]
                     del data_raw[k]
+                if k == '3':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['C'] = data_raw[k]
+                    del data_raw[k]
+                if k == '4':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['D'] = data_raw[k]
+                    del data_raw[k]
 
             # Combine data in case we are doing multiple repetitions
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
             data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
+            data_raw_combined['C'] = data_raw_combined['C'] + data_raw['C']
+            data_raw_combined['D'] = data_raw_combined['D'] + data_raw['D']
+
+        processed_ids = [prm_id]
+        statuses = [status]
 
         # Pack all the data in a dictionary
         data = {
@@ -358,15 +372,33 @@ class PrMManager():
         # Send the data for saving
         data_callback.emit(data)
 
+        if prm_id in self._prm_id_bounded:
+            processed_ids.append(self._prm_id_bounded[prm_id])
+            statuses.append(status)
+            data = {
+                'prm_id': self._prm_id_bounded[prm_id],
+                'status': status,
+                'time': datetime.datetime.today(),
+                'A': data_raw_combined['C'],
+                'B': data_raw_combined['D'],
+            }
+
+            # Send the data for saving
+            data_callback.emit(data)
+
+
         self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
         self._prm_digitizer.lamp_off(prm_id)
 
         self._logger.info(f'Turning HV off for PrM {prm_id}.')
         self._hv_control.hv_on(prm_id)
 
+        ret = {
+            'prm_ids': processed_ids,
+            'statuses': statuses,
+        }
 
-        # Not used
-        return data
+        return ret
 
 
     def _thread_data(self, data):
@@ -385,7 +417,7 @@ class PrMManager():
                 'time': data['time'],
             }
             self.save_data(data['prm_id'])
-            print('Saved data.')
+            print('Saved data for prm_id', data['prm_id'])
 
 
     def _thread_progress(self, prm_id, name, progress):
@@ -398,27 +430,31 @@ class PrMManager():
             progress (int): The progress (0 to 100 percent).
         '''
         self._window.set_progress(prm_id=prm_id, name=name, perc=progress)
+        if prm_id in self._prm_id_bounded:
+            self._window.set_progress(prm_id=self._prm_id_bounded[prm_id], name=name, perc=progress)
 
 
-    def _thread_complete(self, prm_id, status):
+
+    def _thread_complete(self, prm_ids, statuses):
         '''
         Called when a thread ends.
 
         Args:
-            prm_id (int): The purity monitor ID.
-            status (bool): True is the acquisition suceeded, False otherwise.
+            prm_ids (list if int): The purity monitor IDs.
+            statuss (list bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info(f'Thread completed for prm_id {prm_id}.')
-        # self._window.start_stop_prm(prm_id)
 
-        if status:
-            self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
-        else:
-            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
+        for prm_id, status in zip(prm_ids, statuses):
+            self._logger.info(f'Thread completed for prm_id {prm_id}.')
 
-        QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
+            if status:
+                self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
+            else:
+                self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
 
-        self._is_running[prm_id] = False
+            QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
+
+            self._is_running[prm_id] = False
 
 
     def save_data(self, prm_id=1):
@@ -514,24 +550,24 @@ class PrMManager():
         return self._is_running[prm_id]
 
 
+    # def start_prm(self, prm_id=1):
+    #     '''
+    #     Starts prm_id and also all the other PrMs
+    #     bounded to it.
+
+    #     Args:
+    #         prm_id (int): The purity monitor ID.
+    #     '''
+    #     prm_ids = [prm_id]
+
+    #     if prm_id in self._prm_id_bounded:
+    #         prm_ids.append(self._prm_id_bounded[prm_id])
+
+    #     for pm_id in prm_ids:
+    #         self.start_single_prm(pm_id)
+
+
     def start_prm(self, prm_id=1):
-        '''
-        Starts prm_id and also all the other PrMs
-        bounded to it.
-
-        Args:
-            prm_id (int): The purity monitor ID.
-        '''
-        prm_ids = [prm_id]
-
-        if prm_id in self._prm_id_bounded:
-            prm_ids.append(self._prm_id_bounded[prm_id])
-
-        for pm_id in prm_ids:
-            self.start_single_prm(pm_id)
-
-
-    def start_single_prm(self, prm_id=1):
         '''
         Starts the thread for running prm_id.
 

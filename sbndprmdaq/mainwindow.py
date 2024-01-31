@@ -200,13 +200,16 @@ class Control(QtWidgets.QMainWindow):
         self._anodegrid_hv_label.setStyleSheet("color: white;")
         self._anode_hv_label.setStyleSheet("color: white;")
 
-        if status == 0:    
+        if status == 0:
             return
 
         for item in status:
-            if item == 'cathode': self._cathode_hv_label.setStyleSheet("color: red;")
-            if item == 'anodegrid': self._anodegrid_hv_label.setStyleSheet("color: red;")
-            if item == 'anode': self._anode_hv_label.setStyleSheet("color: red;")
+            if item == 'cathode':
+                self._cathode_hv_label.setStyleSheet("color: red;")
+            if item == 'anodegrid':
+                self._anodegrid_hv_label.setStyleSheet("color: red;")
+            if item == 'anode':
+                self._anode_hv_label.setStyleSheet("color: red;")
 
 
 

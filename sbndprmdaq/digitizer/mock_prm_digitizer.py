@@ -11,6 +11,8 @@ class MockDigitizer(DigitizerBase):
     '''
     A mock PrM digitizer class for testing purposed
     '''
+    def __init__(self, prm_id):
+        self._prm_id = prm_id
 
     def busy(self):
         '''Returns true is the digitizer is busy'''
@@ -72,12 +74,15 @@ class MockDigitizer(DigitizerBase):
         '''Returns the captured data'''
         records_per_capture=1
         sample_size=4096
+        offset = self._prm_id * 10
         data = {
             'prm_id': 1,
             'status': True,
             'time': datetime.datetime.today(),
-            'A': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)] * records_per_capture,
-            'B': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)] * records_per_capture
+            'A': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)+offset] * records_per_capture,
+            'B': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)+offset] * records_per_capture,
+            'C': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)+offset] * records_per_capture,
+            'D': [np.random.normal(loc=0.0, scale=1.0, size=sample_size)+offset] * records_per_capture
         }
         return data
 
@@ -91,10 +96,10 @@ class MockPrMDigitizer(PrMDigitizer):
         '''
         Overrides
         '''
-        return MockDigitizer()
+        return MockDigitizer(prm_id)
 
     def _get_ats310_digitizer(self, systemid, config=None):
         '''
         Overrides
         '''
-        return MockDigitizer()
+        return MockDigitizer(systemid)

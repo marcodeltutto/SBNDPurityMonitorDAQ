@@ -15,7 +15,7 @@ class WorkerSignals(QObject):
     result `parameter`, `object` data returned from processing: parameter, value
     progress `int` indicating % progress (currently not used)
     '''
-    finished = pyqtSignal(int, bool) # prm_id, status
+    finished = pyqtSignal(list, list) # prm_id, status
     error = pyqtSignal(tuple)
     # result = pyqtSignal(object, object)
     result = pyqtSignal(object)
@@ -57,7 +57,7 @@ class Worker(QRunnable):
         '''
         Initialise the runner function with passed args, kwargs.
         '''
-        result = {'prm_id': None, 'status': None}
+        result = {'prm_ids': None, 'statuses': None}
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
@@ -69,4 +69,4 @@ class Worker(QRunnable):
         # else:
             # self.signals.result.emit(result)  # Return the result of the processing
         finally:
-            self.signals.finished.emit(result['prm_id'], result['status'])  # Done
+            self.signals.finished.emit(result['prm_ids'], result['statuses'])  # Done
