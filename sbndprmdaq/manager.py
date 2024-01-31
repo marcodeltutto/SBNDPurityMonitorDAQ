@@ -236,7 +236,7 @@ class PrMManager():
         return self._run_numbers[prm_id]
 
 
-    def start_io_thread(self, prm_id):
+    def start_thread(self, prm_id):
         '''
         Starts the thread.
 
@@ -250,6 +250,7 @@ class PrMManager():
         worker.signals.data.connect(self._thread_data)
         # worker.setAutoDelete(False)
 
+        self._logger.info(f'About to start thread for prm_id {prm_id}.')
         self._threadpool.start(worker)
         self._logger.info(f'Thread started for prm_id {prm_id}.')
 
@@ -479,6 +480,7 @@ class PrMManager():
         '''
         return self._is_running[prm_id]
 
+
     def start_prm(self, prm_id=1):
         '''
         Starts prm_id and also all the other PrMs
@@ -496,7 +498,6 @@ class PrMManager():
             self.start_single_prm(pm_id)
 
 
-
     def start_single_prm(self, prm_id=1):
         '''
         Starts the thread for running prm_id.
@@ -508,7 +509,7 @@ class PrMManager():
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
-            self.start_io_thread(prm_id)
+            self.start_thread(prm_id)
         else:
             self.capture_data(prm_id)
 
