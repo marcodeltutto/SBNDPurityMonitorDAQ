@@ -57,8 +57,10 @@ class PrMManager():
         self._threadpool = QThreadPool()
         self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
 
-        for prm_id in config['bound_prms'].keys():
-            self._window.disable_controls(prm_id)
+        self._prm_id_bounded = {}
+        for bounded_id, main_id in config['bound_prms'].items():
+            self._window.disable_controls(bounded_id)
+            self._prm_id_bounded[main_id] = bounded_id
 
 
         # A timer used to periodically run the PrMs
@@ -476,17 +478,31 @@ class PrMManager():
         '''
         return self._is_running[prm_id]
 
-
     def start_prm(self, prm_id=1):
         '''
-        Sets the parallel port pin that turns the PrM ON
-        and starts the thread for the data acquisition.
-        If no GUI is present, the thread is not started.
+        Starts prm_id and also all the other PrMs
+        bounded to it.
 
         Args:
             prm_id (int): The purity monitor ID.
         '''
+        prm_ids = [prm_id]
 
+        if prm_id in self._prm_id_bounded:
+            prm_ids.append(self._prm_id_bounded[prm_id])
+
+        for pm_id in prm_ids:
+            self.start_single_prm(pm_id)
+
+
+
+    def start_single_prm(self, prm_id=1):
+        '''
+        Starts the thread for running prm_id.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
         self._is_running[prm_id] = True
 
         if self._window is not None:
@@ -498,7 +514,7 @@ class PrMManager():
 
     def stop_prm(self, prm_id=1):
         '''
-        Sets the parallel port pin that turns the PrM OFF.
+        Not implemented.
 
         Args:
             prm_id (int): The purity monitor ID.
@@ -507,7 +523,7 @@ class PrMManager():
 
     def hv_on(self, prm_id=1):
         '''
-        Sets the parallel port pin that turns the HV ON.
+        Turns on the HV.
 
         Args:
             prm_id (int): The purity monitor ID.
@@ -518,7 +534,7 @@ class PrMManager():
 
     def hv_off(self, prm_id=1):
         '''
-        Sets the parallel port pin that turns the HV OFF.
+        Turns off the HV.
 
         Args:
             prm_id (int): The purity monitor ID.
