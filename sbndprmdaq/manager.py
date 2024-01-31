@@ -57,6 +57,10 @@ class PrMManager():
         self._threadpool = QThreadPool()
         self._logger.info(f'Number of available threads: {self._threadpool.maxThreadCount()}')
 
+        for prm_id in config['bound_prms'].keys():
+            self._window.disable_controls(prm_id)
+
+
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
         self._mode = 'manual'
