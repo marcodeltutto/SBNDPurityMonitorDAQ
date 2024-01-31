@@ -48,6 +48,11 @@ class MockHVControl(HVControlBase):
         Sets the HV ON.
         '''
         self._logger.info('HV ON.')
+        self._hv_status[prm_id] = {
+            'anode': True,
+            'cathode': True,
+            'anodegrid': True
+        }
 
 
     def hv_off(self, prm_id=1):
@@ -55,6 +60,12 @@ class MockHVControl(HVControlBase):
         Sets the OFF
         '''
         self._logger.info('HV OFF.')
+        self._hv_status[prm_id] = {
+            'anode': False,
+            'cathode': False,
+            'anodegrid': False
+        }
+
 
 
     def set_hv_value(self, item, value, prm_id=1):

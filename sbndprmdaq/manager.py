@@ -286,9 +286,15 @@ class PrMManager():
         #
         # Turn on the HV
         #
+        self._logger.info(f'Turning HV on for PrM {prm_id}.')
         self._hv_control.hv_on(prm_id)
         self.check_hv_range(prm_id)
 
+
+        #
+        # Turn on the lamp
+        #
+        self._logger.info(f'Turning flash lamp on for PrM {prm_id}.')
         self._prm_digitizer.lamp_frequency(10, prm_id)
         self._prm_digitizer.lamp_on(prm_id)
 
@@ -352,7 +358,12 @@ class PrMManager():
         # Send the data for saving
         data_callback.emit(data)
 
+        self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
         self._prm_digitizer.lamp_off(prm_id)
+
+        self._logger.info(f'Turning HV off for PrM {prm_id}.')
+        self._hv_control.hv_on(prm_id)
+
 
         # Not used
         return data
