@@ -13,7 +13,7 @@ from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
 
-#pylint: disable=too-many-public-methods,too-many-branches
+#pylint: disable=too-many-public-methods,too-many-branches,too-many-statements,too-many-locals
 class PrMManager():
     '''
     The purity monitor manager. Takes care of all DAQ aspects.
@@ -236,7 +236,23 @@ class PrMManager():
         return self._run_numbers[prm_id]
 
 
-    def start_io_thread(self, prm_id):
+    def check_hv_range(self, prm_id):
+        '''
+        Checks if the HV is whitin a range
+
+        Return:
+            bool: False is HV is outside of allowed range
+        '''
+        ret = self._hv_control.check_hv_range(prm_id)
+        if ret == 0:
+            return True
+
+        # self._logger.warning('HV value is outside of allowed range!')
+
+        return ret
+
+
+    def start_thread(self, prm_id):
         '''
         Starts the thread.
 
@@ -250,8 +266,36 @@ class PrMManager():
         worker.signals.data.connect(self._thread_data)
         # worker.setAutoDelete(False)
 
+        self._logger.info(f'About to start thread for prm_id {prm_id}.')
         self._threadpool.start(worker)
         self._logger.info(f'Thread started for prm_id {prm_id}.')
+
+    def _lamp_and_hv_on(self, prm_ids):
+
+        for prm_id in prm_ids:
+
+            self._is_running[prm_id] = True
+
+            self._logger.info(f'Turning HV on for PrM {prm_id}.')
+            self._hv_control.hv_on(prm_id)
+            self.check_hv_range(prm_id)
+
+            self._logger.info(f'Turning flash lamp on for PrM {prm_id}.')
+            self._prm_digitizer.lamp_frequency(10, prm_id)
+            self._prm_digitizer.lamp_on(prm_id)
+
+
+    def _lamp_and_hv_off(self, prm_ids):
+
+        for prm_id in prm_ids:
+
+            self._is_running[prm_id] = False
+
+            self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
+            self._prm_digitizer.lamp_off(prm_id)
+
+            self._logger.info(f'Turning HV off for PrM {prm_id}.')
+            self._hv_control.hv_off(prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None, data_callback=None):
@@ -262,12 +306,18 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             progress_callback (fn): The callback function to be called to show progress (optional)
         Returns:
-            dict: A dictionary containing the prm_id, the status,
-            the data for ch A, the data for ch B NO LONGER USED
+            dict: A dictionary containing the prm_ids processed, and the statuses
         '''
 
-        self._prm_digitizer.lamp_frequency(10, prm_id)
-        self._prm_digitizer.lamp_on(prm_id)
+        prm_ids = [prm_id]
+        if prm_id in self._prm_id_bounded:
+            prm_ids.append(self._prm_id_bounded[prm_id])
+
+
+        #
+        # Turn on Lamp and HV
+        #
+        self._lamp_and_hv_on(prm_ids)
 
 
         #
@@ -290,7 +340,9 @@ class PrMManager():
         #
         data_raw_combined = {
             'A': [],
-            'B': []
+            'B': [],
+            'C': [],
+            'D': []
         }
 
         for rep in range(self._repetitions[prm_id]):
@@ -312,10 +364,20 @@ class PrMManager():
                     data_raw[k] = [data_raw[k]]
                     data_raw['B'] = data_raw[k]
                     del data_raw[k]
+                if k == '3':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['C'] = data_raw[k]
+                    del data_raw[k]
+                if k == '4':
+                    data_raw[k] = [data_raw[k]]
+                    data_raw['D'] = data_raw[k]
+                    del data_raw[k]
 
             # Combine data in case we are doing multiple repetitions
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
             data_raw_combined['B'] = data_raw_combined['B'] + data_raw['B']
+            data_raw_combined['C'] = data_raw_combined['C'] + data_raw['C']
+            data_raw_combined['D'] = data_raw_combined['D'] + data_raw['D']
 
         # Pack all the data in a dictionary
         data = {
@@ -329,10 +391,30 @@ class PrMManager():
         # Send the data for saving
         data_callback.emit(data)
 
-        self._prm_digitizer.lamp_off(prm_id)
+        if prm_id in self._prm_id_bounded:
+            data = {
+                'prm_id': self._prm_id_bounded[prm_id],
+                'status': status,
+                'time': datetime.datetime.today(),
+                'A': data_raw_combined['C'],
+                'B': data_raw_combined['D'],
+            }
 
-        # Not used
-        return data
+            # Send the data for saving
+            data_callback.emit(data)
+
+        #
+        # Turn off Lamp and HV
+        #
+        self._lamp_and_hv_off(prm_ids)
+
+
+        ret = {
+            'prm_ids': prm_ids,
+            'statuses': [status] * len(prm_ids),
+        }
+
+        return ret
 
 
     def _thread_data(self, data):
@@ -342,7 +424,7 @@ class PrMManager():
         Args:
             data (dict): The acquired data.
         '''
-        print('***************Got data:', data['prm_id'])
+        self._logger.info(f'Got data for PrM {data["prm_id"]}.')
 
         if data['status']:
             self._data[data['prm_id']] = {
@@ -351,7 +433,9 @@ class PrMManager():
                 'time': data['time'],
             }
             self.save_data(data['prm_id'])
-            print('Saved data.')
+            self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
+        else:
+            self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
 
 
     def _thread_progress(self, prm_id, name, progress):
@@ -364,27 +448,32 @@ class PrMManager():
             progress (int): The progress (0 to 100 percent).
         '''
         self._window.set_progress(prm_id=prm_id, name=name, perc=progress)
+        if prm_id in self._prm_id_bounded:
+            self._window.set_progress(prm_id=self._prm_id_bounded[prm_id], name=name, perc=progress)
 
 
-    def _thread_complete(self, prm_id, status):
+    def _thread_complete(self, prm_ids, statuses):
         '''
         Called when a thread ends.
 
         Args:
-            prm_id (int): The purity monitor ID.
-            status (bool): True is the acquisition suceeded, False otherwise.
+            prm_ids (list if int): The purity monitor IDs.
+            statuss (list bool): True is the acquisition suceeded, False otherwise.
         '''
-        self._logger.info(f'Thread completed for prm_id {prm_id}.')
-        # self._window.start_stop_prm(prm_id)
 
-        if status:
-            self._window.reset_progress(prm_id, name='Done!', color='#006400') # dark green
-        else:
-            self._window.reset_progress(prm_id, name='Failed!', color='#B22222') # firebrick
+        for prm_id, status in zip(prm_ids, statuses):
+            self._logger.info(f'Thread completed for prm_id {prm_id}. Status: {status}.')
 
-        QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_id))
+            if status:
+                self._window.reset_progress([prm_id], name='Done!', color='#006400') # dark green
+            else:
+                self._window.reset_progress([prm_id], name='Failed!', color='#B22222') # firebrick
 
-        self._is_running[prm_id] = False
+            self._is_running[prm_id] = False
+
+
+        QTimer.singleShot(3000, lambda: self._window.reset_progress(prm_ids))
+
 
 
     def save_data(self, prm_id=1):
@@ -395,6 +484,8 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         # pylint: disable=invalid-name
+        self._logger.info(f'Saving data for PrM {prm_id}.')
+
         self.increment_run_number(prm_id)
 
         if self._data_files_path is None:
@@ -465,6 +556,7 @@ class PrMManager():
                     else:
                         f.write(k + '=' + str(v) + '\n')
 
+        self._logger.info(f'Data saved for PrM {prm_id}.')
 
     def set_comment(self, comment):
         '''
@@ -479,25 +571,25 @@ class PrMManager():
         '''
         return self._is_running[prm_id]
 
+
+    # def start_prm(self, prm_id=1):
+    #     '''
+    #     Starts prm_id and also all the other PrMs
+    #     bounded to it.
+
+    #     Args:
+    #         prm_id (int): The purity monitor ID.
+    #     '''
+    #     prm_ids = [prm_id]
+
+    #     if prm_id in self._prm_id_bounded:
+    #         prm_ids.append(self._prm_id_bounded[prm_id])
+
+    #     for pm_id in prm_ids:
+    #         self.start_single_prm(pm_id)
+
+
     def start_prm(self, prm_id=1):
-        '''
-        Starts prm_id and also all the other PrMs
-        bounded to it.
-
-        Args:
-            prm_id (int): The purity monitor ID.
-        '''
-        prm_ids = [prm_id]
-
-        if prm_id in self._prm_id_bounded:
-            prm_ids.append(self._prm_id_bounded[prm_id])
-
-        for pm_id in prm_ids:
-            self.start_single_prm(pm_id)
-
-
-
-    def start_single_prm(self, prm_id=1):
         '''
         Starts the thread for running prm_id.
 
@@ -508,7 +600,7 @@ class PrMManager():
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
-            self.start_io_thread(prm_id)
+            self.start_thread(prm_id)
         else:
             self.capture_data(prm_id)
 

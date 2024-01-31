@@ -188,6 +188,28 @@ class Control(QtWidgets.QMainWindow):
             self._mode_toggle_label.setVisible(True)
             self._mode_toggle.setVisible(True)
 
+    def hv_out_of_range(self, status):
+        '''
+        If the HV is out of range, it changes the text color to red
+
+        Args:
+            status: 0 if the HV is in range, otherwise list containing item
+            with bad values ("cathode", "anode", "anodegrid")
+        '''
+        self._cathode_hv_label.setStyleSheet("color: white;")
+        self._anodegrid_hv_label.setStyleSheet("color: white;")
+        self._anode_hv_label.setStyleSheet("color: white;")
+
+        if status == 0:
+            return
+
+        for item in status:
+            if item == 'cathode':
+                self._cathode_hv_label.setStyleSheet("color: red;")
+            if item == 'anodegrid':
+                self._anodegrid_hv_label.setStyleSheet("color: red;")
+            if item == 'anode':
+                self._anode_hv_label.setStyleSheet("color: red;")
 
 
 
@@ -456,16 +478,17 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._prm_controls[prm_id].set_progress(name, perc, **kwargs)
 
-    def reset_progress(self, prm_id, name=None, **kwargs):
+    def reset_progress(self, prm_ids, name=None, **kwargs):
         '''
         Resets the progress in the progress bar.
 
         Args:
-            prm_id (int): The purity monitor ID.
+            prm_ids (list): The list of purity monitor IDs.
             name (str): The name of the current task.
             color (hex): The color of the text.
         '''
-        self._prm_controls[prm_id].reset_progress(name, **kwargs)
+        for prm_id in prm_ids:
+            self._prm_controls[prm_id].reset_progress(name, **kwargs)
 
 
     def start_stop_prm(self, prm_id):
@@ -550,6 +573,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 continue
 
             control._running = self._prm_manager.is_running(control.get_id())
+
+            status = self._prm_manager.check_hv_range(control.get_id())
+            control.hv_out_of_range(status)
 
             cathode_hv, anode_hv, anodegrid_hv = self._prm_manager.get_hv(control.get_id())
             cathode_hv_onoff, anode_hv_onoff, anodegrid_hv_onoff = self._prm_manager.get_hv_status(control.get_id())

@@ -22,6 +22,7 @@ class HVControlException(Exception):
         super().__init__(self._message)
 
 
+#pylint: disable=invalid-name
 class HVControlBase(ABC):
     '''
     A base class to control the HV.
@@ -46,7 +47,7 @@ class HVControlBase(ABC):
         self._logger.info('HVControl created.')
 
     @abstractmethod
-    def is_crate_on(self):
+    def is_crate_on(self, ip):
         '''
         Returns True if the crate is ON
         '''
@@ -62,3 +63,48 @@ class HVControlBase(ABC):
         '''
         Turn the HV OFF.
         '''
+
+    @abstractmethod
+    def get_hv_value(self, item, prm_id=1):
+        '''
+        Returns the HV set values
+
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
+        '''
+
+    @abstractmethod
+    def get_hv_sense_value(self, item, prm_id=1):
+        '''
+            Returns the HV sensed values
+
+            args:
+            item: 'anode', 'anodegrid', or 'cathode',
+            prm_id: the prm id
+        '''
+
+    @abstractmethod
+    def get_hv_status(self, item, prm_id=1):
+        '''
+        Returns wheter the HV is on or off
+
+        args:
+        item: 'anode', 'anodegrid', or 'cathode',
+        prm_id: the prm id
+        '''
+
+    def check_hv_range(self, prm_id=1):
+        '''
+        Checks if the HV is whitin a range
+        '''
+        bad = []
+        for item in ['cathode', 'anodegrid', 'anode']:
+            if (self.get_hv_sense_value(item, prm_id) < self._config[f'prm{prm_id}_{item}_hv_range'][0]) \
+            or (self.get_hv_sense_value(item, prm_id) > self._config[f'prm{prm_id}_{item}_hv_range'][1]):
+                bad.append(item)
+
+        if len(bad) == 0:
+            return 0
+
+        return bad

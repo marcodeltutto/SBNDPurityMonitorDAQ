@@ -23,21 +23,27 @@ class HVControlMPOD(HVControlBase):
         #
         # Setting IP MPOD address
         #
-        if 'mpod_ip' not in config:
-            raise HVControlException(self._logger, 'Missing mpod_ip in config.')
+        if 'prm_id_to_mpod_ip' not in config:
+            raise HVControlException(self._logger, 'Missing prm_id_to_mpod_ip in config.')
 
-        self._mpod_ip = config['mpod_ip']
+        self._prm_id_to_mpod_ip = config['prm_id_to_mpod_ip']
 
         # Check if the HV crate is on or off
-        self._logger.info(f'HV Crate is on? {self.is_crate_on()}')
-        self._logger.info(f'prm_ids {prm_ids}')
+        for prm_id, mpod_ip in self._prm_id_to_mpod_ip.items():
 
-        if not self.is_crate_on():
-            # Turn crate on
-            self._logger.info('Turning crate on. Wait for 10 seconds...')
-            self._set_cmd(name='sysMainSwitch.', ch=str(0), t='i', value='1')
-            time.sleep(10)
-            self._logger.info('...done.')
+            if not self.is_crate_on(mpod_ip):
+                self._logger.info(f'HV Crate is OFF for PrM {prm_id}? Try to turn it on...')
+                # Turn crate on
+                self._logger.info(f'Turning crate ON for PrM {prm_id}. Wait for 10 seconds...')
+                self._set_cmd(ip=mpod_ip, name='sysMainSwitch.', ch=str(0), t='i', value='1')
+                time.sleep(10)
+                self._logger.info('...done.')
+
+                # Check again
+                if not self.is_crate_on(mpod_ip):
+                    self._logger.error(f'Cannot turn HV Crate ON for PrM {prm_id}.')
+                    raise HVControlException(self._logger, f'Cannot turn HV Crate ON for PrM {prm_id}.')
+
 
         #
         # Setting HV channels
@@ -57,14 +63,12 @@ class HVControlMPOD(HVControlBase):
             self._anodegrid_channels[prm_id] = config[f'mpod_prm{prm_id}_anodegrid_ch']
             self._cathode_channels[prm_id] = config[f'mpod_prm{prm_id}_cathode_ch']
 
-            # self.set_hv_value(0, prm_id)
-
         self._logger.info('HVControlMPOD created.')
 
-    #pylint: disable=invalid-name
-    def _set_cmd(self, name='sysMainSwitch.', ch='0', t='i', value='0'):
+    #pylint: disable=invalid-name, too-many-arguments
+    def _set_cmd(self, ip='', name='sysMainSwitch.', ch='0', t='i', value='0'):
         cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c guru "
-        cmd += self._mpod_ip + ' '
+        cmd += ip + ' '
         cmd += name
         cmd += ch + ' '
         cmd += t + ' '
@@ -82,9 +86,9 @@ class HVControlMPOD(HVControlBase):
 
         # cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/  -m +WIENER-CRATE-MIB -c private 192.168.0.25  sysMainSwitch.0 i 1".format()
 
-    def _get_cmd(self, name='sysMainSwitch.', ch='0'):
+    def _get_cmd(self, ip='', name='sysMainSwitch.', ch='0'):
         cmd = "snmpget -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c public "
-        cmd += self._mpod_ip + ' '
+        cmd += ip + ' '
         cmd += name
         cmd += ch + ' '
         # self._logger.info('Subprocess: ' + cmd)
@@ -103,11 +107,11 @@ class HVControlMPOD(HVControlBase):
 
 
 
-    def is_crate_on(self):
+    def is_crate_on(self, ip):
         '''
         Returns True if the crate is ON
         '''
-        ret = self._get_cmd(name='sysMainSwitch.', ch=str(0))
+        ret = self._get_cmd(ip=ip, name='sysMainSwitch.', ch=str(0))
 
         if 'on' in ret:
             return True
@@ -119,28 +123,32 @@ class HVControlMPOD(HVControlBase):
         '''
         Sets the HV ON.
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
+
         channel = self._cathode_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='1')
 
         channel = self._anode_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='1')
 
         channel = self._anodegrid_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='1')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='1')
 
 
     def hv_off(self, prm_id=1):
         '''
         Sets the OFF
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
+
         channel = self._cathode_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='0')
 
         channel = self._anode_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='0')
 
         channel = self._anodegrid_channels[prm_id]
-        self._set_cmd(name='outputSwitch.u', ch=str(channel), t='i', value='0')
+        self._set_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), t='i', value='0')
 
 
     def set_hv_value(self, item, value, prm_id=1):
@@ -150,21 +158,22 @@ class HVControlMPOD(HVControlBase):
         Args:
             item: 'anode', 'anodegrid', or 'cathode',
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
 
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
+            self._set_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
+            self._set_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            self._set_cmd(name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
+            self._set_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), t='F', value=str(value))
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
 
-    def get_hv_value(self, item, prm_id):
+    def get_hv_value(self, item, prm_id=1):
         '''
         Returns the HV set values
 
@@ -172,16 +181,18 @@ class HVControlMPOD(HVControlBase):
             item: 'anode', 'anodegrid', or 'cathode',
             prm_id: the prm id
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
+
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
@@ -189,7 +200,7 @@ class HVControlMPOD(HVControlBase):
         ret = float(ret)
         return ret
 
-    def get_hv_sense_value(self, item, prm_id):
+    def get_hv_sense_value(self, item, prm_id=1):
         '''
         Returns the HV sensed values
 
@@ -197,16 +208,18 @@ class HVControlMPOD(HVControlBase):
         item: 'anode', 'anodegrid', or 'cathode',
         prm_id: the prm id
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
+
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
@@ -215,7 +228,7 @@ class HVControlMPOD(HVControlBase):
         return ret
 
 
-    def get_hv_status(self, item, prm_id):
+    def get_hv_status(self, item, prm_id=1):
         '''
         Returns wheter the HV is on or off
 
@@ -223,16 +236,18 @@ class HVControlMPOD(HVControlBase):
         item: 'anode', 'anodegrid', or 'cathode',
         prm_id: the prm id
         '''
+        ip = self._prm_id_to_mpod_ip[prm_id]
+
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 

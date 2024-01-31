@@ -383,7 +383,9 @@ class ATS310(DigitizerBase):
 
         self._data = {
         'A': [],
-        'B': []
+        'B': [],
+        'C': [], # Not used
+        'D': [], # Not used
         }
 
         if not self._capture_success:
