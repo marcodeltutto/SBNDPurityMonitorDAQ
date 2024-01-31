@@ -60,6 +60,8 @@ class Control(QtWidgets.QMainWindow):
         self._lcd_cathode_hv.display('199')
         self._lcd_anode_hv.display('199')
 
+        self._disabled_label.setVisible(False)
+
 
     def get_id(self):
         '''
@@ -163,6 +165,29 @@ class Control(QtWidgets.QMainWindow):
 
         if 'color' in kwargs:
             self._progress_label.setStyleSheet("color: " + kwargs['color'])
+
+    def disable_controls(self, disable=True):
+        '''
+        Disables controls
+
+        Args:
+            disable (bool): wether or not to disable.
+        '''
+
+        if disable:
+            self._start_stop_btn.setVisible(False)
+            self._disabled_label.setVisible(True)
+            self._disabled_label.setText('This PrM is controlled\nby PrM 1')
+
+            self._mode_toggle_label.setVisible(False)
+            self._mode_toggle.setVisible(False)
+        else:
+            self._start_stop_btn.setVisible(True)
+            self._disabled_label.setVisible(False)
+
+            self._mode_toggle_label.setVisible(True)
+            self._mode_toggle.setVisible(True)
+
 
 
 
@@ -642,6 +667,16 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._status_bar.showMessage(f'Cannot find digitizer for PrM ID {prm_id}.')
         self._prm_controls[prm_id].setEnabled(False)
+
+    def disable_controls(self, prm_id):
+        '''
+        Disables controls for prm_id
+
+        Args:
+            prm_id (int): The purity monitor ID
+        '''
+        self._status_bar.showMessage(f'PrM ID {prm_id} controls are disabled.')
+        self._prm_controls[prm_id].disable_controls()
 
 
     def show_comment(self):
