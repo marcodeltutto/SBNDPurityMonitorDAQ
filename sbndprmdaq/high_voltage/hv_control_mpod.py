@@ -63,7 +63,6 @@ class HVControlMPOD(HVControlBase):
             self._anodegrid_channels[prm_id] = config[f'mpod_prm{prm_id}_anodegrid_ch']
             self._cathode_channels[prm_id] = config[f'mpod_prm{prm_id}_cathode_ch']
 
-
         self._logger.info('HVControlMPOD created.')
 
     #pylint: disable=invalid-name, too-many-arguments
@@ -174,7 +173,7 @@ class HVControlMPOD(HVControlBase):
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
 
-    def get_hv_value(self, item, prm_id):
+    def get_hv_value(self, item, prm_id=1):
         '''
         Returns the HV set values
 
@@ -201,7 +200,7 @@ class HVControlMPOD(HVControlBase):
         ret = float(ret)
         return ret
 
-    def get_hv_sense_value(self, item, prm_id):
+    def get_hv_sense_value(self, item, prm_id=1):
         '''
         Returns the HV sensed values
 
@@ -229,7 +228,7 @@ class HVControlMPOD(HVControlBase):
         return ret
 
 
-    def get_hv_status(self, item, prm_id):
+    def get_hv_status(self, item, prm_id=1):
         '''
         Returns wheter the HV is on or off
 

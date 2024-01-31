@@ -22,11 +22,17 @@ class MockHVControl(HVControlBase):
 
         self._prm_ids = prm_ids
         self._hvs = {}
+        self._hv_status = {}
         for prm_id in self._prm_ids:
             self._hvs[prm_id] = {
-                'anode': 0,
-                'cathode': 0,
-                'anodegrid': 0
+                'anode': 5000,
+                'cathode': -50,
+                'anodegrid': 1000
+            }
+            self._hv_status[prm_id] = {
+                'anode': False,
+                'cathode': False,
+                'anodegrid': False
             }
 
     def is_crate_on(self, ip):
@@ -64,7 +70,7 @@ class MockHVControl(HVControlBase):
         self._logger.info('HV value set.')
 
 
-    def get_hv_value(self, item, prm_id):
+    def get_hv_value(self, item, prm_id=1):
         '''
         Returns the HV set values
 
@@ -75,7 +81,7 @@ class MockHVControl(HVControlBase):
         return self._hvs[prm_id][item]
 
 
-    def get_hv_sense_value(self, item, prm_id):
+    def get_hv_sense_value(self, item, prm_id=1):
         '''
         Returns the HV sensed values
 
@@ -85,7 +91,8 @@ class MockHVControl(HVControlBase):
         '''
         return self._hvs[prm_id][item]
 
-    def get_hv_status(self, item, prm_id):
+
+    def get_hv_status(self, item, prm_id=1):
         '''
         Returns wheter the HV is on or off
 
@@ -93,4 +100,4 @@ class MockHVControl(HVControlBase):
             item: 'anode', 'anodegrid', or 'cathode',
             prm_id: the prm id
         '''
-        return self._hvs[prm_id][item] != 0
+        return self._hv_status[prm_id][item]

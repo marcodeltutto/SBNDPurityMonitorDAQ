@@ -236,6 +236,22 @@ class PrMManager():
         return self._run_numbers[prm_id]
 
 
+    def check_hv_range(self, prm_id):
+        '''
+        Checks if the HV is whitin a range
+
+        Return:
+            bool: False is HV is outside of allowed range
+        '''
+        ret = self._hv_control.check_hv_range(prm_id)
+        if ret == 0:
+            return True
+
+        # self._logger.warning('HV value is outside of allowed range!')
+
+        return ret
+
+
     def start_thread(self, prm_id):
         '''
         Starts the thread.
@@ -266,6 +282,12 @@ class PrMManager():
             dict: A dictionary containing the prm_id, the status,
             the data for ch A, the data for ch B NO LONGER USED
         '''
+
+        #
+        # Turn on the HV
+        #
+        self._hv_control.hv_on(prm_id)
+        self.check_hv_range(prm_id)
 
         self._prm_digitizer.lamp_frequency(10, prm_id)
         self._prm_digitizer.lamp_on(prm_id)
