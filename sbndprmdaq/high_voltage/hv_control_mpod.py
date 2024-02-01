@@ -31,6 +31,8 @@ class HVControlMPOD(HVControlBase):
         # Check if the HV crate is on or off
         for prm_id, mpod_ip in self._prm_id_to_mpod_ip.items():
 
+            self._logger.info(f'Looking at {prm_id}: {mpod_ip}')
+
             if not self.is_crate_on(mpod_ip):
                 self._logger.info(f'HV Crate is OFF for PrM {prm_id}? Try to turn it on...')
                 # Turn crate on
@@ -103,7 +105,7 @@ class HVControlMPOD(HVControlBase):
                     proc.terminate()
                     raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
 
-        return proc.communicate()[0].decode("utf-8")
+            return proc.communicate()[0].decode("utf-8")
 
 
 
@@ -111,11 +113,15 @@ class HVControlMPOD(HVControlBase):
         '''
         Returns True if the crate is ON
         '''
-        ret = self._get_cmd(ip=ip, name='sysMainSwitch.', ch=str(0))
-
-        if 'on' in ret:
-            return True
-
+        try:
+            ret = self._get_cmd(ip=ip, name='sysMainSwitch.', ch=str(0))
+            print('ret', ret)
+            if 'on' in ret:
+                return True
+        except ValueError as err:
+            self._logger.error(err)
+            self._logger.error(f'Cannot communicate with HV Crate at {ip}. Got ValueError.')
+            return False
         return False
 
 
