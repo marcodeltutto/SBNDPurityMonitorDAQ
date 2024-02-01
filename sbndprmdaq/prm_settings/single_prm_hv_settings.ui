@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>760</width>
-    <height>133</height>
+    <height>163</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -133,7 +133,7 @@ HV [V]</string>
 HV [V]</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_cathode_hv">
+   <widget class="QSpinBox" name="_cathode_hv">
     <property name="geometry">
      <rect>
       <x>500</x>
@@ -142,11 +142,11 @@ HV [V]</string>
       <height>21</height>
      </rect>
     </property>
-    <property name="text">
+    <property name="value">
      <string>-0</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_anode_hv">
+   <widget class="QSpinBox" name="_anode_hv">
     <property name="geometry">
      <rect>
       <x>500</x>
@@ -155,7 +155,7 @@ HV [V]</string>
       <height>21</height>
      </rect>
     </property>
-    <property name="text">
+    <property name="value">
      <string>0</string>
     </property>
    </widget>
@@ -173,7 +173,7 @@ HV [V]</string>
 HV [V]</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_anodegrid_hv">
+   <widget class="QSpinBox" name="_anodegrid_hv">
     <property name="geometry">
      <rect>
       <x>500</x>
@@ -182,11 +182,29 @@ HV [V]</string>
       <height>21</height>
      </rect>
     </property>
-    <property name="text">
+    <property name="value">
      <string>0</string>
     </property>
    </widget>
-  </widget>
+   </widget>
+   <widget class="QCheckBox" name="_hv_remove_limits">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>130</y>
+      <width>182</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string> Remove HV limits</string>
+    </property>
+   </widget>
   <action name="actionShow_Logs">
    <property name="text">
     <string>Show Logs</string>

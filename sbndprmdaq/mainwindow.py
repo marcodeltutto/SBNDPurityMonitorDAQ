@@ -269,7 +269,7 @@ class MainWindow(QtWidgets.QMainWindow):
     The main window.
     '''
 
-    def __init__(self, logs):
+    def __init__(self, logs, config):
         '''
         Contructor.
 
@@ -293,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # self._settings = Settings(self)
         # self._settings_btn.clicked.connect(self._settings.show)
 
-        self._hv_settings = HVSettings(self)
+        self._hv_settings = HVSettings(config["prm_hv_ranges"], self)
         self._digitizer_settings = DigitizerSettings(self)
 
         self._prm_manager = None

@@ -80,7 +80,7 @@ if os.path.exists(heartbeat_file_name):
 #
 app = QtWidgets.QApplication(sys.argv)
 logs = PrMLogWidget()
-window = MainWindow(logs=logs)
+window = MainWindow(logs=logs, config=config)
 app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
 window.show()
 
