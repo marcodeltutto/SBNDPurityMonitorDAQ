@@ -100,8 +100,8 @@ class HVControlBase(ABC):
         '''
         bad = []
         for item in ['cathode', 'anodegrid', 'anode']:
-            if (self.get_hv_sense_value(item, prm_id) < self._config[f'prm{prm_id}_{item}_hv_range'][0]) \
-            or (self.get_hv_sense_value(item, prm_id) > self._config[f'prm{prm_id}_{item}_hv_range'][1]):
+            hv_range = self._config["prm_hv_ranges"][prm_id][item]
+            if not hv_range[0] <= self.get_hv_sense_value(item, prm_id) <= hv_range[1]:
                 bad.append(item)
 
         if len(bad) == 0:
