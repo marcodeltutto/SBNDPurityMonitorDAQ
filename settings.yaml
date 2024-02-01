@@ -77,12 +77,17 @@ mpod_prm3_anodegrid_ch: 301
 
 # The DAQ will check if the HV is whitin these range
 # and will pop a warning if not
-prm1_cathode_hv_range: [-500, -20]
-prm1_anode_hv_range: [2000, 6000]
-prm1_anodegrid_hv_range: [2000, 6000]
-prm2_cathode_hv_range: [-500, -20]
-prm2_anode_hv_range: [2000, 6000]
-prm2_anodegrid_hv_range: [2000, 6000]
-prm3_cathode_hv_range: [-500, -20]
-prm3_anode_hv_range: [2000, 6000]
-prm3_anodegrid_hv_range: [2000, 6000]
+prm_hv_ranges:
+  1:
+    cathode:   [-500, -20]
+    anode:     [2000, 6000]
+    anodegrid: [2000, 6000]
+  2:
+    cathode:   [-500, -20]
+    anode:     [2000, 6000]
+    anodegrid: [2000, 6000]
+  3:
+    cathode:   [-500, -20]
+    anode:     [2000, 6000]
+    anodegrid: [2000, 6000]
+

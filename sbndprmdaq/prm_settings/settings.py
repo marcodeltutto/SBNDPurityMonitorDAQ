@@ -8,7 +8,7 @@ import pyqtgraph as pg
 
 class SinglePrMHVSettings(QtWidgets.QMainWindow):
 
-    def __init__(self, prm_id=1, name='PrM 1', description='Cryo Bottom'):
+    def __init__(self, hv_range, prm_id=1, name='PrM 1', description='Cryo Bottom'):
         super().__init__()
 
         uifile = os.path.join(os.path.dirname(
@@ -20,20 +20,48 @@ class SinglePrMHVSettings(QtWidgets.QMainWindow):
         self._id = prm_id
         self._name = name
         self._description = description
+        self._hv_range = hv_range
         self._name_label.setText(self._name)
         self._description_label.setText(description)
         self._hv_toggle.set_name('HV')
+        if self._hv_remove_limits.isChecked():
+            self._hv_remove_limits.setChecked()
+        self._hv_remove_limits.stateChanged.connect(self.hv_limits_state_changed) 
+        
+        self._apply_hv_ranges()
+
+    def hv_limits_state_changed(self, int):
+        if self._hv_remove_limits.isChecked():
+            self._remove_hv_ranges()
+        else:
+            self._apply_hv_ranges()
 
     def get_id(self):
         return self._id
 
     def get_values(self):
         return {
-            'cathode_hv': self._cathode_hv.text(),
-            'anode_hv': self._anode_hv.text(),
-            'anodegrid_hv': self._anodegrid_hv.text(),
+            'cathode_hv': self._cathode_hv.value(),
+            'anode_hv': self._anode_hv.value(),
+            'anodegrid_hv': self._anodegrid_hv.value(),
             'hv_onoff': self._hv_toggle.value(),
         }
+
+    def _apply_hv_ranges(self):
+        self._cathode_hv.setMinimum(self._hv_range["cathode"][0])
+        self._cathode_hv.setMaximum(self._hv_range["cathode"][1])
+        self._anode_hv.setMinimum(self._hv_range["anode"][0])
+        self._anode_hv.setMaximum(self._hv_range["anode"][1])
+        self._anodegrid_hv.setMinimum(self._hv_range["anodegrid"][0])
+        self._anodegrid_hv.setMaximum(self._hv_range["anodegrid"][1])
+
+    def _remove_hv_ranges(self):
+        self._cathode_hv.setMinimum(-999999)
+        self._cathode_hv.setMaximum(999999)
+        self._anode_hv.setMinimum(-999999)
+        self._anode_hv.setMaximum(999999)
+        self._anodegrid_hv.setMinimum(-999999)
+        self._anodegrid_hv.setMaximum(999999)
 
 
 class SinglePrMDigitizerSettings(QtWidgets.QMainWindow):
@@ -132,14 +160,19 @@ class BaseSettings(QtWidgets.QMainWindow):
 
 class HVSettings(BaseSettings):
 
-    def __init__(self, parent=None):
+    def __init__(self, prm_hv_ranges, parent=None):
         super(HVSettings, self).__init__(parent, "hvsettings.ui")
 
-
         self._prm_settings = {
-            1: SinglePrMHVSettings(prm_id=1, name='PrM 1', description='Cryo Bottom'),
-            2: SinglePrMHVSettings(prm_id=2, name='PrM 2', description='Cryo Top'),
-            3: SinglePrMHVSettings(prm_id=3, name='PrM 3', description='Inline'),
+            1: SinglePrMHVSettings(
+                prm_id=1, name='PrM 1', description='Cryo Bottom', hv_range=prm_hv_ranges[1]
+            ),
+            2: SinglePrMHVSettings(
+                prm_id=2, name='PrM 2', description='Cryo Top', hv_range=prm_hv_ranges[2]
+            ),
+            3: SinglePrMHVSettings(
+                prm_id=3, name='PrM 3', description='Inline', hv_range=prm_hv_ranges[3]
+            )
         }
 
         for s in self._prm_settings.values():

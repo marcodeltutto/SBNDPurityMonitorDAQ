@@ -244,8 +244,6 @@ class PrMManager():
             bool: False is HV is outside of allowed range
         '''
         ret = self._hv_control.check_hv_range(prm_id)
-        if ret == 0:
-            return True
 
         # self._logger.warning('HV value is outside of allowed range!')
 

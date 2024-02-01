@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>760</width>
-    <height>133</height>
+    <height>161</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -133,32 +133,6 @@ HV [V]</string>
 HV [V]</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_cathode_hv">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>10</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>-0</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="_anode_hv">
-    <property name="geometry">
-     <rect>
-      <x>500</x>
-      <y>90</y>
-      <width>81</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="_n_acquisitions_label_3">
     <property name="geometry">
      <rect>
@@ -173,7 +147,17 @@ HV [V]</string>
 HV [V]</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_anodegrid_hv">
+   <widget class="QSpinBox" name="_cathode_hv">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>10</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="_anodegrid_hv">
     <property name="geometry">
      <rect>
       <x>500</x>
@@ -182,8 +166,28 @@ HV [V]</string>
       <height>21</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QSpinBox" name="_anode_hv">
+    <property name="geometry">
+     <rect>
+      <x>500</x>
+      <y>90</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="_hv_remove_limits">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>120</y>
+      <width>141</width>
+      <height>23</height>
+     </rect>
+    </property>
     <property name="text">
-     <string>0</string>
+     <string>Remove HV limits</string>
     </property>
    </widget>
   </widget>
