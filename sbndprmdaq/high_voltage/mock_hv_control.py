@@ -112,4 +112,3 @@ class MockHVControl(HVControlBase):
             prm_id: the prm id
         '''
         return self._hv_status[prm_id][item]
-

@@ -32,7 +32,7 @@ def test_simple_2(qtbot):
         print('NOOOO')
     qtbot.addWidget(logs)
 
-    window = MainWindow(logs=logs)
+    window = MainWindow(logs=logs, config=config)
     qtbot.addWidget(window)
 
     manager = MockPrMManager(config, window)
