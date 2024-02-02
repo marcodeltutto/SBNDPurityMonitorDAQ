@@ -291,7 +291,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._logs_btn.clicked.connect(self._logs.show)
 
         # self._settings = Settings(self)
-        # self._settings_btn.clicked.connect(self._settings.show)
+        self._settings_btn.clicked.connect(self.screenshot)
 
         self._hv_settings = HVSettings(config["prm_hv_default"], config["prm_hv_ranges"], self)
         self._digitizer_settings = DigitizerSettings(self)
@@ -719,3 +719,12 @@ class MainWindow(QtWidgets.QMainWindow):
         Gets config values
         '''
         self._config_form.get_values(prm_id)
+
+    def screenshot(self):
+        screen = QtWidgets.QApplication.primaryScreen()
+        window = self.windowHandle()
+        if window:
+            screen = window.screen()
+
+        screenshot = screen.grabWindow(0)
+        screenshot.save('shot.jpg', 'jpg')
