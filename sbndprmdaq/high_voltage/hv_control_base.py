@@ -4,6 +4,9 @@ Contains base class for HV control
 import logging
 from abc import ABC, abstractmethod
 
+import time
+import numpy as np
+
 class HVControlException(Exception):
     '''
     Exception class for ATS310.
@@ -93,6 +96,31 @@ class HVControlBase(ABC):
         item: 'anode', 'anodegrid', or 'cathode',
         prm_id: the prm id
         '''
+
+    def hv_stable(self, prm_id=1, n_measurements=10):
+        '''
+        Returns true is HV is stable
+        '''
+        status = 0
+
+        for item in ['cathode', 'anodegrid', 'anode']:
+            measurements = []
+            for meas in range(n_measurements):
+                hv = self.get_hv_sense_value(item, prm_id)
+                measurements.append(hv)
+                time.sleep(0.2)
+
+            print('prm_id, ', prm_id, 'item', item, 'RMS: ', np.std(measurements))
+
+            if np.std(measurements) < 0.5:
+                status = status + 1
+
+        if status == 3:
+            return True
+
+        return False
+
+
 
     def check_hv_range(self, prm_id=1):
         '''

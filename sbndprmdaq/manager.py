@@ -5,6 +5,7 @@ import os
 import time
 import datetime
 import logging
+import copy
 import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
@@ -278,6 +279,13 @@ class PrMManager():
             self._hv_control.hv_on(prm_id)
             self.check_hv_range(prm_id)
 
+
+        # Wait for HV to stabilize
+        for prm_id in prm_ids:
+            while not self._hv_control.hv_stable(prm_id):
+                time.sleep(2)
+
+        for prm_id in prm_ids:
             self._logger.info(f'Turning flash lamp on for PrM {prm_id}.')
             self._prm_digitizer.lamp_frequency(10, prm_id)
             self._prm_digitizer.lamp_on(prm_id)
@@ -311,6 +319,8 @@ class PrMManager():
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
 
+        if progress_callback is not None:
+            progress_callback.emit(prm_id, 'Turning ON HV', 50)
 
         #
         # Turn on Lamp and HV
@@ -351,25 +361,30 @@ class PrMManager():
             status = self._prm_digitizer.check_capture(prm_id)
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
-            data_raw = self._prm_digitizer.get_data(prm_id)
+            data_raw_ = self._prm_digitizer.get_data(prm_id)
 
-            for k in data_raw.keys():
+            data_raw = {}
+
+            for k in data_raw_.keys():
+                print('-->', k)
                 if k == '1':
-                    data_raw[k] = [data_raw[k]]
+                    data_raw[k] = [data_raw_[k]]
                     data_raw['A'] = data_raw[k]
                     del data_raw[k]
-                if k == '2':
-                    data_raw[k] = [data_raw[k]]
+                elif k == '2':
+                    data_raw[k] = [data_raw_[k]]
                     data_raw['B'] = data_raw[k]
                     del data_raw[k]
-                if k == '3':
-                    data_raw[k] = [data_raw[k]]
+                elif k == '3':
+                    data_raw[k] = [data_raw_[k]]
                     data_raw['C'] = data_raw[k]
                     del data_raw[k]
-                if k == '4':
-                    data_raw[k] = [data_raw[k]]
+                elif k == '4':
+                    data_raw[k] = [data_raw_[k]]
                     data_raw['D'] = data_raw[k]
                     del data_raw[k]
+                else:
+                    print('Not expected.')
 
             # Combine data in case we are doing multiple repetitions
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']

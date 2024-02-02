@@ -75,6 +75,22 @@ mpod_prm3_cathode_ch: 200
 mpod_prm3_anode_ch: 300
 mpod_prm3_anodegrid_ch: 301
 
+# Default HV values
+prm_hv_default:
+  1:
+    cathode:   -500
+    anode:     3000
+    anodegrid: 3100
+  2:
+    cathode:   -500
+    anode:     2100
+    anodegrid: 2000
+  3:
+    cathode:   0
+    anode:     0
+    anodegrid: 0
+
+
 # The DAQ will check if the HV is whitin these range
 # and will pop a warning if not
 prm_hv_ranges:
