@@ -79,8 +79,8 @@ mpod_prm3_anodegrid_ch: 301
 prm_hv_default:
   1:
     cathode:   -500
-    anode:     3000
-    anodegrid: 3100
+    anode:     3100
+    anodegrid: 3000
   2:
     cathode:   -500
     anode:     2100
@@ -95,15 +95,15 @@ prm_hv_default:
 # and will pop a warning if not
 prm_hv_ranges:
   1:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
   2:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
   3:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
 
