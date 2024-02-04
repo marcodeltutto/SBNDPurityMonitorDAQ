@@ -300,8 +300,8 @@ class PrMManager():
             self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
             self._prm_digitizer.lamp_off(prm_id)
 
-            self._logger.info(f'Turning HV off for PrM {prm_id}.')
-            self._hv_control.hv_off(prm_id)
+            # self._logger.info(f'Turning HV off for PrM {prm_id}.')
+            # self._hv_control.hv_off(prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None, data_callback=None):
@@ -540,7 +540,7 @@ class PrMManager():
         out_dict['samples_per_sec'] = self._prm_digitizer.get_samples_per_second(prm_id)
         out_dict['pre_trigger_samples'] = self._prm_digitizer.get_pre_trigger_samples(prm_id)
         out_dict['post_trigger_samples'] = self._prm_digitizer.get_post_trigger_samples(prm_id)
-        out_dict['input_range_volts'] = self._prm_digitizer.get_input_range_volts(prm_id)
+        # out_dict['input_range_volts'] = self._prm_digitizer.get_input_range_volts(prm_id)
 
         # Add the extra configuration
         configs = self._window.get_config_values(prm_id)
