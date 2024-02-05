@@ -300,8 +300,8 @@ class PrMManager():
             self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
             self._prm_digitizer.lamp_off(prm_id)
 
-            # self._logger.info(f'Turning HV off for PrM {prm_id}.')
-            # self._hv_control.hv_off(prm_id)
+            self._logger.info(f'Turning HV off for PrM {prm_id}.')
+            self._hv_control.hv_off(prm_id)
 
 
     def capture_data(self, prm_id, progress_callback=None, data_callback=None):
@@ -673,17 +673,17 @@ class PrMManager():
             self._window.set_start_button_status(prm_id, True)
 
 
-    def periodic_start_prm(self, prm_id=1, time_interval=300):
+    def periodic_start_prm(self, prm_id=1, time_interval=1800):
         '''
         Starts purity monitor prm_id every time_interval seconds.
         Time interval cannot be less than 60 seconds, and if so,
-        it will be set to 60 seconds.
+        it will be set to 300 seconds.
 
         Args:
             prm_id (int): The purity monitor ID.
             time_interval (int): The time interaval in seconds.
         '''
-        time_interval = max(time_interval, 60)
+        time_interval = max(time_interval, 300)
 
         self._window.set_start_button_status(prm_id, False)
 
