@@ -60,6 +60,8 @@ class Control(QtWidgets.QMainWindow):
         self._lcd_cathode_hv.display('199')
         self._lcd_anode_hv.display('199')
 
+        self._take_hvoff_run.setChecked(True)
+
         self._disabled_label.setVisible(False)
 
 
@@ -181,12 +183,14 @@ class Control(QtWidgets.QMainWindow):
 
             self._mode_toggle_label.setVisible(False)
             self._mode_toggle.setVisible(False)
+            self._take_hvoff_run.setVisible(False)
         else:
             self._start_stop_btn.setVisible(True)
             self._disabled_label.setVisible(False)
 
             self._mode_toggle_label.setVisible(True)
             self._mode_toggle.setVisible(True)
+            self._take_hvoff_run.setVisible(True)
 
     def hv_out_of_range(self, status):
         '''
@@ -405,6 +409,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # control.setStyleSheet("border-color: rgb(0, 0, 0);")
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
+        control._take_hvoff_run.clicked.connect(lambda: self._set_hvoff_run(prm_id=prm_id))
 
     def set_start_button_status(self, prm_id=1, status=True):
         '''
@@ -560,6 +565,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self._prm_manager.set_mode(prm_id, 'auto')
         else:
             self._prm_manager.set_mode(prm_id, 'manual')
+
+    def _set_hvoff_run(self, prm_id):
+        '''
+        Tells the manager whether to take an initial run with no HV.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        control = self._prm_controls[prm_id]
+        self._prm_manager.take_hvoff_run(prm_id, control._take_hvoff_run.isChecked())
 
 
     def _check_status(self):

@@ -36,6 +36,8 @@ class PrMManager():
         self._is_running = {}
         self._run_numbers = {}
         self._repetitions = {}
+        self._take_hvoff_run = {}
+        self._mode = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -46,6 +48,8 @@ class PrMManager():
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
             self._repetitions[prm_id] = 1
+            self._take_hvoff_run[prm_id] = True
+            self._mode[prm_id] = 'manual'
 
         self._set_digitizer_and_hv(config)
 
@@ -66,7 +70,7 @@ class PrMManager():
 
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
-        self._mode = 'manual'
+
 
         self._comment = 'No comment'
 
@@ -396,21 +400,22 @@ class PrMManager():
         #
         # First run with no HV
         #
+        if self._take_hvoff_run[prm_id]:
 
-        if progress_callback is not None:
-            progress_callback.emit(prm_id, 'NO HV run', 50)
+            if progress_callback is not None:
+                progress_callback.emit(prm_id, 'NO HV run', 50)
 
-        time.sleep(1)
+            time.sleep(1)
 
-        self._logger.info(f'NO HN Run for {prm_id}.')
+            self._logger.info(f'NO HN Run for {prm_id}.')
 
-        self._lamp_on(prm_ids)
+            self._lamp_on(prm_ids)
 
-        data_hv_off, _ = self._take_data(prm_id, progress_callback)
+            data_hv_off, _ = self._take_data(prm_id, progress_callback)
 
-        self._lamp_off(prm_ids)
+            self._lamp_off(prm_ids)
 
-        self._logger.info(f'NO HN Run for {prm_id} completed.')
+            self._logger.info(f'NO HN Run for {prm_id} completed.')
 
 
 
@@ -696,13 +701,13 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
             mode (int): The desired mode.
         '''
-        self._mode = mode
-        self._logger.info(f'Setting mode to: {self._mode}')
+        self._mode[prm_id] = mode
+        self._logger.info(f'Setting mode to: {self._mode[prm_id]}')
 
-        if self._mode == 'auto':
+        if self._mode[prm_id] == 'auto':
             self._window.set_start_button_status(prm_id, False)
             self.periodic_start_prm(prm_id)
-        elif self._mode == 'manual':
+        elif self._mode[prm_id] == 'manual':
             self._timer.stop()
 
             # Wait until we have done running
@@ -710,6 +715,18 @@ class PrMManager():
                 time.sleep(0.1)
 
             self._window.set_start_button_status(prm_id, True)
+
+    def take_hvoff_run(self, prm_id, do_take):
+        '''
+        Saves option to take run with no HV or not.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            do_take (bool): True if need to take HV off run.
+        '''
+        self._take_hvoff_run[prm_id] = do_take
+        self._logger.info(f'Taking HV off run for {prm_id}?: {self._take_hvoff_run[prm_id]}')
+
 
 
     def periodic_start_prm(self, prm_id=1, time_interval=1800):
