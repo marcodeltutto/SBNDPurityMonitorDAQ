@@ -5,7 +5,6 @@ import os
 import time
 import datetime
 import logging
-import copy
 import numpy as np
 
 from PyQt5.QtCore import QThreadPool, QTimer
@@ -376,7 +375,7 @@ class PrMManager():
                     data_raw['D'] = data_raw[k]
                     del data_raw[k]
                 else:
-                     data_raw[k] = data_raw_[k]
+                    data_raw[k] = data_raw_[k]
 
             # Combine data in case we are doing multiple repetitions
             data_nohv['A'] = data_nohv['A'] + data_raw['A']
@@ -455,7 +454,7 @@ class PrMManager():
                     data_raw['D'] = data_raw[k]
                     del data_raw[k]
                 else:
-                     data_raw[k] = data_raw_[k]
+                    data_raw[k] = data_raw_[k]
 
             # Combine data in case we are doing multiple repetitions
             data_raw_combined['A'] = data_raw_combined['A'] + data_raw['A']
