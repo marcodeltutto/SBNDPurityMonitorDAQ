@@ -432,7 +432,8 @@ class PrMManager():
                 'time': data['time'],
             }
             out_dict = self.save_data(data['prm_id'])
-            self.output_to_epics(data['prm_id'], out_dict)
+            if out_dict is not None:
+                self.output_to_epics(data['prm_id'], out_dict)
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -493,17 +494,17 @@ class PrMManager():
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
-            return
+            return None
         if not self._save_as_npz and not self._save_as_txt:
             self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
-            return
+            return None
 
         out_dict = {}
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
         if self._data[prm_id] is None:
-            return
+            return None
 
         for ch in self._data[prm_id].keys():
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
@@ -578,23 +579,23 @@ class PrMManager():
         elif prm_id == 3:
             prm = 'inline'
         else:
-            raise ValueError('prm_id {} invalid'.format(prm_id))
-        
+            raise ValueError(f'prm_id {prm_id} invalid')
+
         pvs = [
-            'sbnd_prm_{}_hv/anode_voltage',
-            'sbnd_prm_{}_hv/anodegrid_voltage',
-            'sbnd_prm_{}_hv/cathode_voltage'
+            f'sbnd_prm_{prm}_hv/anode_voltage',
+            f'sbnd_prm_{prm}_hv/anodegrid_voltage',
+            f'sbnd_prm_{prm}_hv/cathode_voltage'
         ]
         res = []
         for pv in pvs:
-            res.append(epics.caput(pv.format(prm), out_dict['hv_anode']))
+            res.append(epics.caput(pv, out_dict['hv_anode']))
 
         if all(res):
-            self._logger.info('All EPICS updates successful for PrM {}'.format(prm_id))
+            self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
         elif any(res):
-            self._logger.info('Some EPICS updates failed for PrM {}'.format(prm_id))
+            self._logger.info(f'Some EPICS updates failed for PrM {prm_id}')
         else:
-            self._logger.info('All EPICS updates failed for PrM {}'.format(prm_id))
+            self._logger.info(f'All EPICS updates failed for PrM {prm_id}')
 
     def set_comment(self, comment):
         '''
