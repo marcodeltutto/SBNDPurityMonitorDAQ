@@ -2,11 +2,13 @@ Output Files
 ===========================================
 
 Output files from the PrM DAQ are saved in the ``data_files_path`` directory specified in the
-``settings.yaml`` configuration file. The files are in ``npz`` format. They contain the following
-information:
+``settings.yaml`` configuration file. The files are in ``npz`` and/or text format
+(configurable in ``settings.yaml``). They contain the following information:
 
 - ``ch_A``: numpy array containg waveform from channel A
 - ``ch_B``: numpy array containg waveform from channel B
+- ``ch_time``: time data was taken in Y-m-d H:M:S.f
+- ``run``: run number
 - ``date``: date data was taken in Ymd-HMS format
 - ``hv``: 'on' or 'off'
 - ``comment``: the comment if any
@@ -21,7 +23,9 @@ information:
 Opening an Output file
 ---------------
 
-.. code-block:: bash
+The ``npz`` outputs can be opened like:
+
+.. code-block:: python
 
 	import numpy as np
 	container = np.load('file_name.npz')
@@ -42,8 +46,26 @@ Opening an Output file
 	ax[1].plot(x * x_scale, anode_on * y_scale,   label='Cathode')
 	ax[0].plot(x * x_scale, cathode_on * y_scale, label='Anode')
 
+The text outputs are of the form
 
-.. image:: source/images/pm_plot.png
+.. code-block::
+
+   ch_A=[[0.11534820667744995,-1.0751930546414368,...]]
+   ch_B=[[-1.2907774641861673,0.19290700054296683,...]]
+   ch_time=2024-01-26 19:41:36.658627
+   run=301
+   date=20240126-194136
+   hv=off
+   ...
+
+If reading these with python the method ``literal_eval()`` of the built-in ``ast`` library is
+useful for converting the list strings to python lists
+
+
+Example PrM Waveforms
+---------------
+
+.. image:: /images/pm_plot.png
  	:width: 400
  	:alt: Example PrM Waveforms
 
