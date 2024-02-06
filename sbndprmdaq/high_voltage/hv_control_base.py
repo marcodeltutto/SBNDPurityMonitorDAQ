@@ -118,8 +118,8 @@ class HVControlBase(ABC):
                 status = status + 1
 
         if status == 3:
-            return True
             self._logger.info(f'...HV is stabile for PrM {prm_id}.')
+            return True
 
         self._logger.info(f'...cannot stabilize HV for PrM {prm_id}.')
 
