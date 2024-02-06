@@ -46,7 +46,11 @@ The ``npz`` outputs can be opened like:
 	ax[1].plot(x * x_scale, anode_on * y_scale,   label='Cathode')
 	ax[0].plot(x * x_scale, cathode_on * y_scale, label='Anode')
 
-The text outputs are of the form
+.. image:: /images/pm_plot.png
+ 	:width: 400
+ 	:alt: Example PrM Waveforms
+
+The text outputs are of the form:
 
 .. code-block::
 
@@ -60,23 +64,4 @@ The text outputs are of the form
 
 If reading these with python the method ``literal_eval()`` of the built-in ``ast`` library is
 useful for converting the list strings to python lists
-
-
-Example PrM Waveforms
----------------
-
-.. image:: /images/pm_plot.png
- 	:width: 400
- 	:alt: Example PrM Waveforms
-
-
-
-
-
-
-
-
-
-
-
 
