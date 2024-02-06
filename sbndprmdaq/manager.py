@@ -6,6 +6,7 @@ import time
 import datetime
 import logging
 import numpy as np
+import epics
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
@@ -430,7 +431,8 @@ class PrMManager():
                 'B': data['B'],
                 'time': data['time'],
             }
-            self.save_data(data['prm_id'])
+            out_dict = self.save_data(data['prm_id'])
+            self.output_to_epics(data['prm_id'], out_dict)
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -456,7 +458,7 @@ class PrMManager():
 
         Args:
             prm_ids (list if int): The purity monitor IDs.
-            statuss (list bool): True is the acquisition suceeded, False otherwise.
+            statuses (list bool): True is the acquisition suceeded, False otherwise.
         '''
 
         for prm_id, status in zip(prm_ids, statuses):
@@ -480,6 +482,9 @@ class PrMManager():
 
         Args:
             prm_id (int): The purity monitor ID.
+
+        Returns:
+            out_dict (dict): Saved data.
         '''
         # pylint: disable=invalid-name
         self._logger.info(f'Saving data for PrM {prm_id}.')
@@ -555,6 +560,29 @@ class PrMManager():
                         f.write(k + '=' + str(v) + '\n')
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
+
+        return out_dict
+
+    def output_to_epics(self, prm_id, out_dict):
+        '''
+        Updates EPICS with run data.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            out_dict (dict): Data from run.
+        '''
+        if prm_id == 1:
+            prm = 'tpcshort'
+        elif prm_id == 2:
+            prm = 'tpclong'
+        elif prm == 3:
+            prm = 'inline'
+        else:
+            raise ValueError('prm_id {} invalid'.format(prm_id))
+
+        epics.caput('sbnd_prm_' + prm + '_hv/anode_voltage', out_dict['hv_anode'])
+        epics.caput('sbnd_prm_' + prm + '_hv/anodegrid_voltage', out_dict['hv_anodegrid'])
+        epics.caput('sbnd_prm_' + prm + '_hv/cathode_voltage', out_dict['hv_cathode'])
 
     def set_comment(self, comment):
         '''

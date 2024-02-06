@@ -8,3 +8,4 @@ paramiko
 sshtunnel
 requests
 rich
+pyepics
