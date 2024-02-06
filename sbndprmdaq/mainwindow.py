@@ -721,6 +721,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._config_form.get_values(prm_id)
 
     def screenshot(self):
+        '''
+        Takes screenshot of current window
+        '''
         screen = QtWidgets.QApplication.primaryScreen()
         window = self.windowHandle()
         if window:

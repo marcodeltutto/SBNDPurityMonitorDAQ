@@ -97,6 +97,7 @@ class HVControlBase(ABC):
         prm_id: the prm id
         '''
 
+    #pylint: disable=unused-variable
     def hv_stable(self, prm_id=1, n_measurements=10):
         '''
         Returns true is HV is stable

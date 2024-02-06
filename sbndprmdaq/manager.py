@@ -310,112 +310,11 @@ class PrMManager():
             self._logger.info(f'Turning HV off for PrM {prm_id}.')
             self._hv_control.hv_off(prm_id)
 
-
-    def capture_data(self, prm_id, progress_callback=None, data_callback=None):
+    def _take_data(self, prm_id, progress_callback=None):
         '''
-        Capture the data. If running without a GUI, do not pass the progress_callback.
-
-        Args:
-            prm_id (int): The purity monitor ID.
-            progress_callback (fn): The callback function to be called to show progress (optional)
-        Returns:
-            dict: A dictionary containing the prm_ids processed, and the statuses
+        Takes the actual data
         '''
 
-        prm_ids = [prm_id]
-        if prm_id in self._prm_id_bounded:
-            prm_ids.append(self._prm_id_bounded[prm_id])
-
-        self._logger.info(f'NO HN Run for {prm_id}.')
-
-        #
-        # First run with no HV
-        #
-
-        if progress_callback is not None:
-            progress_callback.emit(prm_id, 'NO HV run', 50)
-
-        self._lamp_on(prm_ids)
-
-        data_nohv = {
-            'A': [],
-            'B': [],
-            'C': [],
-            'D': []
-        }
-
-        for rep in range(self._repetitions[prm_id]):
-            self._logger.info(f'*** Repetition number {rep}.')
-            self._logger.info('Start capture for  {prm_id}.')
-            self._prm_digitizer.start_capture(prm_id)
-            self._logger.info(f'Check capture for  {prm_id}.')
-            status = self._prm_digitizer.check_capture(prm_id)
-
-            progress_callback.emit(prm_id, 'Retrieving Data', 100)
-            data_raw_ = self._prm_digitizer.get_data(prm_id)
-
-            data_raw = {}
-
-            for k in data_raw_.keys():
-                print('-->', k)
-                if k == '1':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['A'] = data_raw[k]
-                    del data_raw[k]
-                elif k == '2':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['B'] = data_raw[k]
-                    del data_raw[k]
-                elif k == '3':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['C'] = data_raw[k]
-                    del data_raw[k]
-                elif k == '4':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['D'] = data_raw[k]
-                    del data_raw[k]
-                else:
-                    data_raw[k] = data_raw_[k]
-
-            # Combine data in case we are doing multiple repetitions
-            data_nohv['A'] = data_nohv['A'] + data_raw['A']
-            data_nohv['B'] = data_nohv['B'] + data_raw['B']
-            data_nohv['C'] = data_nohv['C'] + data_raw['C']
-            data_nohv['D'] = data_nohv['D'] + data_raw['D']
-
-        self._lamp_off(prm_ids)
-
-        self._logger.info(f'NO HN Run for {prm_id} completed.')
-
-
-        if progress_callback is not None:
-            progress_callback.emit(prm_id, 'Turning ON HV', 50)
-
-        #
-        # Turn on Lamp and HV
-        #
-        self._turn_hv_on(prm_ids)
-        self._lamp_on(prm_ids)
-
-
-        #
-        # Wait some time for the HV to stabilize
-        #
-        purity_mon_wake_time = 4 # seconds
-        self._logger.info(f'Awaking {prm_id} for {purity_mon_wake_time} seconds.')
-        start = time.time()
-        while purity_mon_wake_time > time.time() - start:
-            perc = (time.time() - start) / purity_mon_wake_time * 100
-            if progress_callback is not None:
-                progress_callback.emit(prm_id, 'Awake Monitor', perc)
-            time.sleep(0.1)
-
-        if progress_callback is not None:
-            progress_callback.emit(prm_id, 'Start Capture', 100)
-
-        #
-        # Tell the digitizer to start capturing data and check until it completes
-        #
         data_raw_combined = {
             'A': [],
             'B': [],
@@ -425,9 +324,9 @@ class PrMManager():
 
         for rep in range(self._repetitions[prm_id]):
             self._logger.info(f'*** Repetition number {rep}.')
-            self._logger.info('Start capture for  {prm_id}.')
+            self._logger.info(f'Start capture for {prm_id}.')
             self._prm_digitizer.start_capture(prm_id)
-            self._logger.info(f'Check capture for  {prm_id}.')
+            self._logger.info(f'Check capture for {prm_id}.')
             status = self._prm_digitizer.check_capture(prm_id)
 
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
@@ -436,7 +335,6 @@ class PrMManager():
             data_raw = {}
 
             for k in data_raw_.keys():
-                print('-->', k)
                 if k == '1':
                     data_raw[k] = [data_raw_[k]]
                     data_raw['A'] = data_raw[k]
@@ -462,15 +360,82 @@ class PrMManager():
             data_raw_combined['C'] = data_raw_combined['C'] + data_raw['C']
             data_raw_combined['D'] = data_raw_combined['D'] + data_raw['D']
 
+        return data_raw_combined, status
+
+
+    def _prm_wait(self, prm_id, purity_mon_wake_time=4, progress_callback=None):
+        '''
+        Waits for purity_mon_wake_time seconds and communicated this to the GUI
+        '''
+        self._logger.info(f'Awaking {prm_id} for {purity_mon_wake_time} seconds.')
+        start = time.time()
+        while purity_mon_wake_time > time.time() - start:
+            perc = (time.time() - start) / purity_mon_wake_time * 100
+            if progress_callback is not None:
+                progress_callback.emit(prm_id, 'Awake Monitor', perc)
+            time.sleep(0.1)
+
+
+
+    def capture_data(self, prm_id, progress_callback=None, data_callback=None):
+        '''
+        Capture the data. If running without a GUI, do not pass the progress_callback.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            progress_callback (fn): The callback function to be called to show progress (optional)
+        Returns:
+            dict: A dictionary containing the prm_ids processed, and the statuses
+        '''
+
+        prm_ids = [prm_id]
+        if prm_id in self._prm_id_bounded:
+            prm_ids.append(self._prm_id_bounded[prm_id])
+
+
+        #
+        # First run with no HV
+        #
+
+        if progress_callback is not None:
+            progress_callback.emit(prm_id, 'NO HV run', 50)
+
+        time.sleep(1)
+
+        self._logger.info(f'NO HN Run for {prm_id}.')
+
+        self._lamp_on(prm_ids)
+
+        data_hv_off, _ = self._take_data(prm_id, progress_callback)
+
+        self._lamp_off(prm_ids)
+
+        self._logger.info(f'NO HN Run for {prm_id} completed.')
+
+
+
+        #
+        # Second run with HV
+        #
+        self._turn_hv_on(prm_ids)
+        self._prm_wait(prm_id, 4, progress_callback)
+        self._lamp_on(prm_ids)
+
+        if progress_callback is not None:
+            progress_callback.emit(prm_id, 'Start Capture', 100)
+
+        data_hv_on, status = self._take_data(prm_id, progress_callback)
+
+
         # Pack all the data in a dictionary
         data = {
             'prm_id': prm_id,
             'status': status,
             'time': datetime.datetime.today(),
-            'A': data_raw_combined['A'],
-            'B': data_raw_combined['B'],
-            'A_nohv': data_nohv['A'],
-            'B_nohv': data_nohv['B'],
+            'A': data_hv_on['A'],
+            'B': data_hv_on['B'],
+            'A_nohv': data_hv_off['A'],
+            'B_nohv': data_hv_off['B'],
         }
 
         # Send the data for saving
@@ -481,18 +446,15 @@ class PrMManager():
                 'prm_id': self._prm_id_bounded[prm_id],
                 'status': status,
                 'time': datetime.datetime.today(),
-                'A': data_raw_combined['C'],
-                'B': data_raw_combined['D'],
-                'A_nohv': data_nohv['C'],
-                'B_nohv': data_nohv['D'],
+                'A': data_hv_on['C'],
+                'B': data_hv_on['D'],
+                'A_nohv': data_hv_off['C'],
+                'B_nohv': data_hv_off['D'],
             }
 
             # Send the data for saving
             data_callback.emit(data)
 
-        #
-        # Turn off Lamp and HV
-        #
         self._lamp_off(prm_ids)
         self._turn_hv_off(prm_ids)
 
