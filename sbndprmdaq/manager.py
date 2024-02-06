@@ -396,6 +396,8 @@ class PrMManager():
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
 
+        data_hv_off = {'A': [], 'B': [], 'C': [], 'D': []}
+        data_hv_on  = {'A': [], 'B': [], 'C': [], 'D': []}
 
         #
         # First run with no HV
@@ -416,6 +418,9 @@ class PrMManager():
             self._lamp_off(prm_ids)
 
             self._logger.info(f'NO HN Run for {prm_id} completed.')
+
+            if progress_callback is not None:
+                progress_callback.emit(prm_id, 'Next run', 0)
 
 
 
@@ -461,7 +466,7 @@ class PrMManager():
             data_callback.emit(data)
 
         self._lamp_off(prm_ids)
-        self._turn_hv_off(prm_ids)
+        # self._turn_hv_off(prm_ids)
 
 
         ret = {

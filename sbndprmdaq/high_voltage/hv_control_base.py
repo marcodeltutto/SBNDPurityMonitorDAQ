@@ -102,6 +102,7 @@ class HVControlBase(ABC):
         '''
         Returns true is HV is stable
         '''
+        self._logger.info(f'Waiting for HV to stabilize for PrM {prm_id}...')
         status = 0
 
         for item in ['cathode', 'anodegrid', 'anode']:
@@ -111,13 +112,16 @@ class HVControlBase(ABC):
                 measurements.append(hv)
                 time.sleep(0.2)
 
-            print('prm_id, ', prm_id, 'item', item, 'RMS: ', np.std(measurements))
+            # print('prm_id, ', prm_id, 'item', item, 'RMS: ', np.std(measurements))
 
             if np.std(measurements) < 0.5:
                 status = status + 1
 
         if status == 3:
             return True
+            self._logger.info(f'...HV is stabile for PrM {prm_id}.')
+
+        self._logger.info(f'...cannot stabilize HV for PrM {prm_id}.')
 
         return False
 
