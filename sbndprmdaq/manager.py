@@ -346,7 +346,7 @@ class PrMManager():
 
         for rep in range(self._repetitions[prm_id]):
             self._logger.info(f'*** Repetition number {rep}.')
-            self._logger.info('Start capture for  {prm_id}.')
+            self._logger.info(f'Start capture for {prm_id}.')
             self._prm_digitizer.start_capture(prm_id)
             self._logger.info(f'Check capture for  {prm_id}.')
             status = self._prm_digitizer.check_capture(prm_id)
@@ -575,14 +575,26 @@ class PrMManager():
             prm = 'tpcshort'
         elif prm_id == 2:
             prm = 'tpclong'
-        elif prm == 3:
+        elif prm_id == 3:
             prm = 'inline'
         else:
             raise ValueError('prm_id {} invalid'.format(prm_id))
+        
+        pvs = [
+            'sbnd_prm_{}_hv/anode_voltage',
+            'sbnd_prm_{}_hv/anodegrid_voltage',
+            'sbnd_prm_{}_hv/cathode_voltage'
+        ]
+        res = []
+        for pv in pvs:
+            res.append(epics.caput(pv.format(prm), out_dict['hv_anode']))
 
-        epics.caput('sbnd_prm_' + prm + '_hv/anode_voltage', out_dict['hv_anode'])
-        epics.caput('sbnd_prm_' + prm + '_hv/anodegrid_voltage', out_dict['hv_anodegrid'])
-        epics.caput('sbnd_prm_' + prm + '_hv/cathode_voltage', out_dict['hv_cathode'])
+        if all(res):
+            self._logger.info('All EPICS updates successful for PrM {}'.format(prm_id))
+        elif any(res):
+            self._logger.info('Some EPICS updates failed for PrM {}'.format(prm_id))
+        else:
+            self._logger.info('All EPICS updates failed for PrM {}'.format(prm_id))
 
     def set_comment(self, comment):
         '''
