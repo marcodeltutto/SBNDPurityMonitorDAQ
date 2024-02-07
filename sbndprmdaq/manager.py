@@ -421,7 +421,7 @@ class PrMManager():
             self._logger.info(f'NO HN Run for {prm_id} completed.')
 
             if progress_callback is not None:
-                progress_callback.emit(prm_id, 'Next run', 0)
+                progress_callback.emit(prm_id, 'Wait for HV', 0)
 
 
 

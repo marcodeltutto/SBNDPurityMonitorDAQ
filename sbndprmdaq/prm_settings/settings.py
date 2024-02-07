@@ -275,7 +275,7 @@ class DigitizerSettings(BaseSettings):
 
             for name, value in values.items():
                 if name == 'number_acquisitions':
-                    self._prm_digitizers.set_n_acquisitions(prm_id, value)
+                    self._prm_digitizers.set_number_acquisitions(n_acquisitions=value, prm_id=prm_id)
                 elif name == 'number_repetitions':
                     self._manager.set_n_repetitions(prm_id, value)
                 else:

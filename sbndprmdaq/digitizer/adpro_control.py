@@ -133,7 +133,8 @@ class ADProControl(DigitizerBase):
 
     def set_number_acquisitions(self, n_acquisitions):
 
-        return requests.get(self._url + f"/digitizer/set_number_acquisitions{n_acquisitions}", timeout=self._to).json()['set_number_acquisitions']
+        pass
+        # return requests.get(self._url + f"/digitizer/set_number_acquisitions{n_acquisitions}", timeout=self._to).json()['set_number_acquisitions']
 
 
     def get_pre_trigger_samples(self):
