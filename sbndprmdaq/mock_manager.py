@@ -29,3 +29,21 @@ class MockPrMManager(PrMManager):
 
     def exit(self):
         pass
+
+    #pylint: disable=duplicate-code
+    def _thread_data(self, data):
+        '''
+        Remove output_to_epics call for testing
+        '''
+        self._logger.info(f'Got data for PrM {data["prm_id"]}.')
+
+        if data['status']:
+            self._data[data['prm_id']] = {
+                'A': data['A'],
+                'B': data['B'],
+                'time': data['time'],
+            }
+            _ = self.save_data(data['prm_id'])
+            self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
+        else:
+            self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
