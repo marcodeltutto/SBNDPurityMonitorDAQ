@@ -573,9 +573,9 @@ class PrMManager():
             out_dict (dict): Data from run.
         '''
         if prm_id == 1:
-            prm = 'tpcshort'
-        elif prm_id == 2:
             prm = 'tpclong'
+        elif prm_id == 2:
+            prm = 'tpcshort'
         elif prm_id == 3:
             prm = 'inline'
         else:
