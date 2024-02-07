@@ -6,6 +6,7 @@ import time
 import datetime
 import logging
 import numpy as np
+import epics
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
@@ -436,7 +437,6 @@ class PrMManager():
 
         data_hv_on, status = self._take_data(prm_id, progress_callback)
 
-
         # Pack all the data in a dictionary
         data = {
             'prm_id': prm_id,
@@ -494,7 +494,9 @@ class PrMManager():
                 'B_nohv': data['B_nohv'],
                 'time': data['time'],
             }
-            self.save_data(data['prm_id'])
+            out_dict = self.save_data(data['prm_id'])
+            if out_dict is not None:
+                self.output_to_epics(data['prm_id'], out_dict)
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -520,7 +522,7 @@ class PrMManager():
 
         Args:
             prm_ids (list if int): The purity monitor IDs.
-            statuss (list bool): True is the acquisition suceeded, False otherwise.
+            statuses (list bool): True is the acquisition suceeded, False otherwise.
         '''
 
         for prm_id, status in zip(prm_ids, statuses):
@@ -544,6 +546,9 @@ class PrMManager():
 
         Args:
             prm_id (int): The purity monitor ID.
+
+        Returns:
+            out_dict (dict): Saved data.
         '''
         # pylint: disable=invalid-name
         self._logger.info(f'Saving data for PrM {prm_id}.')
@@ -552,17 +557,17 @@ class PrMManager():
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
-            return
+            return None
         if not self._save_as_npz and not self._save_as_txt:
             self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
-            return
+            return None
 
         out_dict = {}
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
         if self._data[prm_id] is None:
-            return
+            return None
 
         for ch in self._data[prm_id].keys():
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
@@ -619,6 +624,41 @@ class PrMManager():
                         f.write(k + '=' + str(v) + '\n')
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
+
+        return out_dict
+
+    def output_to_epics(self, prm_id, out_dict):
+        '''
+        Updates EPICS with run data.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            out_dict (dict): Data from run.
+        '''
+        if prm_id == 1:
+            prm = 'tpclong'
+        elif prm_id == 2:
+            prm = 'tpcshort'
+        elif prm_id == 3:
+            prm = 'inline'
+        else:
+            raise ValueError(f'prm_id {prm_id} invalid')
+
+        pvs = [
+            f'sbnd_prm_{prm}_hv/anode_voltage',
+            f'sbnd_prm_{prm}_hv/anodegrid_voltage',
+            f'sbnd_prm_{prm}_hv/cathode_voltage'
+        ]
+        res = []
+        for pv in pvs:
+            res.append(epics.caput(pv, out_dict['hv_anode']))
+
+        if all(res):
+            self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
+        elif any(res):
+            self._logger.info(f'Some EPICS updates failed for PrM {prm_id}')
+        else:
+            self._logger.info(f'All EPICS updates failed for PrM {prm_id}')
 
     def set_comment(self, comment):
         '''
