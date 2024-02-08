@@ -15,7 +15,7 @@ prm_id_to_digitizer_type:
 prm_id_to_ats_systemid:
   1: None
   2: None
-  3: 2
+  3: 1
 
 prm_id_to_adpro_channels:
   1: [1, 2]
@@ -59,7 +59,7 @@ save_as_txt: true
 
 arduino_address: '/dev/arduino'
 arduino_pin: 7
-disable_arduino: True
+disable_arduino: False
 
 prm_id_to_mpod_ip:
   1: "10.226.35.154"
@@ -75,19 +75,41 @@ mpod_prm3_cathode_ch: 200
 mpod_prm3_anode_ch: 300
 mpod_prm3_anodegrid_ch: 301
 
+# Default HV values
+prm_hv_default:
+  1:
+    cathode:   -500
+    anode:     3100
+    anodegrid: 3000
+  2:
+    cathode:   -500
+    anode:     2100
+    anodegrid: 2000
+  3:
+    cathode:   -500
+    anode:     3100
+    anodegrid: 3000
+
+
 # The DAQ will check if the HV is whitin these range
 # and will pop a warning if not
 prm_hv_ranges:
   1:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
   2:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
   3:
-    cathode:   [-500, -20]
-    anode:     [2000, 6000]
-    anodegrid: [2000, 6000]
+    cathode:   [-600, -20]
+    anode:     [1000, 6000]
+    anodegrid: [1000, 6000]
+
+
+# Data storage
+data_storage_host: "sbndgpvm01.fnal.gov"
+data_storage_username: "sbnd"
+data_storage_path: "/exp/sbnd/data/purity_monitors"
 

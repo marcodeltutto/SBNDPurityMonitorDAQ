@@ -16,6 +16,7 @@ jobs:
       run: |
         sudo apt-get update -y
         sudo apt-get install -y xvfb libxcb-icccm4 libxcb-image0 libxcb-randr0 libxcb-xinerama0 libxcb-keysyms1 libxcb-render-util0 libxcb-xkb1 x11-utils libxkbcommon-x11-0
+        sudo apt-get install -y krb5-config libkrb5-dev
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install py

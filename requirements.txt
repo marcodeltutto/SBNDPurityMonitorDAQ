@@ -4,8 +4,9 @@ argparse
 pyyaml
 qdarkstyle
 pyfirmata
-paramiko
+paramiko[gssapi]
 sshtunnel
+scp
 requests
 rich
 pyepics

@@ -21,6 +21,9 @@ ICON_RED_LED = os.path.join(os.path.dirname(
 ICON_GREEN_LED = os.path.join(os.path.dirname(
                  os.path.realpath(__file__)),
                  'icons/green-led-on.png')
+ICON_BLUE_LED = os.path.join(os.path.dirname(
+                os.path.realpath(__file__)),
+                'icons/blue-led-on.png')
 
 class Control(QtWidgets.QMainWindow):
     '''
@@ -60,6 +63,8 @@ class Control(QtWidgets.QMainWindow):
         self._lcd_cathode_hv.display('199')
         self._lcd_anode_hv.display('199')
 
+        self._take_hvoff_run.setChecked(True)
+
         self._disabled_label.setVisible(False)
 
 
@@ -93,6 +98,11 @@ class Control(QtWidgets.QMainWindow):
             self._start_stop_btn.setDisabled(True)
             self._run_status_label.setText('Running')
             self._status_led.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+        elif self._mode_toggle.value():
+            self._start_stop_btn.setText("(Auto)")
+            self._start_stop_btn.setDisabled(True)
+            self._run_status_label.setText('Waiting')
+            self._status_led.setPixmap(QtGui.QPixmap(ICON_BLUE_LED))
         else:
             self._start_stop_btn.setText("Start")
             self._start_stop_btn.setDisabled(False)
@@ -181,12 +191,18 @@ class Control(QtWidgets.QMainWindow):
 
             self._mode_toggle_label.setVisible(False)
             self._mode_toggle.setVisible(False)
+            self._take_hvoff_run.setVisible(False)
+
+            self._status_led.setDisabled(True)
         else:
             self._start_stop_btn.setVisible(True)
             self._disabled_label.setVisible(False)
 
             self._mode_toggle_label.setVisible(True)
             self._mode_toggle.setVisible(True)
+            self._take_hvoff_run.setVisible(True)
+
+            self._status_led.setDisabled(False )
 
     def hv_out_of_range(self, status):
         '''
@@ -291,9 +307,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._logs_btn.clicked.connect(self._logs.show)
 
         # self._settings = Settings(self)
-        # self._settings_btn.clicked.connect(self._settings.show)
+        self._settings_btn.clicked.connect(self.screenshot)
 
-        self._hv_settings = HVSettings(config["prm_hv_ranges"], self)
+        self._hv_settings = HVSettings(config["prm_hv_default"], config["prm_hv_ranges"], self)
         self._digitizer_settings = DigitizerSettings(self)
 
         self._prm_manager = None
@@ -303,8 +319,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer.start(1000)
 
         self._prm_controls = {
-            1: Control(prm_id=1, name='PrM 1', description='Cryo Bottom'),
-            2: Control(prm_id=2, name='PrM 2', description='Cryo Top'),
+            1: Control(prm_id=1, name='PrM 1', description='Int Long (Top)'),
+            2: Control(prm_id=2, name='PrM 2', description='Int Short (Bot)'),
             3: Control(prm_id=3, name='PrM 3', description='Inline'),
         }
         # self._prm_controls[0].setStyleSheet("background-color: rgba(0,0,0,0.1);")
@@ -405,6 +421,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # control.setStyleSheet("border-color: rgb(0, 0, 0);")
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
+        control._take_hvoff_run.clicked.connect(lambda: self._set_hvoff_run(prm_id=prm_id))
 
     def set_start_button_status(self, prm_id=1, status=True):
         '''
@@ -560,6 +577,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self._prm_manager.set_mode(prm_id, 'auto')
         else:
             self._prm_manager.set_mode(prm_id, 'manual')
+
+    def _set_hvoff_run(self, prm_id):
+        '''
+        Tells the manager whether to take an initial run with no HV.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        control = self._prm_controls[prm_id]
+        self._prm_manager.take_hvoff_run(prm_id, control._take_hvoff_run.isChecked())
 
 
     def _check_status(self):
@@ -719,3 +746,15 @@ class MainWindow(QtWidgets.QMainWindow):
         Gets config values
         '''
         self._config_form.get_values(prm_id)
+
+    def screenshot(self):
+        '''
+        Takes screenshot of current window
+        '''
+        screen = QtWidgets.QApplication.primaryScreen()
+        window = self.windowHandle()
+        if window:
+            screen = window.screen()
+
+        screenshot = screen.grabWindow(0)
+        screenshot.save('shot.jpg', 'jpg')

@@ -154,6 +154,7 @@ class PrMDigitizer(DigitizerBase):
     def set_number_acquisitions(self, n_acquisitions, prm_id=1):
 
         prm_id = self._process_prm_id(prm_id)
+        print('prm_digitizer, set_number_acquisitions with ', prm_id)
         return self._digitizers[prm_id].set_number_acquisitions(n_acquisitions)
 
     def get_pre_trigger_samples(self, prm_id=1):
