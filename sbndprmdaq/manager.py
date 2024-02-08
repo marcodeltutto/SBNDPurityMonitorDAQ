@@ -73,6 +73,7 @@ class PrMManager():
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
 
+        self._do_store = config['data_storage']
         self._data_storage = DataStorage(config)
 
         self._comment = 'No comment'
@@ -399,8 +400,8 @@ class PrMManager():
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
 
-        data_hv_off = {'A': [], 'B': [], 'C': [], 'D': []}
-        data_hv_on  = {'A': [], 'B': [], 'C': [], 'D': []}
+        data_hv_off = {'A': [0], 'B': [0], 'C': [0], 'D': [0]}
+        data_hv_on  = {'A': [0], 'B': [0], 'C': [0], 'D': [0]}
 
         #
         # First run with no HV
@@ -623,6 +624,7 @@ class PrMManager():
             saved_files.append(file_name)
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
+                    self._logger.info(f'Saving {k}')
                     if isinstance(v, list):
                         v = np.stack(v) # assuming list of arrays
                         v_str = str(v.tolist()).replace(" ", "")
@@ -631,7 +633,7 @@ class PrMManager():
                         f.write(k + '=' + str(v) + '\n')
 
         # Copy data to sbndgpvm
-        if self._config['data_storage']:
+        if self._do_store:
             self._data_storage.store_files(saved_files)
 
 
@@ -657,14 +659,9 @@ class PrMManager():
         else:
             raise ValueError(f'prm_id {prm_id} invalid')
 
-        pvs = [
-            f'sbnd_prm_{prm}_hv/anode_voltage',
-            f'sbnd_prm_{prm}_hv/anodegrid_voltage',
-            f'sbnd_prm_{prm}_hv/cathode_voltage'
-        ]
         res = []
-        for pv in pvs:
-            res.append(epics.caput(pv, out_dict['hv_anode']))
+        for item in ['cathode', 'anodegrid', 'anode']:
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
 
         if all(res):
             self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
