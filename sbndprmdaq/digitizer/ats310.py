@@ -79,10 +79,10 @@ class ATS310(DigitizerBase):
         # self._post_trigger_samples = 4096
         # self._post_trigger_samples = 10240 #1024 # <--
         # self._post_trigger_samples = 20000 #1024
-        self._post_trigger_samples = 6000 #1024
+        self._post_trigger_samples = 4000 #1024
 
         # Select the number of records in the acquisition.
-        self._records_per_capture = 1
+        self._records_per_capture = 10
 
         # Select the amount of time to wait for the acquisition to
         # complete to on-board memory.
@@ -133,7 +133,7 @@ class ATS310(DigitizerBase):
         Args:
             n (int): Number of samples per second
         '''
-        print('To be implemented')
+        self._logger.info('To be implemented')
         self._samples_per_sec = samples
 
     def get_pre_trigger_samples(self):
@@ -365,7 +365,7 @@ class ATS310(DigitizerBase):
         # recordsPerSec = 0
         if captureTime_sec > 0:
             recordsPerSec = self._records_per_capture / captureTime_sec
-        print("Captured {self._records_per_capture} records in {captureTime_sec} rec ({recordsPerSec} records/sec)")
+        self._logger.info(f"Captured {self._records_per_capture} records in {captureTime_sec} rec ({recordsPerSec} records/sec)")
         self._capture_success = True
 
         return True
@@ -401,7 +401,7 @@ class ATS310(DigitizerBase):
         buffer = ats.DMABuffer(self._board.handle, sample_type, self._bytes_per_buffer + 16)
 
         # Transfer the records from on-board memory to our buffer
-        print(f"Transferring {self._records_per_capture} records...")
+        self._logger.info(f"Transferring {self._records_per_capture} records...")
 
         for record in range(self._records_per_capture):
             if ats.enter_pressed():
@@ -454,7 +454,7 @@ class ATS310(DigitizerBase):
         bytesPerSec = 0
         if transferTime_sec > 0:
             bytesPerSec = bytesTransferred / transferTime_sec
-        print(f"Transferred {bytesTransferred} bytes ({bytesPerSec} bytes per sec)")
+        self._logger.info(f"Transferred {bytesTransferred} bytes ({bytesPerSec} bytes per sec)")
 
         del buffer
 
