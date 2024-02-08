@@ -107,3 +107,9 @@ prm_hv_ranges:
     anode:     [1000, 6000]
     anodegrid: [1000, 6000]
 
+
+# Data storage
+data_storage_host: "sbndgpvm01.fnal.gov"
+data_storage_username: "sbnd"
+data_storage_path: "/exp/sbnd/data/purity_monitors"
+

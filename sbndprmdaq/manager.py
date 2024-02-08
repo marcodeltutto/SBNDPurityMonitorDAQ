@@ -10,6 +10,7 @@ import epics
 
 from PyQt5.QtCore import QThreadPool, QTimer
 
+from sbndprmdaq.data_storage import DataStorage
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
@@ -72,6 +73,7 @@ class PrMManager():
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
 
+        self._data_storage = DataStorage()
 
         self._comment = 'No comment'
 
@@ -420,9 +422,9 @@ class PrMManager():
 
             self._logger.info(f'NO HN Run for {prm_id} completed.')
 
-            if progress_callback is not None:
+        
+        if progress_callback is not None:
                 progress_callback.emit(prm_id, 'Wait for HV', 0)
-
 
 
         #
@@ -622,6 +624,10 @@ class PrMManager():
                         f.write(k + '=' + v_str + '\n')
                     else:
                         f.write(k + '=' + str(v) + '\n')
+
+        # Copy data to sbndgpvm
+        self._data_storage.store_folder(os.path.join(self._data_files_path, run_name))
+
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
 
