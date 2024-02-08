@@ -611,11 +611,16 @@ class PrMManager():
             timestr
         )
 
+        saved_files = []
+
         if self._save_as_npz:
-            np.savez(os.path.join(self._data_files_path, run_name + '.npz'), **out_dict)
+            file_name = os.path.join(self._data_files_path, run_name + '.npz')
+            saved_files.append(file_name)
+            np.savez(saved_files[-1], **out_dict)
 
         if self._save_as_txt:
             file_name = os.path.join(self._data_files_path, run_name + '.txt')
+            saved_files.append(file_name)
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
                     if isinstance(v, list):
@@ -626,7 +631,8 @@ class PrMManager():
                         f.write(k + '=' + str(v) + '\n')
 
         # Copy data to sbndgpvm
-        self._data_storage.store_folder(os.path.join(self._data_files_path, run_name))
+        if self._config['data_storage']:
+            self._data_storage.store_files(saved_files)
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
