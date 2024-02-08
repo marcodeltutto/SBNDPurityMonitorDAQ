@@ -15,7 +15,7 @@ prm_id_to_digitizer_type:
 prm_id_to_ats_systemid:
   1: None
   2: None
-  3: 1
+  3: 2
 
 prm_id_to_adpro_channels:
   1: [1, 2]
@@ -86,9 +86,9 @@ prm_hv_default:
     anode:     2100
     anodegrid: 2000
   3:
-    cathode:   -500
-    anode:     3100
-    anodegrid: 3000
+    cathode:   -120
+    anode:     4431
+    anodegrid: 4351
 
 
 # The DAQ will check if the HV is whitin these range
@@ -109,6 +109,7 @@ prm_hv_ranges:
 
 
 # Data storage
+data_storage: False
 data_storage_host: "sbndgpvm01.fnal.gov"
 data_storage_username: "sbnd"
 data_storage_path: "/exp/sbnd/data/purity_monitors"
