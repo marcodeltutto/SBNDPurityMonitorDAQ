@@ -73,7 +73,7 @@ class PrMManager():
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
 
-        self._data_storage = DataStorage()
+        self._data_storage = DataStorage(config)
 
         self._comment = 'No comment'
 
@@ -422,9 +422,9 @@ class PrMManager():
 
             self._logger.info(f'NO HN Run for {prm_id} completed.')
 
-        
+
         if progress_callback is not None:
-                progress_callback.emit(prm_id, 'Wait for HV', 0)
+            progress_callback.emit(prm_id, 'Wait for HV', 0)
 
 
         #
@@ -633,6 +633,7 @@ class PrMManager():
 
         return out_dict
 
+    #pylint: disable=invalid-name
     def output_to_epics(self, prm_id, out_dict):
         '''
         Updates EPICS with run data.

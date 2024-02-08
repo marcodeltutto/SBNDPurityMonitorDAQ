@@ -6,7 +6,7 @@ import logging
 import paramiko
 from scp import SCPClient
 
-
+#pylint: disable=too-few-public-methods
 class DataStorage():
     '''
     A class that handles storage of purity monitor data
@@ -62,10 +62,3 @@ class DataStorage():
             foldername (string): The full path of the folder to store
         '''
         return os.path.isdir(foldername)
-
-
-
-
-
-
-
