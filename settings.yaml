@@ -78,13 +78,13 @@ mpod_prm3_anodegrid_ch: 301
 # Default HV values
 prm_hv_default:
   1:
-    cathode:   -500
-    anode:     3100
-    anodegrid: 3000
+    cathode:   -120
+    anode:     4431
+    anodegrid: 4351
   2:
-    cathode:   -500
-    anode:     2100
-    anodegrid: 2000
+    cathode:   -200
+    anode:     2408
+    anodegrid: 2532
   3:
     cathode:   -120
     anode:     4431
