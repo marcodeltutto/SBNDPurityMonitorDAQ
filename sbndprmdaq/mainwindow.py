@@ -274,7 +274,7 @@ class DataDisplay(QtWidgets.QMainWindow):
             tau: The lifetime.
             time: The timestamp.
         '''
-        text = f'Qa = {qa}\nQc = {qc}\nLifetime = {tau}'
+        text = f'Qa = {qa:.1f}  -  Qc = {qc:.1f}\nQa/Qc = {qa/qc:.1f}  -  Lifetime = {tau:.1f} mus'
         self._text.setText(text)
         self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
 
@@ -691,25 +691,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
-            qa, qc, tau = self._extract_values(data['A'], data['B'])
+            qa, qc, tau = self._prm_manager.get_latest_lifetime(control.get_id())
 
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
 
-    def _extract_values(self, a, b):
-        '''
-        Extracts the Qa, Qc, tau from the latest data. To be implemented in a separate
-        analysis class.
-
-        Args:
-            a (array): Waveform for channel A.
-            b (array): Waveform for channel B.
-
-        Returns:
-            float: The extracted Qa.
-            float: The extracted Qc.
-            float: The extracted Lifetime.
-        '''
-        return a, b, 0
 
     def missing_digitizer(self, prm_id):
         '''

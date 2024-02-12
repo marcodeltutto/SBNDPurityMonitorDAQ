@@ -114,3 +114,5 @@ data_storage_host: "sbndgpvm01.fnal.gov"
 data_storage_username: "sbnd"
 data_storage_path: "/exp/sbnd/data/purity_monitors"
 
+# Lifetime analysis
+analyze: True

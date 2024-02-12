@@ -79,7 +79,7 @@ class ATS310(DigitizerBase):
         # self._post_trigger_samples = 4096
         # self._post_trigger_samples = 10240 #1024 # <--
         # self._post_trigger_samples = 20000 #1024
-        self._post_trigger_samples = 4000 #1024
+        self._post_trigger_samples = 6000 #1024
 
         # Select the number of records in the acquisition.
         self._records_per_capture = 10
@@ -476,6 +476,7 @@ class ATS310(DigitizerBase):
         code_range = float(1 << (bits_per_sample - 1)) - 0.5
 
         if self._data['A'] is not None:
+            print('type(self._data[A])', type(self._data['A']))
             sample_code = np.right_shift(self._data['A'], bit_shift)
             self._data['A'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
             self._data['A'] = self._data['A'].tolist()

@@ -11,6 +11,7 @@ import epics
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
+from sbndprmdaq.analysis import PrMAnalysis
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
@@ -40,6 +41,7 @@ class PrMManager():
         self._repetitions = {}
         self._take_hvoff_run = {}
         self._mode = {}
+        self._meas = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -52,6 +54,7 @@ class PrMManager():
             self._repetitions[prm_id] = 1
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
+            self._meas[prm_id] = None
 
         self._set_digitizer_and_hv(config)
 
@@ -75,6 +78,8 @@ class PrMManager():
 
         self._do_store = config['data_storage']
         self._data_storage = DataStorage(config)
+
+        self._do_analyze = config['analyze']
 
         self._comment = 'No comment'
 
@@ -469,7 +474,7 @@ class PrMManager():
             data_callback.emit(data)
 
         self._lamp_off(prm_ids)
-        # self._turn_hv_off(prm_ids)
+        self._turn_hv_off(prm_ids)
 
 
         ret = {
@@ -624,7 +629,6 @@ class PrMManager():
             saved_files.append(file_name)
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
-                    self._logger.info(f'Saving {k}')
                     if isinstance(v, list):
                         v = np.stack(v) # assuming list of arrays
                         v_str = str(v.tolist()).replace(" ", "")
@@ -634,7 +638,25 @@ class PrMManager():
 
         # Copy data to sbndgpvm
         if self._do_store:
+            self._logger.info(f'Storing data for PrM {prm_id}.')
             self._data_storage.store_files(saved_files)
+
+        self._meas[prm_id] = None
+        if self._do_analyze:
+            try:
+                self._logger.info(f'Analyzing data for PrM {prm_id}.')
+                self._prmana = PrMAnalysis(out_dict[f'ch_A'], out_dict[f'ch_B'])
+                self._prmana.calculate()
+                file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
+                self._prmana.plot_summary(container=out_dict, savename=file_name)
+                self._meas[prm_id] = {
+                    'td': self._prmana._td,
+                    'qc': self._prmana._qc,
+                    'qa': self._prmana._qa,
+                    'tau': self._prmana._tau
+                }
+            except:
+                pass
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
@@ -662,6 +684,11 @@ class PrMManager():
         res = []
         for item in ['cathode', 'anodegrid', 'anode']:
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
+
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
 
         if all(res):
             self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
@@ -814,6 +841,23 @@ class PrMManager():
             dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id]
+
+    def get_latest_lifetime(self, prm_id):
+        '''
+        Returns the Qa, Qc, tau from the latest data.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            float: The extracted Qa.
+            float: The extracted Qc.
+            float: The extracted Lifetime.
+        '''
+        if self._meas[prm_id] is not None:
+            return self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau']
+        else:
+            return -999, -999, -999
 
 
     def get_hv(self, prm_id):

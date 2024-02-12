@@ -94,6 +94,17 @@ class ADProControl(DigitizerBase):
             time.sleep(1)
         self._logger.info('ADPro API ready.')
 
+    def check_connection(self):
+        if self._server.tunnel_is_up():
+            return
+
+        self._logger.warning(f'ADPro SSH tunnel is down. Restarting...')
+
+        self._server.stop()
+        self._server.start()
+
+        self._start_api()
+
 
     #pylint: disable=bare-except
     def _check_digitizer(self):
