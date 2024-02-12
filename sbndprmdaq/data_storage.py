@@ -45,7 +45,7 @@ class DataStorage():
         # Open an SSH tunnel
         with paramiko.SSHClient() as client:
 
-            self._logger.info(f"Opened SSH client.")
+            self._logger.info("Opened SSH client.")
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(self._config['data_storage_host'],
@@ -55,7 +55,7 @@ class DataStorage():
 
             # Open an SCP client and copy the folder
             with SCPClient(client.get_transport()) as scp:
-                self._logger.info(f"Opened SCP.")
+                self._logger.info("Opened SCP.")
                 for fname in real_filenames:
                     scp.put(fname, recursive=True, remote_path=self._config['data_storage_path'])
 
@@ -80,4 +80,3 @@ class DataStorage():
             filename (string): The full path of the file to store
         '''
         return os.path.isfile(filename)
-

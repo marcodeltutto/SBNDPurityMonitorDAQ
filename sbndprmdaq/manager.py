@@ -644,8 +644,9 @@ class PrMManager():
         self._meas[prm_id] = None
         if self._do_analyze:
             try:
+                #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
                 self._logger.info(f'Analyzing data for PrM {prm_id}.')
-                self._prmana = PrMAnalysis(out_dict[f'ch_A'], out_dict[f'ch_B'])
+                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'])
                 self._prmana.calculate()
                 file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
                 self._prmana.plot_summary(container=out_dict, savename=file_name)
@@ -655,7 +656,7 @@ class PrMManager():
                     'qa': self._prmana._qa,
                     'tau': self._prmana._tau
                 }
-            except:
+            except Exception:
                 pass
 
 
@@ -856,8 +857,8 @@ class PrMManager():
         '''
         if self._meas[prm_id] is not None:
             return self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau']
-        else:
-            return -999, -999, -999
+
+        return -999, -999, -999
 
 
     def get_hv(self, prm_id):

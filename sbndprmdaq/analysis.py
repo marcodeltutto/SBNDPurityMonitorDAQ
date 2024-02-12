@@ -3,9 +3,12 @@ Contains PrM analysis class
 '''
 
 import datetime
-import numpy as np
 import subprocess
+import numpy as np
 
+import matplotlib.pyplot as plt
+
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type
 
 class PrMAnalysis:
     '''
@@ -31,6 +34,34 @@ class PrMAnalysis:
         self._raw_wf_c = np.mean(wf_c, axis=0) * volt_to_mv
         self._raw_wf_a = np.mean(wf_a, axis=0) * volt_to_mv
 
+        self._wf_c = None
+        self._wf_a = None
+        self._wf_x = None
+
+        self._baseline_c = None
+        self._baseline_rms_c = None
+        self._baseline_a = None
+        self._baseline_rms_a = None
+
+        self._time_start_c = None
+        self._time_end_c = None
+        self._deltat_c = None
+
+        self._time_start_a = None
+        self._time_end_a = None
+        self._deltat_a = None
+
+        self._max_c = None
+        self._max_a = None
+
+        self._qa = None
+        self._qc = None
+
+        self._td = None
+        self._tau = None
+
+        self._offset = None
+
     def pre_process(self, smooth=True, n=10):
         '''
         Smooths the data if requested
@@ -51,7 +82,7 @@ class PrMAnalysis:
             self._wf_a = self._raw_wf_a
             self._wf_x = self._raw_wf_x
 
-    def estimate_baseline(self, baseline_range_c=[0,450],  baseline_range_a=[1000,2000]):
+    def estimate_baseline(self, baseline_range_c=None,  baseline_range_a=None):
         '''
         Baseline estimation
 
@@ -59,6 +90,13 @@ class PrMAnalysis:
             baseline_range_c (list): Range used to estimate baseline for cathode
             baseline_range_a (list): Range used to estimate baseline for anode
         '''
+
+        if baseline_range_c is None:
+            baseline_range_c=[0,450]
+
+        if baseline_range_a is None:
+            baseline_range_a=[1000,2000]
+
         self._baseline_c = np.mean(self._wf_c[baseline_range_c])
         self._baseline_rms_c = np.std(self._wf_c[baseline_range_c])
 
@@ -74,7 +112,7 @@ class PrMAnalysis:
         # _trigger_sample += self._offset
         # _deltat_start_c -= self._offset
         # _deltat_start_a -= self._offset
-        
+
         # Cathode
         tmp_wvf = self._wf_c[self._deltat_start_c:]
         min_idx = np.argmin(tmp_wvf)
@@ -122,7 +160,7 @@ class PrMAnalysis:
         Lifetime estimation
 
         Args:
-            start_idx (int): where to start estimation (to esclude lamp noise) 
+            start_idx (int): where to start estimation (to esclude lamp noise)
         '''
 
         self._max_c = np.min(self._wf_c[start_idx:])
@@ -143,16 +181,16 @@ class PrMAnalysis:
         print(type(self._max_a), type(self._baseline_a), type(rc_correction_a), type(self._qa))
 
         print('Qc', self._qc, ', QA', self._qa, 'Qa/Qc', self._qa/self._qc)
-        
+
         self._td = self._time_end_a - self._time_start_c
-        
+
         print('Drift time', self._td)
-        
+
         self._tau = -self._td/np.log(self._qa/self._qc)
 
         print('Lifetime', self._tau)
-        
-        
+
+
 
     def calculate(self):
         '''
@@ -176,7 +214,6 @@ class PrMAnalysis:
             savename (string): full path to save file
         '''
 
-        import matplotlib.pyplot as plt
         # import matplotlib.patches as patches
 
         prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -184,39 +221,39 @@ class PrMAnalysis:
 
         fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(12, 8), sharex=True)
         fig.subplots_adjust(hspace=0)
-                
+
         ax[0].plot(self._raw_wf_x, self._raw_wf_a, label='Anode Raw', color=_colors[0], alpha=0.5,)
         ax[1].plot(self._raw_wf_x, self._raw_wf_c, label='Cathode Raw', color=_colors[1], alpha=0.5)
-                
+
         ax[0].plot(self._wf_x, self._wf_a, label='Anode', color=_colors[0])
         ax[1].plot(self._wf_x, self._wf_c, label='Cathode', color=_colors[1])
 
-        
+
         ax[0].axhline(self._baseline_a, color=_colors[0],
                       label=f'Baseline = {self._baseline_a:.1f} ' + r'$\pm$' + f' {self._baseline_rms_a:.1f} mV', linestyle='dashed')
         ax[1].axhline(self._baseline_c, color=_colors[1],
                       label=f'Baseline = {self._baseline_c:.1f} ' + r'$\pm$' + f' {self._baseline_rms_c:.1f} mV', linestyle='dashed')
-        
-        
+
+
         ax[0].axvline(self._time_start_c, color='grey', linestyle='dashed')
         ax[1].axvline(self._time_start_c, color='grey', linestyle='dashed')
         ax[0].axvline(self._time_end_a, color='grey', linestyle='dashed')
         ax[1].axvline(self._time_end_a, color='grey', linestyle='dashed')
-        
+
         ax[0].axvspan(self._time_start_a, self._time_end_a, alpha=0.5, color=_colors[0])
         ax[1].axvspan(self._time_start_c, self._time_end_c, alpha=0.5, color=_colors[1])
-        
+
         ax[0].axhline(self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot')
         ax[1].axhline(self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot')
-        
+
         ax[0].set_ylim([-29.9999, 50])
         ax[1].set_ylim([-50, 29.9999])
-                
+
         ax[0].set_title(f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
                         + f'\nQa/Qc: {self._qa/self._qc:.2f}'
                         + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
                         loc='left', fontsize=12)
-        
+
         self.set_lifetime_axis(ax, 'SBND PrM 3 - Inline - Long', container, text_pos=[0.27, 0.56])
 
         if savename:
@@ -235,19 +272,19 @@ class PrMAnalysis:
         #     a.set_title('SBND Purity Monitors', loc='right', fontsize=18)
             a.tick_params(labelsize=15)
             a.grid(True)
-            
+
             ax[0].legend(fontsize=12, loc=1)
             ax[1].legend(fontsize=12, loc=4)
-    
+
         # ax[0].set_ylim([-29.9999, 30])
         # ax[1].set_ylim([-30,    29.9999])
-        
+
         ax[0].set_title(title, loc='right', fontsize=18)
-        
+
         if draw_txt and container is not None:
             self.draw_text_lifetime(ax[0], container, text_pos)
-        
-        
+
+
     def draw_text_lifetime(self, ax, container, pos=None):
         '''
         Draw info text on plot
@@ -255,7 +292,7 @@ class PrMAnalysis:
         date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
 
         short_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
-    
+
         textstr = '\n'.join((
             r'Run %i' % (container['run'], ),
             r'%s' % (date.strftime("%B %d, %Y - %H:%M"), ),
@@ -264,17 +301,17 @@ class PrMAnalysis:
             r'Anode HV = %.0f V' % (container['hv_anode'], ),
             r'n traces = %.0i' % (len(container['ch_B']), ),
         ))
-        
+
         if pos is None:
             pos = [0.98, 0.15]
 
-        props = dict(boxstyle='round', edgecolor='grey', facecolor='white', alpha=0.8)        
+        props = {"boxstyle": 'round', "edgecolor": 'grey', "facecolor": 'white', "alpha": 0.8}
         ax.text(pos[0], pos[1], textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='bottom',
                 horizontalalignment='left',
                 bbox=props)
 
-        props = dict(boxstyle='round', edgecolor='white', facecolor='white', alpha=0)
+        props = {"boxstyle": 'round', "edgecolor": 'white', "facecolor": 'white', "alpha": 0}
         ax.text(0.6, 1, 'SBNDPurityMonitorDAQ: ' + short_hash, transform=ax.transAxes, fontsize=8,
                 verticalalignment='bottom',
                 horizontalalignment='right',
