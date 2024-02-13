@@ -274,7 +274,8 @@ class DataDisplay(QtWidgets.QMainWindow):
             tau: The lifetime.
             time: The timestamp.
         '''
-        text = f'Qa = {qa:.1f}  -  Qc = {qc:.1f}\nQa/Qc = {qa/qc:.1f}  -  Lifetime = {tau:.1f} mus'
+        print('set_latest_data', qa, qc, tau, time)
+        text = f'Qa = {qa:.1f}  -  Qc = {qc:.1f}\nQa/Qc = {qa/qc:.1f}  -  tau = {tau:.1f} mus'
         self._text.setText(text)
         self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
 
@@ -692,6 +693,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
             qa, qc, tau = self._prm_manager.get_latest_lifetime(control.get_id())
+            print('before call set_latest_data', qa, qc, tau)
 
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
 

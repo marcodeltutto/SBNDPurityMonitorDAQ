@@ -19,6 +19,10 @@ class PrMAnalysis:
     _deltat_start_a = 900
     _trigger_sample = 512 # When the flash lamp flashes
 
+    _volt_to_mv = 1e3
+    _sec_to_us = 1e6
+    _us_to_ms = 1e-3
+
     def __init__(self, wf_c, wf_a, samples_per_sec=2e6):
         '''
         Constructor.
@@ -27,12 +31,11 @@ class PrMAnalysis:
             wf_c (list): cathode waveforms
             wf_a (list): anode waveforms
         '''
-        volt_to_mv = 1e3
-        sec_to_us = 1e6
 
-        self._raw_wf_x = np.arange(len(wf_c[0])) / samples_per_sec * sec_to_us # us
-        self._raw_wf_c = np.mean(wf_c, axis=0) * volt_to_mv
-        self._raw_wf_a = np.mean(wf_a, axis=0) * volt_to_mv
+
+        self._raw_wf_x = np.arange(len(wf_c[0])) / samples_per_sec * self._sec_to_us # us
+        self._raw_wf_c = np.mean(wf_c, axis=0) * self._volt_to_mv
+        self._raw_wf_a = np.mean(wf_a, axis=0) * self._volt_to_mv
 
         self._wf_c = None
         self._wf_a = None
@@ -76,7 +79,7 @@ class PrMAnalysis:
             self._wf_a = np.convolve(self._raw_wf_a, np.ones(n)/n, mode='valid')
             self._wf_x = self._raw_wf_x[int(n/2):-int(n/2)+1]
             self._offset = int(n/2)
-            print(len(self._raw_wf_x), '->', len(self._wf_x))
+            self._trigger_sample -= self._offset
         else:
             self._wf_c = self._raw_wf_c
             self._wf_a = self._raw_wf_a
@@ -187,8 +190,9 @@ class PrMAnalysis:
         print('Drift time', self._td)
 
         self._tau = -self._td/np.log(self._qa/self._qc)
+        self._tau = self._tau
 
-        print('Lifetime', self._tau)
+        print('Lifetime', self._tau, 'ms')
 
 
 
@@ -246,8 +250,13 @@ class PrMAnalysis:
         ax[0].axhline(self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot')
         ax[1].axhline(self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot')
 
-        ax[0].set_ylim([-29.9999, 50])
-        ax[1].set_ylim([-50, 29.9999])
+        x_plot_range = self._time_end_a * 2
+        ax[0].set_xlim([0, x_plot_range])
+        ax[1].set_xlim([0, x_plot_range])
+
+        y_plot_range = self._max_c * 1.4
+        ax[0].set_ylim([-29.9999,      y_plot_range])
+        ax[1].set_ylim([-y_plot_range, 29.9999])
 
         ax[0].set_title(f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
                         + f'\nQa/Qc: {self._qa/self._qc:.2f}'

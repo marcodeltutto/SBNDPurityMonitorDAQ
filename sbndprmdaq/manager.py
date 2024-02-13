@@ -474,6 +474,7 @@ class PrMManager():
             data_callback.emit(data)
 
         self._lamp_off(prm_ids)
+        time.sleep(2)
         self._turn_hv_off(prm_ids)
 
 
@@ -656,8 +657,10 @@ class PrMManager():
                     'qa': self._prmana._qa,
                     'tau': self._prmana._tau
                 }
-            except Exception:
-                pass
+            except Exception as err:
+                self._logger.warning('PrMAnalysis failed:')
+                self._logger.warning(type(err))
+                self._logger.warning(err)
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
@@ -686,8 +689,8 @@ class PrMManager():
         for item in ['cathode', 'anodegrid', 'anode']:
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
 
-        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
-        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td'] * 1e-3))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau'] * 1e-3))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
 
@@ -856,6 +859,7 @@ class PrMManager():
             float: The extracted Lifetime.
         '''
         if self._meas[prm_id] is not None:
+            print('get_latest_lifetime', self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau'])
             return self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau']
 
         return -999, -999, -999
