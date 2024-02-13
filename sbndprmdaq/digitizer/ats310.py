@@ -477,6 +477,7 @@ class ATS310(DigitizerBase):
 
         if self._data['A'] is not None:
             print('type(self._data[A])', type(self._data['A']))
+            print('type(self._data[A][0])', type(self._data['A'][0]))
             sample_code = np.right_shift(self._data['A'], bit_shift)
             self._data['A'] = self._input_range_volts * ((sample_code - code_zero) / code_range)
             self._data['A'] = self._data['A'].tolist()
