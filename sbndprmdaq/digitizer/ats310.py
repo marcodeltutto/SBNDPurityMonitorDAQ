@@ -404,8 +404,8 @@ class ATS310(DigitizerBase):
         self._logger.info(f"Transferring {self._records_per_capture} records...")
 
         for record in range(self._records_per_capture):
-            if ats.enter_pressed():
-                break
+            # if ats.enter_pressed():
+            #     break
             for channel in range(self._channel_count):
                 channel_id = ats.channels[channel]
                 if channel_id & self._channels == 0:

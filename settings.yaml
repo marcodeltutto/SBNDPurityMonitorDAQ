@@ -22,38 +22,13 @@ prm_id_to_adpro_channels:
   2: [3, 4]
   3: None
 
-###################################
-# PrM 2 is controlled via PrM 1
-# bound_prms:
-#   3: 2
 
-# prm_id_to_digitizer_type:
-#   1: 'ats310'
-#   2: 'adpro'
-#   3: 'adpro'
-
-# prm_id_to_ats_systemid:
-#   1: 2
-#   2: None
-#   3: None
-
-# prm_id_to_adpro_channels:
-#   1: None
-#   2: [1, 2]
-#   3: [3, 4]
-###################################
-
-# adpro_ip: "192.168.2.10"
 adpro_ip: "10.226.35.155"
 adpro_username: "digilent"
 adpro_password: "digilent"
 adpro_port: 8000
 
 data_files_path: '/home/nfs/sbndprm/purity_monitor_data/'
-# data_files_path: '/home/nfs/mdeltutt/prm_data/'
-# data_files_path: '/sbnd/data/purity_monitors/'
-# data_files_path: '/home/nfs/mdeltutt/work/purity_monitors/data/'
-# data_files_path: '/Users/mdeltutt/Work/SBND/Purity Monitors/communication/'
 save_as_npz: true
 save_as_txt: true
 
@@ -79,16 +54,16 @@ mpod_prm3_anodegrid_ch: 301
 prm_hv_default:
   1:
     cathode:   -120
-    anode:     4431
-    anodegrid: 4351
+    anodegrid: 4431
+    anode:     4352
   2:
     cathode:   -200
-    anode:     2408
-    anodegrid: 2532
+    anodegrid: 2408
+    anode:     2533
   3:
     cathode:   -120
-    anode:     4431
-    anodegrid: 4351
+    anodegrid: 4431
+    anode:     4352
 
 
 # The DAQ will check if the HV is whitin these range
@@ -96,16 +71,16 @@ prm_hv_default:
 prm_hv_ranges:
   1:
     cathode:   [-600, -20]
-    anode:     [1000, 6000]
     anodegrid: [1000, 6000]
+    anode:     [1000, 6000]
   2:
     cathode:   [-600, -20]
-    anode:     [1000, 6000]
     anodegrid: [1000, 6000]
+    anode:     [1000, 6000]
   3:
     cathode:   [-600, -20]
-    anode:     [1000, 6000]
     anodegrid: [1000, 6000]
+    anode:     [1000, 6000]
 
 
 # Data storage
@@ -116,3 +91,25 @@ data_storage_path: "/exp/sbnd/data/purity_monitors"
 
 # Lifetime analysis
 analyze: True
+analysis_config:
+  1:
+    'deltat_start_c': 2700
+    'deltat_start_a': 2800
+    'trigger_sample': 2679
+    'baseline_range_c': [0,1000]
+    'baseline_range_a': [0,1000]
+    'title': 'SBND PrM 1 - Internal - Long'
+  2:
+    'deltat_start_c': 2700
+    'deltat_start_a': 2800
+    'trigger_sample': 2679
+    'baseline_range_c': [0,1000]
+    'baseline_range_a': [0,1000]
+    'title': 'SBND PrM 2 - Internal - Short'
+  3:
+    'deltat_start_c': 450
+    'deltat_start_a': 900
+    'trigger_sample': 512
+    'baseline_range_c': [0,450]
+    'baseline_range_a': [2000, 2400]
+    'title': 'SBND PrM 3 - Inline - Long'

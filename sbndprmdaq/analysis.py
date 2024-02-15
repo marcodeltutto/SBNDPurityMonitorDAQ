@@ -15,23 +15,23 @@ class PrMAnalysis:
     A class to perform quick PrM analysis
     '''
 
-    _deltat_start_c = 450
-    _deltat_start_a = 900
-    _trigger_sample = 512 # When the flash lamp flashes
-
     _volt_to_mv = 1e3
     _sec_to_us = 1e6
     _us_to_ms = 1e-3
 
-    def __init__(self, wf_c, wf_a, samples_per_sec=2e6):
+    def __init__(self, wf_c, wf_a, samples_per_sec=2e6, config=None, wf_c_hvoff=None, wf_a_hvoff=None):
         '''
         Constructor.
 
         Args:
             wf_c (list): cathode waveforms
             wf_a (list): anode waveforms
+            samples_per_sec (int): number of samples per seconds
+            config (dict): configuration
+            wf_c_hvoff (list): HV off cathode waveforms
+            wf_a_hvoff (list): HV on cathode waveforms
+            
         '''
-
 
         self._raw_wf_x = np.arange(len(wf_c[0])) / samples_per_sec * self._sec_to_us # us
         self._raw_wf_c = np.mean(wf_c, axis=0) * self._volt_to_mv
@@ -65,6 +65,26 @@ class PrMAnalysis:
 
         self._offset = None
 
+        if wf_c_hvoff is not None and wf_a_hvoff is not None:
+            if len(wf_c_hvoff) and len (wf_a_hvoff):
+                print('Subtracting HV OFF')
+                self._raw_wf_c -= np.mean(wf_c_hvoff, axis=0) * self._volt_to_mv
+                self._raw_wf_a -= np.mean(wf_a_hvoff, axis=0) * self._volt_to_mv
+
+        if config is None:
+            self._deltat_start_c = 450
+            self._deltat_start_a = 900
+            self._trigger_sample = 512 # When the flash lamp flashes
+            self._baseline_range_c = [0,450]
+            self._baseline_range_a = [2000,2400]
+        else:
+            self._deltat_start_c = config['deltat_start_c']
+            self._deltat_start_a = config['deltat_start_a']
+            self._trigger_sample = config['trigger_sample']
+            self._baseline_range_c = config['baseline_range_c']
+            self._baseline_range_a = config['baseline_range_a']
+
+
     def pre_process(self, smooth=True, n=10):
         '''
         Smooths the data if requested
@@ -85,7 +105,7 @@ class PrMAnalysis:
             self._wf_a = self._raw_wf_a
             self._wf_x = self._raw_wf_x
 
-    def estimate_baseline(self, baseline_range_c=None,  baseline_range_a=None):
+    def estimate_baseline(self):
         '''
         Baseline estimation
 
@@ -93,18 +113,13 @@ class PrMAnalysis:
             baseline_range_c (list): Range used to estimate baseline for cathode
             baseline_range_a (list): Range used to estimate baseline for anode
         '''
+        self._baseline_c = np.mean(self._wf_c[self._baseline_range_c])
+        # self._baseline_rms_c = np.std(self._wf_c[self._baseline_range_c])
+        self._baseline_rms_c = np.std(self._raw_wf_c[self._baseline_range_c])
 
-        if baseline_range_c is None:
-            baseline_range_c=[0,450]
-
-        if baseline_range_a is None:
-            baseline_range_a=[1000,2000]
-
-        self._baseline_c = np.mean(self._wf_c[baseline_range_c])
-        self._baseline_rms_c = np.std(self._wf_c[baseline_range_c])
-
-        self._baseline_a = np.mean(self._wf_a[baseline_range_a])
-        self._baseline_rms_a = np.std(self._wf_a[baseline_range_a])
+        self._baseline_a = np.mean(self._wf_a[self._baseline_range_a])
+        # self._baseline_rms_a = np.std(self._wf_a[self._baseline_range_a])
+        self._baseline_rms_a = np.std(self._raw_wf_a[self._baseline_range_a])
 
 
     def estimate_deltat(self):
@@ -115,7 +130,7 @@ class PrMAnalysis:
         # _trigger_sample += self._offset
         # _deltat_start_c -= self._offset
         # _deltat_start_a -= self._offset
-
+        
         # Cathode
         tmp_wvf = self._wf_c[self._deltat_start_c:]
         min_idx = np.argmin(tmp_wvf)
@@ -138,7 +153,7 @@ class PrMAnalysis:
         max_idx = np.argmax(tmp_wvf)
         selected = tmp_wvf[0:max_idx]
 
-        # FInd start of anode wf (when is 10% from the baseline)
+        # Find start of anode wf (when is 0.05% from the baseline)
         th = (selected[-1] - self._baseline_a) * 0.1
         start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
         start = self._wf_x[start_idx + self._deltat_start_a]
@@ -147,6 +162,7 @@ class PrMAnalysis:
         self._time_start_a = start[0]
         self._time_end_a = end
         self._deltat_a = end - start[0]
+
 
     def rc_correction(self, delta_t, RC=119):
         '''
@@ -158,16 +174,18 @@ class PrMAnalysis:
         '''
         return (delta_t / RC) * (1 / (1 - np.exp(-delta_t/RC)))
 
-    def calculate_lifetime(self, start_idx=550):
+    def calculate_lifetime(self):
         '''
         Lifetime estimation
 
         Args:
-            start_idx (int): where to start estimation (to esclude lamp noise)
+            start_idx (int): where to start estimation (to esclude lamp noise) 
         '''
 
-        self._max_c = np.min(self._wf_c[start_idx:])
-        self._max_a = np.max(self._wf_a[start_idx:])
+        self._max_c = np.min(self._wf_c[self._trigger_sample:])
+        self._max_a = np.max(self._wf_a[self._trigger_sample:])
+
+        print('Max: C', self._max_c, ', A', self._max_a)
 
         # self._max_c += self._baseline_rms_c
         # self._max_a -= self._baseline_rms_a
@@ -176,7 +194,7 @@ class PrMAnalysis:
         rc_correction_a = self.rc_correction(self._deltat_a, RC=119)
 
         print('RC correction: C', rc_correction_c, ', A', rc_correction_a)
-
+        print('> Mac C', self._max_c, 'base c', self._baseline_c, 'rc', rc_correction_c)
         self._qc = (self._max_c - self._baseline_c) * rc_correction_c
         self._qa = (self._max_a - self._baseline_a) * rc_correction_a
 
@@ -184,17 +202,60 @@ class PrMAnalysis:
         print(type(self._max_a), type(self._baseline_a), type(rc_correction_a), type(self._qa))
 
         print('Qc', self._qc, ', QA', self._qa, 'Qa/Qc', self._qa/self._qc)
-
+        
         self._td = self._time_end_a - self._time_start_c
-
+        
         print('Drift time', self._td)
-
+        
         self._tau = -self._td/np.log(self._qa/self._qc)
-        self._tau = self._tau
 
-        print('Lifetime', self._tau, 'ms')
+        print('Lifetime', self._tau, 'mus')
 
+    
+    def sanity_check(self):
+        if np.abs((self._max_a - self._baseline_a) / (self._baseline_rms_a)) < 5:
+            return 'no_anode'
 
+        if self._max_a < 0:
+            return 'no_anode'
+
+        if np.abs((self._max_c - self._baseline_c) / (self._baseline_rms_a)) < 5:
+            return 'no_cathode'
+
+        if self._max_c > 0:
+            return 'no_cathode'
+
+        if self._deltat_c > 50:
+            return 'cathode_deltat_large'
+
+        if self._deltat_a > 50:
+            return 'anode_deltat_large'
+
+        if self._qa > self._qc:
+            return 'qa_lt_qc'
+
+        return 'ok'
+
+    def process_error(self, status):
+        code = 0
+        if status == 'no_anode':
+            code = -10
+        elif status == 'no_cathode':
+            code = -11
+        elif status == 'cathode_deltat_large':
+            code = -12
+        elif code == 'anode_deltat_large':
+            code = -13
+        elif code == 'qa_lt_qc':
+            code = -14
+        else:
+            code = -99
+
+        self._tau = code
+        self._td = -1
+        self._qa = -1
+        self._qc = -1
+        
 
     def calculate(self):
         '''
@@ -209,6 +270,11 @@ class PrMAnalysis:
 
         self.calculate_lifetime()
 
+        status = self.sanity_check()
+
+        if status != 'ok':
+            self.process_error(status)
+
     def plot_summary(self, container=None, savename=None):
         '''
         Generates a summary plot
@@ -218,51 +284,49 @@ class PrMAnalysis:
             savename (string): full path to save file
         '''
 
-        # import matplotlib.patches as patches
-
         prop_cycle = plt.rcParams['axes.prop_cycle']
         _colors = prop_cycle.by_key()['color']
 
         fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(12, 8), sharex=True)
         fig.subplots_adjust(hspace=0)
-
+                
         ax[0].plot(self._raw_wf_x, self._raw_wf_a, label='Anode Raw', color=_colors[0], alpha=0.5,)
         ax[1].plot(self._raw_wf_x, self._raw_wf_c, label='Cathode Raw', color=_colors[1], alpha=0.5)
-
+                
         ax[0].plot(self._wf_x, self._wf_a, label='Anode', color=_colors[0])
         ax[1].plot(self._wf_x, self._wf_c, label='Cathode', color=_colors[1])
 
-
+        
         ax[0].axhline(self._baseline_a, color=_colors[0],
                       label=f'Baseline = {self._baseline_a:.1f} ' + r'$\pm$' + f' {self._baseline_rms_a:.1f} mV', linestyle='dashed')
         ax[1].axhline(self._baseline_c, color=_colors[1],
                       label=f'Baseline = {self._baseline_c:.1f} ' + r'$\pm$' + f' {self._baseline_rms_c:.1f} mV', linestyle='dashed')
-
-
+        
+        
         ax[0].axvline(self._time_start_c, color='grey', linestyle='dashed')
         ax[1].axvline(self._time_start_c, color='grey', linestyle='dashed')
         ax[0].axvline(self._time_end_a, color='grey', linestyle='dashed')
         ax[1].axvline(self._time_end_a, color='grey', linestyle='dashed')
-
+        
         ax[0].axvspan(self._time_start_a, self._time_end_a, alpha=0.5, color=_colors[0])
         ax[1].axvspan(self._time_start_c, self._time_end_c, alpha=0.5, color=_colors[1])
-
+        
         ax[0].axhline(self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot')
         ax[1].axhline(self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot')
-
+        
         x_plot_range = self._time_end_a * 2
         ax[0].set_xlim([0, x_plot_range])
         ax[1].set_xlim([0, x_plot_range])
 
-        y_plot_range = self._max_c * 1.4
-        ax[0].set_ylim([-29.9999,      y_plot_range])
-        ax[1].set_ylim([-y_plot_range, 29.9999])
+        y_plot_range = np.abs(self._max_c) * 1.4
+        ax[0].set_ylim([-29.99,        y_plot_range])
+        ax[1].set_ylim([-y_plot_range, 29.99])
 
         ax[0].set_title(f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
                         + f'\nQa/Qc: {self._qa/self._qc:.2f}'
                         + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
                         loc='left', fontsize=12)
-
+        
         self.set_lifetime_axis(ax, 'SBND PrM 3 - Inline - Long', container, text_pos=[0.27, 0.56])
 
         if savename:
@@ -281,19 +345,19 @@ class PrMAnalysis:
         #     a.set_title('SBND Purity Monitors', loc='right', fontsize=18)
             a.tick_params(labelsize=15)
             a.grid(True)
-
+            
             ax[0].legend(fontsize=12, loc=1)
             ax[1].legend(fontsize=12, loc=4)
-
+    
         # ax[0].set_ylim([-29.9999, 30])
         # ax[1].set_ylim([-30,    29.9999])
-
+        
         ax[0].set_title(title, loc='right', fontsize=18)
-
+        
         if draw_txt and container is not None:
             self.draw_text_lifetime(ax[0], container, text_pos)
-
-
+        
+        
     def draw_text_lifetime(self, ax, container, pos=None):
         '''
         Draw info text on plot
@@ -301,7 +365,7 @@ class PrMAnalysis:
         date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
 
         short_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
-
+    
         textstr = '\n'.join((
             r'Run %i' % (container['run'], ),
             r'%s' % (date.strftime("%B %d, %Y - %H:%M"), ),
@@ -310,17 +374,17 @@ class PrMAnalysis:
             r'Anode HV = %.0f V' % (container['hv_anode'], ),
             r'n traces = %.0i' % (len(container['ch_B']), ),
         ))
-
+        
         if pos is None:
             pos = [0.98, 0.15]
 
-        props = {"boxstyle": 'round', "edgecolor": 'grey', "facecolor": 'white', "alpha": 0.8}
+        props = dict(boxstyle='round', edgecolor='grey', facecolor='white', alpha=0.8)        
         ax.text(pos[0], pos[1], textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='bottom',
                 horizontalalignment='left',
                 bbox=props)
 
-        props = {"boxstyle": 'round', "edgecolor": 'white', "facecolor": 'white', "alpha": 0}
+        props = dict(boxstyle='round', edgecolor='white', facecolor='white', alpha=0)
         ax.text(0.6, 1, 'SBNDPurityMonitorDAQ: ' + short_hash, transform=ax.transAxes, fontsize=8,
                 verticalalignment='bottom',
                 horizontalalignment='right',

@@ -83,6 +83,8 @@ class PrMManager():
 
         self._comment = 'No comment'
 
+        self._config = config
+
         self.retrieve_run_numbers()
 
 
@@ -207,7 +209,7 @@ class PrMManager():
                 for line in run_file:
                     prm_id = line.split()[0]
                     run_no = line.split()[1]
-                    print('PrM:', prm_id, 'Run No:', run_no)
+                    self._logger.info(f'PrM: {prm_id} Run No: {run_no}')
                     self._run_numbers[int(prm_id)] = int(run_no)
 
     def write_run_numbers(self):
@@ -405,8 +407,8 @@ class PrMManager():
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
 
-        data_hv_off = {'A': [0], 'B': [0], 'C': [0], 'D': [0]}
-        data_hv_on  = {'A': [0], 'B': [0], 'C': [0], 'D': [0]}
+        data_hv_off = {'A': [], 'B': [], 'C': [], 'D': []}
+        data_hv_on  = {'A': [], 'B': [], 'C': [], 'D': []}
 
         #
         # First run with no HV
@@ -644,23 +646,26 @@ class PrMManager():
 
         self._meas[prm_id] = None
         if self._do_analyze:
-            try:
-                #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
-                self._logger.info(f'Analyzing data for PrM {prm_id}.')
-                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'])
-                self._prmana.calculate()
-                file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
-                self._prmana.plot_summary(container=out_dict, savename=file_name)
-                self._meas[prm_id] = {
-                    'td': self._prmana._td,
-                    'qc': self._prmana._qc,
-                    'qa': self._prmana._qa,
-                    'tau': self._prmana._tau
-                }
-            except Exception as err:
-                self._logger.warning('PrMAnalysis failed:')
-                self._logger.warning(type(err))
-                self._logger.warning(err)
+            # try:
+            #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
+            self._logger.info(f'Analyzing data for PrM {prm_id}.')
+            ana_config = self._config['analysis_config'][prm_id]
+            self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                                       config=ana_config,
+                                       wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
+            self._prmana.calculate()
+            file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
+            self._prmana.plot_summary(container=out_dict, savename=file_name)
+            self._meas[prm_id] = {
+                'td': self._prmana._td,
+                'qc': self._prmana._qc,
+                'qa': self._prmana._qa,
+                'tau': self._prmana._tau
+            }
+            # except Exception as err:
+            #     self._logger.warning('PrMAnalysis failed:')
+            #     self._logger.warning(type(err))
+            #     self._logger.warning(err)
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
@@ -815,7 +820,7 @@ class PrMManager():
 
 
 
-    def periodic_start_prm(self, prm_id=1, time_interval=1800):
+    def periodic_start_prm(self, prm_id=1, time_interval=900):
         '''
         Starts purity monitor prm_id every time_interval seconds.
         Time interval cannot be less than 60 seconds, and if so,
@@ -859,7 +864,6 @@ class PrMManager():
             float: The extracted Lifetime.
         '''
         if self._meas[prm_id] is not None:
-            print('get_latest_lifetime', self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau'])
             return self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau']
 
         return -999, -999, -999
