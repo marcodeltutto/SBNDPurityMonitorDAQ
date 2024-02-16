@@ -314,8 +314,13 @@ class PrMManager():
 
         # Wait for HV to stabilize
         for prm_id in prm_ids:
+            wait_time_max = 60 # seconds
+            start = time.time()
             while not self._hv_control.hv_stable(prm_id):
                 time.sleep(2)
+
+                if wait_time_max > time.time() - start:
+                    break
 
 
     def _turn_hv_off(self, prm_ids):
@@ -347,25 +352,23 @@ class PrMManager():
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
             data_raw_ = self._prm_digitizer.get_data(prm_id)
 
+            print('PPPPPPPPPP')
+            print('len(data_raw_)', len(data_raw_))
+            if 1 in data_raw_:
+                print(len(data_raw_[1]))
+                print('len(data_raw_[1])', len(data_raw_[1]))
+
             data_raw = {}
 
             for k in data_raw_.keys():
                 if k == '1':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['A'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['A'] = data_raw_[k]
                 elif k == '2':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['B'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['B'] = data_raw_[k]
                 elif k == '3':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['C'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['C'] = data_raw_[k]
                 elif k == '4':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['D'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['D'] = data_raw_[k]
                 else:
                     data_raw[k] = data_raw_[k]
 
