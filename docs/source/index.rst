@@ -12,6 +12,7 @@ This repository contains the DAQ for the SBND purity monitors.
    :maxdepth: 1
    :caption: Documentation
 
+   expert_info
    setup_instructions
    output_files
    adpro_digitizer
