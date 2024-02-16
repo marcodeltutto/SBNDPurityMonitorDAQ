@@ -1,7 +1,5 @@
-Information for PrM Experts
+Take PrM Data
 ===================
-
-This page contains instructions for purity monitor experts.
 
 
 
@@ -230,4 +228,10 @@ ______________
 - ADPro PM1: 10.226.35.155
 
 
+Using the Oscilloscope
+_______________________
 
+For debugging purposes, one can look at the signals with the scope, without using the DAQ.
+Needed equipment:
+- Oscilloscope: located in the cabinet on the mezzanine
+- Cables: 2 RG-58 cables terminated with a BNC on one side, and with a LEMO on the other side. Two of these cables are avalable next to the PM2 rack 
