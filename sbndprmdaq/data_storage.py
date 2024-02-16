@@ -22,24 +22,30 @@ class DataStorage():
         self._logger = logging.getLogger(__name__)
         self._config = config
 
-    def store_folder(self, foldername):
+    def store_files(self, filenames):
         '''
         Stores an entire folder
 
         Args:
-            foldername (string): The full path of the folder to store
+            filenames (list): The list of strings containind the full path of the files to store
 
         Returns:
             bool: True is copy was successful
         '''
-        self._logger.info(f"Storing folder {foldername} to {self._config['data_storage_host']}.")
+        real_filenames = []
+        self._logger.info(f"Storing these files to {self._config['data_storage_host']}:{self._config['data_storage_path']}:")
+        for filename in filenames:
+            if self._file_exists(filename):
+                self._logger.info(filename)
+                real_filenames.append(filename)
+            else:
+                self._logger.info(f"File {filename} does not exist.")
 
-        if not self._folder_exists(foldername):
-            return False
 
         # Open an SSH tunnel
         with paramiko.SSHClient() as client:
 
+            self._logger.info("Opened SSH client.")
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(self._config['data_storage_host'],
@@ -48,8 +54,10 @@ class DataStorage():
 
 
             # Open an SCP client and copy the folder
-            scp = SCPClient(client.get_transport())
-            scp.put(foldername, recursive=True, remote_path=self._config['data_storage_path'])
+            with SCPClient(client.get_transport()) as scp:
+                self._logger.info("Opened SCP.")
+                for fname in real_filenames:
+                    scp.put(fname, recursive=True, remote_path=self._config['data_storage_path'])
 
         return True
 
@@ -62,3 +70,13 @@ class DataStorage():
             foldername (string): The full path of the folder to store
         '''
         return os.path.isdir(foldername)
+
+
+    def _file_exists(self, filename):
+        '''
+        Checks if the file exists
+
+        Args:
+            filename (string): The full path of the file to store
+        '''
+        return os.path.isfile(filename)

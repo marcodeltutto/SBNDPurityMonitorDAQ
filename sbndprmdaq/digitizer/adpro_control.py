@@ -33,6 +33,8 @@ class ADProControl(DigitizerBase):
 
         self._to = 10 # timeout for requests
 
+        self._config = config
+
 
     def _ssh_forward(self, config):
         '''
@@ -93,6 +95,20 @@ class ADProControl(DigitizerBase):
         while not self._check_digitizer():
             time.sleep(1)
         self._logger.info('ADPro API ready.')
+
+    def check_connection(self):
+        '''
+        Checks if connection is still live
+        '''
+        if self._server.tunnel_is_up:
+            return
+
+        self._logger.warning('ADPro SSH tunnel is down. Restarting...')
+
+        self._server.stop()
+        self._server.start()
+
+        self._start_api(self._config)
 
 
     #pylint: disable=bare-except

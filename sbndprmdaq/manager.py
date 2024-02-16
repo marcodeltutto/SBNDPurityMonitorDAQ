@@ -11,6 +11,7 @@ import epics
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
+from sbndprmdaq.analysis import PrMAnalysis
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
@@ -40,6 +41,7 @@ class PrMManager():
         self._repetitions = {}
         self._take_hvoff_run = {}
         self._mode = {}
+        self._meas = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -52,6 +54,7 @@ class PrMManager():
             self._repetitions[prm_id] = 1
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
+            self._meas[prm_id] = None
 
         self._set_digitizer_and_hv(config)
 
@@ -73,9 +76,14 @@ class PrMManager():
         # A timer used to periodically run the PrMs
         self._timer = QTimer()
 
+        self._do_store = config['data_storage']
         self._data_storage = DataStorage(config)
 
+        self._do_analyze = config['analyze']
+
         self._comment = 'No comment'
+
+        self._config = config
 
         self.retrieve_run_numbers()
 
@@ -201,7 +209,7 @@ class PrMManager():
                 for line in run_file:
                     prm_id = line.split()[0]
                     run_no = line.split()[1]
-                    print('PrM:', prm_id, 'Run No:', run_no)
+                    self._logger.info(f'PrM: {prm_id} Run No: {run_no}')
                     self._run_numbers[int(prm_id)] = int(run_no)
 
     def write_run_numbers(self):
@@ -306,8 +314,13 @@ class PrMManager():
 
         # Wait for HV to stabilize
         for prm_id in prm_ids:
+            wait_time_max = 60 # seconds
+            start = time.time()
             while not self._hv_control.hv_stable(prm_id):
                 time.sleep(2)
+
+                if wait_time_max > time.time() - start:
+                    break
 
 
     def _turn_hv_off(self, prm_ids):
@@ -339,25 +352,23 @@ class PrMManager():
             progress_callback.emit(prm_id, 'Retrieving Data', 100)
             data_raw_ = self._prm_digitizer.get_data(prm_id)
 
+            print('PPPPPPPPPP')
+            print('len(data_raw_)', len(data_raw_))
+            if 1 in data_raw_:
+                print(len(data_raw_[1]))
+                print('len(data_raw_[1])', len(data_raw_[1]))
+
             data_raw = {}
 
             for k in data_raw_.keys():
                 if k == '1':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['A'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['A'] = data_raw_[k]
                 elif k == '2':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['B'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['B'] = data_raw_[k]
                 elif k == '3':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['C'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['C'] = data_raw_[k]
                 elif k == '4':
-                    data_raw[k] = [data_raw_[k]]
-                    data_raw['D'] = data_raw[k]
-                    del data_raw[k]
+                    data_raw['D'] = data_raw_[k]
                 else:
                     data_raw[k] = data_raw_[k]
 
@@ -468,7 +479,8 @@ class PrMManager():
             data_callback.emit(data)
 
         self._lamp_off(prm_ids)
-        # self._turn_hv_off(prm_ids)
+        time.sleep(2)
+        self._turn_hv_off(prm_ids)
 
 
         ret = {
@@ -611,11 +623,16 @@ class PrMManager():
             timestr
         )
 
+        saved_files = []
+
         if self._save_as_npz:
-            np.savez(os.path.join(self._data_files_path, run_name + '.npz'), **out_dict)
+            file_name = os.path.join(self._data_files_path, run_name + '.npz')
+            saved_files.append(file_name)
+            np.savez(saved_files[-1], **out_dict)
 
         if self._save_as_txt:
             file_name = os.path.join(self._data_files_path, run_name + '.txt')
+            saved_files.append(file_name)
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
                     if isinstance(v, list):
@@ -626,7 +643,32 @@ class PrMManager():
                         f.write(k + '=' + str(v) + '\n')
 
         # Copy data to sbndgpvm
-        self._data_storage.store_folder(os.path.join(self._data_files_path, run_name))
+        if self._do_store:
+            self._logger.info(f'Storing data for PrM {prm_id}.')
+            self._data_storage.store_files(saved_files)
+
+        self._meas[prm_id] = None
+        if self._do_analyze:
+            # try:
+            #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
+            self._logger.info(f'Analyzing data for PrM {prm_id}.')
+            ana_config = self._config['analysis_config'][prm_id]
+            self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                                       config=ana_config,
+                                       wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
+            self._prmana.calculate()
+            file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
+            self._prmana.plot_summary(container=out_dict, savename=file_name)
+            self._meas[prm_id] = {
+                'td': self._prmana._td,
+                'qc': self._prmana._qc,
+                'qa': self._prmana._qa,
+                'tau': self._prmana._tau
+            }
+            # except Exception as err:
+            #     self._logger.warning('PrMAnalysis failed:')
+            #     self._logger.warning(type(err))
+            #     self._logger.warning(err)
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
@@ -651,14 +693,14 @@ class PrMManager():
         else:
             raise ValueError(f'prm_id {prm_id} invalid')
 
-        pvs = [
-            f'sbnd_prm_{prm}_hv/anode_voltage',
-            f'sbnd_prm_{prm}_hv/anodegrid_voltage',
-            f'sbnd_prm_{prm}_hv/cathode_voltage'
-        ]
         res = []
-        for pv in pvs:
-            res.append(epics.caput(pv, out_dict['hv_anode']))
+        for item in ['cathode', 'anodegrid', 'anode']:
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
+
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td'] * 1e-3))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau'] * 1e-3))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
 
         if all(res):
             self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
@@ -781,7 +823,7 @@ class PrMManager():
 
 
 
-    def periodic_start_prm(self, prm_id=1, time_interval=1800):
+    def periodic_start_prm(self, prm_id=1, time_interval=900):
         '''
         Starts purity monitor prm_id every time_interval seconds.
         Time interval cannot be less than 60 seconds, and if so,
@@ -811,6 +853,23 @@ class PrMManager():
             dict: A dictionary containing the data for ch A and for ch B.
         '''
         return self._data[prm_id]
+
+    def get_latest_lifetime(self, prm_id):
+        '''
+        Returns the Qa, Qc, tau from the latest data.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+
+        Returns:
+            float: The extracted Qa.
+            float: The extracted Qc.
+            float: The extracted Lifetime.
+        '''
+        if self._meas[prm_id] is not None:
+            return self._meas[prm_id]['qa'], self._meas[prm_id]['qc'], self._meas[prm_id]['tau']
+
+        return -999, -999, -999
 
 
     def get_hv(self, prm_id):
