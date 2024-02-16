@@ -99,6 +99,7 @@ analysis_config:
     'baseline_range_c': [0,1000]
     'baseline_range_a': [0,1000]
     'title': 'SBND PrM 1 - Internal - Long'
+    'plot_range': [1250, 2000]
   2:
     'deltat_start_c': 2700
     'deltat_start_a': 2800
@@ -106,6 +107,7 @@ analysis_config:
     'baseline_range_c': [0,1000]
     'baseline_range_a': [0,1000]
     'title': 'SBND PrM 2 - Internal - Short'
+    'plot_range': [1250, 2000]
   3:
     'deltat_start_c': 450
     'deltat_start_a': 900
@@ -113,3 +115,4 @@ analysis_config:
     'baseline_range_c': [0,450]
     'baseline_range_a': [2000, 2400]
     'title': 'SBND PrM 3 - Inline - Long'
+    'plot_range': [0, 3500]

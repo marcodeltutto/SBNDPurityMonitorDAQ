@@ -77,12 +77,14 @@ class PrMAnalysis:
             self._trigger_sample = 512 # When the flash lamp flashes
             self._baseline_range_c = [0,450]
             self._baseline_range_a = [2000,2400]
+            self._plot_range = [0, 3500]
         else:
             self._deltat_start_c = config['deltat_start_c']
             self._deltat_start_a = config['deltat_start_a']
             self._trigger_sample = config['trigger_sample']
             self._baseline_range_c = config['baseline_range_c']
             self._baseline_range_a = config['baseline_range_a']
+            self._plot_range = config['plot_range']
 
 
     def pre_process(self, smooth=True, n=10):
