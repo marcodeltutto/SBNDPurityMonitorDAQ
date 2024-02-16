@@ -167,7 +167,7 @@ class HVSettings(BaseSettings):
 
     def set_hv_control(self, hv_control):
         self._hv_control = hv_control
-        self.save_setting()
+        self.save_settings()
 
     def get_prm(prm_id=1):
         return self._prm_settings[prm_id]
