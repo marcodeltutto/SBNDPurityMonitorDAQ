@@ -17,11 +17,12 @@ This repository contains the DAQ for the SBND purity monitors.
    troubleshoot
    output_files
 
-   arduino
 
 .. toctree::
    :maxdepth: 1
    :caption: Additional
+
+   arduino
    adpro_digitizer
    ats_digitizer
    installation
