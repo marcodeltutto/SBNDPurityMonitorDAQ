@@ -702,6 +702,8 @@ class PrMManager():
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
 
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/timestamp', int(time.time() * 1e3)))
+
         if all(res):
             self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
         elif any(res):
