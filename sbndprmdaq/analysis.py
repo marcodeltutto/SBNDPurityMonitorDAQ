@@ -406,7 +406,7 @@ class PrMAnalysis:
                         + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
                         loc='left', fontsize=12)
 
-        self.set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.27, 0.56])
+        self.set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.56])
 
         if savename:
             plt.savefig(savename)
