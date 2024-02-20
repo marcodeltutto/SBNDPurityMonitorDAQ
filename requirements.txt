@@ -10,3 +10,4 @@ scp
 requests
 rich
 pyepics
+matplotlib

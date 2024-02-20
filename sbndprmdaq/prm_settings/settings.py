@@ -118,29 +118,6 @@ class BaseSettings(QtWidgets.QMainWindow):
         self._save_btn.clicked.connect(self.save)
         self._save_quit_btn.clicked.connect(self.save_quit)
 
-
-
-        # self._prm_settings = {
-        #     1: SinglePrMHVSettings(prm_id=1, name='PrM 1', description='Cryo Bottom'),
-        #     2: SinglePrMHVSettings(prm_id=2, name='PrM 2', description='Cryo Top'),
-        #     3: SinglePrMHVSettings(prm_id=3, name='PrM 3', description='Inline'),
-        # }
-
-        # for s in self._prm_settings.values():
-        #     self.setup_settings(s)
-        #     self._settings_layout.addWidget(s)
-
-    # def set_hv_control(self, hv_control):
-    #     self._hv_control = hv_control
-
-    # def get_prm(prm_id=1):
-    #     return self._prm_settings[prm_id]
-
-
-    # def setup_settings(self, s):
-    #     prm_id = s.get_id()
-    #     s.setStyleSheet("background-color: rgba(0,0,0,0.1);")
-
     def values(self):
         return
 
@@ -190,6 +167,7 @@ class HVSettings(BaseSettings):
 
     def set_hv_control(self, hv_control):
         self._hv_control = hv_control
+        self.save_settings()
 
     def get_prm(prm_id=1):
         return self._prm_settings[prm_id]
