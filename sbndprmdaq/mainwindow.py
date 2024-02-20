@@ -373,7 +373,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._show_choice_checkboxes[2].clicked.connect(lambda: self._update_plot_choice(2))
         self._show_choice_checkboxes[3].clicked.connect(lambda: self._update_plot_choice(3))
 
-
         self._latest_data = {
             1: DataDisplay(prm_id=1, name='PrM 1'),
             2: DataDisplay(prm_id=2, name='PrM 2'),
@@ -664,7 +663,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
                 # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
 
-                if self._show_graph[control.get_id()]:
+                if self._show_graph[control.get_id()] and not self._diff_checkbox.isChecked():
                     self._graphs[control.get_id()]['A'].setData(x_a, y_a, pen=pg.mkPen('b'))
                     self._infinite_line_1.setValue(trigger_x)
                     self._infinite_line_2.setValue(trigger_x + flash_time)
@@ -677,10 +676,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 x_b = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
                 y_b = av_waveform * v_to_mv
                 # self._graph_b.setData(x, y, pen=pg.mkPen('r'))
-                if self._show_graph[control.get_id()]:
+                if self._show_graph[control.get_id()] and not self._diff_checkbox.isChecked():
                     self._graphs[control.get_id()]['B'].setData(x_b, y_b, pen=pg.mkPen('r'))
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
+
+            if self._diff_checkbox.isChecked():
+                self._graphs[control.get_id()]['diff'].setData(x_a, y_a-y_b, pen=pg.mkPen('g'))
+            else:
+                self._graphs[control.get_id()]['diff'].setData([], [])
 
             # if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
             #     diff = y_a - y_b

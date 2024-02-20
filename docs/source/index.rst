@@ -12,14 +12,21 @@ This repository contains the DAQ for the SBND purity monitors.
    :maxdepth: 1
    :caption: Documentation
 
-   expert_info
-   setup_instructions
+   overview
+   take_data
+   troubleshoot
    output_files
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Additional
+
+   arduino
    adpro_digitizer
    ats_digitizer
    installation
    running
-   arduino
    connect_via_vnc
 
 
