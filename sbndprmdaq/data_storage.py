@@ -3,6 +3,8 @@ Contains data storage class for purity monitor data.
 '''
 import os
 import logging
+import subprocess
+import time
 import paramiko
 from scp import SCPClient
 
@@ -22,6 +24,57 @@ class DataStorage():
         self._logger = logging.getLogger(__name__)
         self._config = config
 
+        self.kinit()
+
+    def kinit(self):
+        '''
+        Authenticates via a keytab
+        '''
+
+        os.environ["KRB5CCNAME"] = "/tmp/krb5cc_sbndprm"
+
+        cmd = 'kinit -kt /var/kerberos/krb5/user/25081/client.keytab sbndprm/sbnd-prm01.fnal.gov@FNAL.GOV'
+
+        start = time.time()
+
+        with subprocess.Popen(cmd.split()) as proc:
+            while proc.poll():
+                time.sleep(0.1)
+                if time.time() - start > 5:
+                    proc.terminate()
+                    self._logger.error('Timeout during command: ' + cmd)
+        
+        self._logger.info(f"Kerberos certificate obtained.")
+
+    def check_ticket(self):
+        '''
+        Checks if a valid kerberos ticket is available
+        '''
+
+        self._logger.info('Checking ticket...')
+
+        cmd = 'klist -f'
+
+        start = time.time()
+
+        with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+            while proc.poll():
+                time.sleep(0.1)
+            if time.time() - start > 5:
+                    proc.terminate()
+                    self._logger.error('Timeout during command: ' + cmd)
+
+            # out = proc.communicate()[0].decode("utf-8")
+            err = proc.communicate()[1].decode("utf-8")
+
+            self._logger.info('err: ' + err)
+
+            if 'No credentials cache found' in err:
+                self._logger.info('no ticket found...')
+                return False
+
+        return True
+
     def store_files(self, filenames):
         '''
         Stores an entire folder
@@ -32,6 +85,11 @@ class DataStorage():
         Returns:
             bool: True is copy was successful
         '''
+
+        if not self.check_ticket():
+            self._logger.info('Ticket expired. Regenerating.')
+            self.kinit()
+
         real_filenames = []
         self._logger.info(f"Storing these files to {self._config['data_storage_host']}:{self._config['data_storage_path']}:")
         for filename in filenames:

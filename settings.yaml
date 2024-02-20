@@ -53,9 +53,12 @@ mpod_prm3_anodegrid_ch: 301
 # Default HV values
 prm_hv_default:
   1:
-    cathode:   -120
-    anodegrid: 4431
-    anode:     4352
+    # cathode:   -120
+    # anodegrid: 4431
+    # anode:     4352
+    cathode:   -50
+    anodegrid: 1846
+    anode:     1814
   2:
     cathode:   -200
     anodegrid: 2408
@@ -84,10 +87,10 @@ prm_hv_ranges:
 
 
 # Data storage
-data_storage: False
+data_storage: True
 data_storage_host: "sbndgpvm01.fnal.gov"
 data_storage_username: "sbnd"
-data_storage_path: "/exp/sbnd/data/purity_monitors"
+data_storage_path: "/exp/sbnd/data/purity_monitors/"
 
 # Lifetime analysis
 analyze: True

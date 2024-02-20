@@ -290,7 +290,7 @@ class PrMManager():
             self._is_running[prm_id] = True
 
             self._logger.info(f'Turning flash lamp on for PrM {prm_id}.')
-            self._prm_digitizer.lamp_frequency(10, prm_id)
+            self._prm_digitizer.lamp_frequency(2, prm_id)
             self._prm_digitizer.lamp_on(prm_id)
 
 
@@ -314,12 +314,12 @@ class PrMManager():
 
         # Wait for HV to stabilize
         for prm_id in prm_ids:
-            wait_time_max = 60 # seconds
+            wait_time_max = 120 # seconds
             start = time.time()
             while not self._hv_control.hv_stable(prm_id):
                 time.sleep(2)
 
-                if wait_time_max > time.time() - start:
+                if wait_time_max < time.time() - start:
                     break
 
 
@@ -642,11 +642,7 @@ class PrMManager():
                     else:
                         f.write(k + '=' + str(v) + '\n')
 
-        # Copy data to sbndgpvm
-        if self._do_store:
-            self._logger.info(f'Storing data for PrM {prm_id}.')
-            self._data_storage.store_files(saved_files)
-
+        # Analyze data
         self._meas[prm_id] = None
         if self._do_analyze:
             # try:
@@ -660,15 +656,22 @@ class PrMManager():
             file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
             self._prmana.plot_summary(container=out_dict, savename=file_name)
             self._meas[prm_id] = {
-                'td': self._prmana._td,
-                'qc': self._prmana._qc,
-                'qa': self._prmana._qa,
-                'tau': self._prmana._tau
+                'td': self._prmana.get_drifttime(unit='ms'),
+                'qc': self._prmana.get_qc(unit='mV'),
+                'qa': self._prmana.get_qa(unit='mV'),
+                'tau': self._prmana.get_lifetime(unit='ms')
             }
+            saved_files.append(file_name)
             # except Exception as err:
             #     self._logger.warning('PrMAnalysis failed:')
             #     self._logger.warning(type(err))
             #     self._logger.warning(err)
+
+
+        # Copy data to sbndgpvm
+        if self._do_store:
+            self._logger.info(f'Storing data for PrM {prm_id}.')
+            self._data_storage.store_files(saved_files)
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
@@ -697,8 +700,8 @@ class PrMManager():
         for item in ['cathode', 'anodegrid', 'anode']:
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
 
-        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td'] * 1e-3))
-        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau'] * 1e-3))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
 
@@ -823,7 +826,7 @@ class PrMManager():
 
 
 
-    def periodic_start_prm(self, prm_id=1, time_interval=900):
+    def periodic_start_prm(self, prm_id=1, time_interval=3600):
         '''
         Starts purity monitor prm_id every time_interval seconds.
         Time interval cannot be less than 60 seconds, and if so,

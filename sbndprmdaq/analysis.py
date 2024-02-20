@@ -132,36 +132,42 @@ class PrMAnalysis:
         # _deltat_start_a -= self._offset
 
         # Cathode
-        tmp_wvf = self._wf_c[self._deltat_start_c:]
-        min_idx = np.argmin(tmp_wvf)
-        print('min_idx', min_idx)
-        selected = tmp_wvf[0:min_idx]
-        # print('->', selected, np.argwhere((selected-(base-base_rms))>0))
-        if self._trigger_sample:
-            start_idx = self._trigger_sample - self._deltat_start_c
-        else:
-            start_idx = np.argwhere((selected-(self._baseline_c-self._baseline_rms_c))>0)[-1]
-        start = self._wf_x[start_idx + self._deltat_start_c]
-        end = self._wf_x[min_idx + self._deltat_start_c]
-        print('Cathode: start', start, 'end', end)
-        self._time_start_c = start
-        self._time_end_c = end
-        self._deltat_c = end - start
+        try:
+            tmp_wvf = self._wf_c[self._deltat_start_c:]
+            min_idx = np.argmin(tmp_wvf)
+            print('min_idx', min_idx)
+            selected = tmp_wvf[0:min_idx]
+            # print('->', selected, np.argwhere((selected-(base-base_rms))>0))
+            if self._trigger_sample:
+                start_idx = self._trigger_sample - self._deltat_start_c
+            else:
+                start_idx = np.argwhere((selected-(self._baseline_c-self._baseline_rms_c))>0)[-1]
+            start = self._wf_x[start_idx + self._deltat_start_c]
+            end = self._wf_x[min_idx + self._deltat_start_c]
+            print('Cathode: start', start, 'end', end)
+            self._time_start_c = start
+            self._time_end_c = end
+            self._deltat_c = end - start
+        except:
+            return 'deltat_cathode_failed'
 
         # Anode
-        tmp_wvf = self._wf_a[self._deltat_start_a:]
-        max_idx = np.argmax(tmp_wvf)
-        selected = tmp_wvf[0:max_idx]
+        try:
+            tmp_wvf = self._wf_a[self._deltat_start_a:]
+            max_idx = np.argmax(tmp_wvf)
+            selected = tmp_wvf[0:max_idx]
 
-        # Find start of anode wf (when is 0.05% from the baseline)
-        th = (selected[-1] - self._baseline_a) * 0.1
-        start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
-        start = self._wf_x[start_idx + self._deltat_start_a]
-        end = self._wf_x[max_idx + self._deltat_start_a]
-        print('Anode: start', start, 'end', end)
-        self._time_start_a = start[0]
-        self._time_end_a = end
-        self._deltat_a = end - start[0]
+            # Find start of anode wf (when is 0.05% from the baseline)
+            th = (selected[-1] - self._baseline_a) * 0.1
+            start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
+            start = self._wf_x[start_idx + self._deltat_start_a]
+            end = self._wf_x[max_idx + self._deltat_start_a]
+            print('Anode: start', start, 'end', end)
+            self._time_start_a = start[0]
+            self._time_end_a = end
+            self._deltat_a = end - start[0]
+        except:
+            return 'deltat_cathode_failed'
 
 
     def rc_correction(self, delta_t, RC=119):
@@ -269,18 +275,75 @@ class PrMAnalysis:
         Performs all the calculation
         '''
 
-        self.pre_process(smooth=True, n=40)
+        self._err = self.pre_process(smooth=True, n=40)
 
-        self.estimate_baseline()
+        if self._err != 0:
+            return
 
-        self.estimate_deltat()
+        self._err = self.estimate_baseline()
 
-        self.calculate_lifetime()
+        if self._err != 0:
+            return
+
+        self._err = self.estimate_deltat()
+
+        if self._err != 0:
+            return
+
+        self._err = self.calculate_lifetime()
+
+        if self._err != 0:
+            return
 
         status = self.sanity_check()
 
         if status != 'ok':
             self.process_error(status)
+
+    def get_lifetime(self, unit='us'):
+        if self._tau < 0:
+            return self._tau
+
+        if unit == 'us':
+            return self._tau
+        elif unit == 'ms':
+            return self._tau * 1e-3
+        else:
+            print(f'Unit {unit} not supported')
+            return -999
+
+    def get_drifttime(self, unit='us'):
+        if self._td < 0:
+            return self._td
+
+        if unit == 'us':
+            return self._td
+        elif unit == 'ms':
+            return self._td * 1e-3
+        else:
+            print(f'Unit {unit} not supported')
+            return -999
+
+    def get_qa(self, unit='mV'):
+        if self._qa < 0:
+            return self._qa
+
+        if unit == 'mV':
+            return self._qa
+        else:
+            print(f'Unit {unit} not supported')
+            return -999
+
+    def get_qc(self, unit='mV'):
+        if self._qc < 0:
+            return self._qc
+
+        if unit == 'mV':
+            return self._qc
+        else:
+            print(f'Unit {unit} not supported')
+            return -999
+
 
     def plot_summary(self, container=None, savename=None):
         '''
@@ -290,6 +353,8 @@ class PrMAnalysis:
             container (dict): data container to add info on plot
             savename (string): full path to save file
         '''
+        if self._td < 0:
+            return None, None
 
         prop_cycle = plt.rcParams['axes.prop_cycle']
         _colors = prop_cycle.by_key()['color']
