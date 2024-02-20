@@ -681,7 +681,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
-            if self._diff_checkbox.isChecked():
+            if self._diff_checkbox.isChecked() and self._show_graph[control.get_id()] \
+                and y_a is not None and y_b is not None:
                 self._graphs[control.get_id()]['diff'].setData(x_a, y_a-y_b, pen=pg.mkPen('g'))
             else:
                 self._graphs[control.get_id()]['diff'].setData([], [])

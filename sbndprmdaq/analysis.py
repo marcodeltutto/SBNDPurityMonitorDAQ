@@ -78,6 +78,7 @@ class PrMAnalysis:
             self._baseline_range_c = [0,450]
             self._baseline_range_a = [2000,2400]
             self._plot_range = [0, 3500]
+            self._plot_title = 'PrM'
         else:
             self._deltat_start_c = config['deltat_start_c']
             self._deltat_start_a = config['deltat_start_a']
@@ -85,6 +86,7 @@ class PrMAnalysis:
             self._baseline_range_c = config['baseline_range_c']
             self._baseline_range_a = config['baseline_range_a']
             self._plot_range = config['plot_range']
+            self._plot_title = config['title']
 
 
     def pre_process(self, smooth=True, n=10):
@@ -355,6 +357,9 @@ class PrMAnalysis:
             container (dict): data container to add info on plot
             savename (string): full path to save file
         '''
+        if self._td is None:
+            return None, None
+
         if self._td < 0:
             return None, None
 
@@ -401,7 +406,7 @@ class PrMAnalysis:
                         + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
                         loc='left', fontsize=12)
 
-        self.set_lifetime_axis(ax, 'SBND PrM 3 - Inline - Long', container, text_pos=[0.27, 0.56])
+        self.set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.27, 0.56])
 
         if savename:
             plt.savefig(savename)
