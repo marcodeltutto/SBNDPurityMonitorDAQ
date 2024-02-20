@@ -96,21 +96,21 @@ data_storage_path: "/exp/sbnd/data/purity_monitors/"
 analyze: True
 analysis_config:
   1:
-    'deltat_start_c': 2700
-    'deltat_start_a': 2800
-    'trigger_sample': 2679
-    'baseline_range_c': [0,1000]
-    'baseline_range_a': [0,1000]
+    'deltat_start_c': 620
+    'deltat_start_a': 620
+    'trigger_sample': 600
+    'baseline_range_c': [0,500]
+    'baseline_range_a': [620,1000]
     'title': 'SBND PrM 1 - Internal - Long'
-    'plot_range': [1250, 2000]
+    'plot_range': [0, 1000]
   2:
-    'deltat_start_c': 2700
-    'deltat_start_a': 2800
-    'trigger_sample': 2679
-    'baseline_range_c': [0,1000]
-    'baseline_range_a': [0,1000]
+    'deltat_start_c': 620
+    'deltat_start_a': 620
+    'trigger_sample': 600
+    'baseline_range_c': [0,500]
+    'baseline_range_a': [620,1000]
     'title': 'SBND PrM 2 - Internal - Short'
-    'plot_range': [1250, 2000]
+    'plot_range': [0, 1000]
   3:
     'deltat_start_c': 450
     'deltat_start_a': 900
