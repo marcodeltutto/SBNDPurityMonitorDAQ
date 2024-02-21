@@ -14,6 +14,7 @@ import pyqtgraph as pg
 from sbndprmdaq.prm_settings.settings import HVSettings
 from sbndprmdaq.prm_settings.settings import DigitizerSettings
 from sbndprmdaq.configuration_form import Form
+from sbndprmdaq.externals import pmt_hv_on
 
 ICON_RED_LED = os.path.join(os.path.dirname(
                os.path.realpath(__file__)),
@@ -319,6 +320,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._status_timer = QTimer()
         self._status_timer.timeout.connect(self._check_status)
         self._status_timer.start(1000)
+
+        self._external_status_timer = QTimer()
+        self._external_status_timer.timeout.connect(self._check_external_status)
+        self._external_status_timer.start(10000) # 10 seconds
 
         self._prm_controls = {
             1: Control(prm_id=1, name='PrM 1', description='Int Long (Top)'),
@@ -721,6 +726,39 @@ class MainWindow(QtWidgets.QMainWindow):
             qa, qc, tau = self._prm_manager.get_latest_lifetime(control.get_id())
 
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
+
+
+    def _check_external_status(self):
+        '''
+        Checks the status of external components of SBND, e.g. the PMT HV
+        '''
+        if pmt_hv_on():
+            self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+            self.inhibit_run(True, [1, 2])
+        else:
+            self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+            self.inhibit_run(False, [1, 2])
+
+    def inhibit_run(self, do_inhibit=True, prm_ids=[1, 2]):
+        '''
+        Inhibits running the specified PrMs
+
+        Args:
+            do_inhibit (bool): if True it inhibits running
+            prm_ids (list): list of PrM IDs to inhibit
+        '''
+
+        for prm_id in prm_ids:
+            if do_inhibit:
+                self._status_bar.showMessage(f'Inhibiting PrM IDs {prm_ids}.')
+                self._prm_controls[prm_id].setEnabled(False)
+
+                # Make sure we are not in automatic mode
+                self._prm_controls[prm_id]_mode_toggle.setChecked(False):
+
+            else:
+                self._status_bar.showMessage(f'Enabling PrM IDs {prm_ids}.')
+                self._prm_controls[prm_id].setEnabled(True)
 
 
     def missing_digitizer(self, prm_id):
