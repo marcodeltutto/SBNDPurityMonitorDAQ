@@ -739,13 +739,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
             self.inhibit_run(False, [1, 2])
 
-    def inhibit_run(self, do_inhibit=True, prm_ids=[1, 2]):
+    def inhibit_run(self, do_inhibit=True, prm_ids=(1, 2)):
         '''
         Inhibits running the specified PrMs
 
         Args:
             do_inhibit (bool): if True it inhibits running
-            prm_ids (list): list of PrM IDs to inhibit
+            prm_ids (set): list of PrM IDs to inhibit
         '''
 
         for prm_id in prm_ids:
