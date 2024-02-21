@@ -129,6 +129,7 @@ class PrMAnalysis:
         # self._baseline_rms_a = np.std(self._wf_a[self._baseline_range_a])
         self._baseline_rms_a = np.std(self._raw_wf_a[self._baseline_range_a])
 
+        print('Baseline estimated')
         return 'ok'
 
 
@@ -140,6 +141,7 @@ class PrMAnalysis:
         # _trigger_sample += self._offset
         # _deltat_start_c -= self._offset
         # _deltat_start_a -= self._offset
+        print('estimate_deltat')
 
         # Cathode
         try:
@@ -179,6 +181,7 @@ class PrMAnalysis:
         except:
             return 'deltat_cathode_failed'
 
+        print('estimate_deltat done')
         return 'ok'
 
 
@@ -291,22 +294,22 @@ class PrMAnalysis:
 
         self._err = self.pre_process(smooth=True, n=40)
 
-        if self._err != 0:
+        if self._err != 'ok':
             return
 
         self._err = self.estimate_baseline()
 
-        if self._err != 0:
+        if self._err != 'ok':
             return
 
         self._err = self.estimate_deltat()
 
-        if self._err != 0:
+        if self._err != 'ok':
             return
 
         self._err = self.calculate_lifetime()
 
-        if self._err != 0:
+        if self._err != 'ok':
             return
 
         status = self.sanity_check()

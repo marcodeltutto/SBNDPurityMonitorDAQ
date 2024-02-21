@@ -54,7 +54,7 @@ class PrMManager():
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
-            self._repetitions[prm_id] = 1
+            self._repetitions[prm_id] = 1 if prm_id == 3 else 2
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
@@ -485,7 +485,7 @@ class PrMManager():
             data_callback.emit(data)
 
         self._lamp_off(prm_ids)
-        time.sleep(2)
+        time.sleep(5)
         self._turn_hv_off(prm_ids)
 
 

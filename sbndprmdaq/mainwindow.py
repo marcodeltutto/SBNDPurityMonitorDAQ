@@ -277,7 +277,7 @@ class DataDisplay(QtWidgets.QMainWindow):
             tau: The lifetime.
             time: The timestamp.
         '''
-        text = f'Qa = {qa:.1f} mV  -  Qc = {qc:.1f} mV\nQa/Qc = {qa/qc:.1f}  -  tau = {tau*1e-3:.2f} ms'
+        text = f'Qa = {qa:.1f} mV  -  Qc = {qc:.1f} mV\nQa/Qc = {qa/qc:.1f}  -  tau = {tau:.2f} ms'
         self._text.setText(text)
         self._date.setText(time.strftime("%B %d, %Y  %H:%M:%S"))
 
