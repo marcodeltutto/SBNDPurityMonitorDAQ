@@ -596,9 +596,9 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
-        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', prm_id)
-        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
-        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', prm_id)
+        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
+        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', 'votlage', prm_id)
+        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
 
         # out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
         # out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
@@ -886,9 +886,9 @@ class PrMManager():
             float: The anode HV.
             float: The anodegrid HV.
         '''
-        cathode_hv = self._hv_control.get_hv_sense_value('cathode', prm_id)
-        anode_hv = self._hv_control.get_hv_sense_value('anode', prm_id)
-        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
+        cathode_hv = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
+        anode_hv = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
+        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', 'voltage', prm_id)
 
         return cathode_hv, anode_hv, anodegrid_hv
 

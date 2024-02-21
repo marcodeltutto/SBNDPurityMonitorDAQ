@@ -107,8 +107,6 @@ class HVControlMPOD(HVControlBase):
 
             return proc.communicate()[0].decode("utf-8")
 
-
-
     def is_crate_on(self, ip):
         '''
         Returns True if the crate is ON
@@ -181,10 +179,10 @@ class HVControlMPOD(HVControlBase):
 
     def get_hv_value(self, item, prm_id=1):
         '''
-        Returns the HV set values
+        Returns the HV set voltage values
 
         Args:
-            item: 'anode', 'anodegrid', or 'cathode',
+            item: 'anode', 'anodegrid', or 'cathode'
             prm_id: the prm id
         '''
         ip = self._prm_id_to_mpod_ip[prm_id]
@@ -206,33 +204,47 @@ class HVControlMPOD(HVControlBase):
         ret = float(ret)
         return ret
 
-    def get_hv_sense_value(self, item, prm_id=1):
+    def get_hv_sense_value(self, item, property='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode'
+            property: 'voltage', 'current', or 'temperature'
+            prm_id: the prm id
         '''
+        if property == 'voltage':
+            cmd_name = 'outputMeasurementTerminalVoltage.u'
+            ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
+        elif property == 'current':
+            cmd_name = 'outputMeasurementCurrent.u'
+            ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
+        elif property == 'temperature':
+            cmd_name = 'outputMeasurementTemperature.u'
+            ret_parser = lambda ret: float(ret.split('INTEGER: ')[1][:-1])
+        else:
+            raise HVControlException(
+                self._logger, 'property can only be voltage, current, or temperature'
+            )
+
         ip = self._prm_id_to_mpod_ip[prm_id]
 
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('Float: ')[1][:-2]
-        ret = float(ret)
-        return ret
+        ret = ret_parser(ret)
 
+        return ret
 
     def get_hv_status(self, item, prm_id=1):
         '''

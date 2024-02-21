@@ -70,20 +70,21 @@ class HVControlBase(ABC):
     @abstractmethod
     def get_hv_value(self, item, prm_id=1):
         '''
-        Returns the HV set values
+        Returns the HV set voltage values
 
         Args:
-            item: 'anode', 'anodegrid', or 'cathode',
+            item: 'anode', 'anodegrid', or 'cathode'
             prm_id: the prm id
         '''
 
     @abstractmethod
-    def get_hv_sense_value(self, item, prm_id=1):
+    def get_hv_sense_value(self, item, property='voltage', prm_id=1):
         '''
-            Returns the HV sensed values
+        Returns the HV sensed values
 
-            args:
-            item: 'anode', 'anodegrid', or 'cathode',
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode'
+            property: 'voltage', 'current', or 'temperature'
             prm_id: the prm id
         '''
 
@@ -92,9 +93,9 @@ class HVControlBase(ABC):
         '''
         Returns wheter the HV is on or off
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode'
+            prm_id: the prm id
         '''
 
     #pylint: disable=unused-variable
@@ -107,8 +108,8 @@ class HVControlBase(ABC):
 
         for item in ['cathode', 'anodegrid', 'anode']:
             measurements = []
-            for meas in range(n_measurements):
-                hv = self.get_hv_sense_value(item, prm_id)
+            for _ in range(n_measurements):
+                hv = self.get_hv_sense_value(item, 'voltage', prm_id)
                 measurements.append(hv)
                 time.sleep(0.2)
 
@@ -134,7 +135,7 @@ class HVControlBase(ABC):
         bad = []
         for item in ['cathode', 'anodegrid', 'anode']:
             hv_range = self._config["prm_hv_ranges"][prm_id][item]
-            if not hv_range[0] <= self.get_hv_sense_value(item, prm_id) <= hv_range[1]:
+            if not hv_range[0] <= self.get_hv_sense_value(item, 'voltage', prm_id) <= hv_range[1]:
                 bad.append(item)
 
         if len(bad) == 0:
