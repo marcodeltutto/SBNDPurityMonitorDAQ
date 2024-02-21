@@ -163,7 +163,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="_led_cathode_hv">
+   <widget class="QLabel" name="_led_pmt_hv">
     <property name="geometry">
      <rect>
       <x>30</x>
