@@ -15,11 +15,11 @@ This is the account for purity monitor experts.
 VNC (Default)
 ____________
 
-From terminal on your local machine create a tunnel (you must be connected to the `fgz` network, or use a VPN):
+From terminal on your local machine create a tunnel (you may need to be connected to the `fgz` network, or use a VPN):
 
 .. code-block:: bash
 
-	ssh -L 8443:sbnd-prm01.fnal.gov:443 sbnd@sbnd-gateway01.fnal.gov
+	ssh -L 8443:sbnd-prm01.fnal.gov:443 <username>@sbnd-gateway01.fnal.gov
 
 Then, go to the following link on your browser:
 
@@ -101,7 +101,7 @@ ___________________________
 
 Default HV values are specified in ``settings.yaml`` in the root folder of the DAQ. These are the values set when the DAQ is started.
 
-To take a special run with different HV values, with the DAQ open, click on Menu, then HV Settings. You will be able to set the HV values for the Anode, Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings before exiting. The sensed HV values are displayed on the main DAQ window. Note that when you take a run, the DAQ automatically ramps the HV up and then down at the end of the run, so you don't have to manually turn the HV ON on the HV Settings page. This toggle is only available here in case we need to debug issues with the HV. 
+To take a special run with different HV values, with the DAQ open, click on Menu, then HV Settings. You will be able to set the HV values for the Anode, Cathode, and Anode Grid. A toggle button allows switching the HV on and off. Remember to save the settings before exiting. The sensed HV values are displayed on the main DAQ window. Note that when you take a run, the DAQ automatically ramps the HV up and then down at the end of the run, so you don't have to manually turn the HV ON on the HV Settings page. This toggle is only available here in case we need to debug issues with the HV.
 
 HV settings should ensure that the "transparency requirement" is satisfied. This is true for the default values.
 

@@ -43,7 +43,7 @@ class MockPrMManager(PrMManager):
                 'B': data['B'],
                 'time': data['time'],
             }
-            _ = self.save_data(data['prm_id'])
+            self.save_data(data['prm_id'])
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')

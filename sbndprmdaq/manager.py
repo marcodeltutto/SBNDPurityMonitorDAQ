@@ -36,6 +36,7 @@ class PrMManager():
 
         self._digitizers = {}
         self._data = {}
+        self._epics_data = {}
         self._is_running = {}
         self._run_numbers = {}
         self._repetitions = {}
@@ -509,9 +510,9 @@ class PrMManager():
                 'B_nohv': data['B_nohv'],
                 'time': data['time'],
             }
-            out_dict = self.save_data(data['prm_id'])
-            if out_dict is not None:
-                self.output_to_epics(data['prm_id'], out_dict)
+            self.save_data(data['prm_id'])
+            if self._epics_data:
+                self.output_to_epics(data['prm_id'])
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -561,9 +562,6 @@ class PrMManager():
 
         Args:
             prm_id (int): The purity monitor ID.
-
-        Returns:
-            out_dict (dict): Saved data.
         '''
         # pylint: disable=invalid-name
         self._logger.info(f'Saving data for PrM {prm_id}.')
@@ -572,17 +570,18 @@ class PrMManager():
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
-            return None
+            return
         if not self._save_as_npz and not self._save_as_txt:
             self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
-            return None
+            return
 
         out_dict = {}
+        self._epics_data = {}
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
         if self._data[prm_id] is None:
-            return None
+            return
 
         for ch in self._data[prm_id].keys():
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
@@ -597,9 +596,26 @@ class PrMManager():
         out_dict['hv'] = hv_status
         out_dict['comment'] = self._comment
 
-        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', prm_id)
-        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
-        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', prm_id)
+        out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
+        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', 'voltage', prm_id)
+        out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
+
+        # Get EPICS data here to have the measurements at roughly the same time
+        self._epics_data['anode'] = {
+            'voltage' : out_dict['hv_anode'],
+            'current' : self._hv_control.get_hv_sense_value('anode', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('anode', 'temperature', prm_id)
+        }
+        self._epics_data['anodegrid'] = {
+            'voltage' : out_dict['hv_anodegrid'],
+            'current' : self._hv_control.get_hv_sense_value('anodegrid', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('anodegrid', 'temperature', prm_id)
+        }
+        self._epics_data['cathode'] = {
+            'voltage' : out_dict['hv_cathode'],
+            'current' : self._hv_control.get_hv_sense_value('cathode', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('cathode', 'temperature', prm_id)
+        }
 
         # out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
         # out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
@@ -677,16 +693,13 @@ class PrMManager():
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
 
-        return out_dict
-
     #pylint: disable=invalid-name
-    def output_to_epics(self, prm_id, out_dict):
+    def output_to_epics(self, prm_id):
         '''
         Updates EPICS with run data.
 
         Args:
             prm_id (int): The purity monitor ID.
-            out_dict (dict): Data from run.
         '''
         if prm_id == 1:
             prm = 'tpclong'
@@ -698,13 +711,18 @@ class PrMManager():
             raise ValueError(f'prm_id {prm_id} invalid')
 
         res = []
+
         for item in ['cathode', 'anodegrid', 'anode']:
-            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', self._epics_data[item]['voltage']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', self._epics_data[item]['current']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', self._epics_data[item]['temperature']))
 
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QC', self._meas[prm_id]['qc']))
+
+        res.append(epics.caput(f'sbnd_prm_{prm}_signal/timestamp', int(time.time() * 1e3)))
 
         if all(res):
             self._logger.info(f'All EPICS updates successful for PrM {prm_id}')
@@ -712,6 +730,8 @@ class PrMManager():
             self._logger.info(f'Some EPICS updates failed for PrM {prm_id}')
         else:
             self._logger.info(f'All EPICS updates failed for PrM {prm_id}')
+
+        self._epics_data = {}
 
     def set_comment(self, comment):
         '''
@@ -910,9 +930,9 @@ class PrMManager():
             float: The anode HV.
             float: The anodegrid HV.
         '''
-        cathode_hv = self._hv_control.get_hv_sense_value('cathode', prm_id)
-        anode_hv = self._hv_control.get_hv_sense_value('anode', prm_id)
-        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', prm_id)
+        cathode_hv = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
+        anode_hv = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
+        anodegrid_hv = self._hv_control.get_hv_sense_value('anodegrid', 'voltage', prm_id)
 
         return cathode_hv, anode_hv, anodegrid_hv
 
