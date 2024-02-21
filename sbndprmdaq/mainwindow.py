@@ -754,7 +754,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._prm_controls[prm_id].setEnabled(False)
 
                 # Make sure we are not in automatic mode
-                self._prm_controls[prm_id]_mode_toggle.setChecked(False):
+                self._prm_controls[prm_id]._mode_toggle.setChecked(False)
 
             else:
                 self._status_bar.showMessage(f'Enabling PrM IDs {prm_ids}.')
