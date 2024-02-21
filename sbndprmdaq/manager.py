@@ -598,7 +598,7 @@ class PrMManager():
         out_dict['comment'] = self._comment
 
         out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
-        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', 'votlage', prm_id)
+        out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', 'voltage', prm_id)
         out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
 
         # Get EPICS data here to have the measurements at roughly the same time
