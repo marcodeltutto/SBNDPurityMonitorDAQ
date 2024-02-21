@@ -36,6 +36,7 @@ class PrMManager():
 
         self._digitizers = {}
         self._data = {}
+        self._epics_data = {}
         self._is_running = {}
         self._run_numbers = {}
         self._repetitions = {}
@@ -508,9 +509,9 @@ class PrMManager():
                 'B_nohv': data['B_nohv'],
                 'time': data['time'],
             }
-            _, epics_dict = self.save_data(data['prm_id'])
-            if epics_dict is not None:
-                self.output_to_epics(data['prm_id'], epics_dict)
+            self.save_data(data['prm_id'])
+            if self._epics_data:
+                self.output_to_epics(data['prm_id'])
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -560,10 +561,6 @@ class PrMManager():
 
         Args:
             prm_id (int): The purity monitor ID.
-
-        Returns:
-            out_dict (dict): Saved data.
-            epics_dict (dict): Additional data to be saved to EPICS.
         '''
         # pylint: disable=invalid-name
         self._logger.info(f'Saving data for PrM {prm_id}.')
@@ -572,17 +569,18 @@ class PrMManager():
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
-            return None, None
+            return
         if not self._save_as_npz and not self._save_as_txt:
             self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
-            return None, None
+            return
 
-        out_dict, epics_dict = {}, {}
+        out_dict = {}
+        self._epics_data = {}
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
         if self._data[prm_id] is None:
-            return None, None
+            return
 
         for ch in self._data[prm_id].keys():
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
@@ -602,17 +600,17 @@ class PrMManager():
         out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
 
         # Get EPICS data here to have the measurements at roughly the same time
-        epics_dict['anode'] = {
+        self._epics_data['anode'] = {
             'voltage' : out_dict['hv_anode'],
             'current' : self._hv_control.get_hv_sense_value('anode', 'current', prm_id),
             'temperature' : self._hv_control.get_hv_sense_value('anode', 'temperature', prm_id)
         }
-        epics_dict['anodegrid'] = {
+        self._epics_data['anodegrid'] = {
             'voltage' : out_dict['hv_anodegrid'],
             'current' : self._hv_control.get_hv_sense_value('anodegrid', 'current', prm_id),
             'temperature' : self._hv_control.get_hv_sense_value('anodegrid', 'temperature', prm_id)
         }
-        epics_dict['cathode'] = {
+        self._epics_data['cathode'] = {
             'voltage' : out_dict['hv_cathode'],
             'current' : self._hv_control.get_hv_sense_value('cathode', 'current', prm_id),
             'temperature' : self._hv_control.get_hv_sense_value('cathode', 'temperature', prm_id)
@@ -691,16 +689,13 @@ class PrMManager():
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
 
-        return out_dict
-
     #pylint: disable=invalid-name
-    def output_to_epics(self, prm_id, epics_dict):
+    def output_to_epics(self, prm_id):
         '''
         Updates EPICS with run data.
 
         Args:
             prm_id (int): The purity monitor ID.
-            epics_dict (dict): HV data from run.
         '''
         if prm_id == 1:
             prm = 'tpclong'
@@ -714,9 +709,9 @@ class PrMManager():
         res = []
 
         for item in ['cathode', 'anodegrid', 'anode']:
-            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', epics_dict[item]['voltage']))
-            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', epics_dict[item]['current']))
-            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', epics_dict[item]['temperature']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', self._epics_data[item]['voltage']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', self._epics_data[item]['current']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', self._epics_data[item]['temperature']))
 
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td'] * 1e-3))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau'] * 1e-3))
@@ -731,6 +726,8 @@ class PrMManager():
             self._logger.info(f'Some EPICS updates failed for PrM {prm_id}')
         else:
             self._logger.info(f'All EPICS updates failed for PrM {prm_id}')
+
+        self._epics_data = {}
 
     def set_comment(self, comment):
         '''
