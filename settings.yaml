@@ -53,13 +53,19 @@ mpod_prm3_anodegrid_ch: 301
 # Default HV values
 prm_hv_default:
   1:
-    cathode:   -120
-    anodegrid: 4431
-    anode:     4352
+    # cathode:   -120
+    # anodegrid: 4431
+    # anode:     4352
+    cathode:   -50
+    anodegrid: 1846
+    anode:     1814
   2:
-    cathode:   -200
-    anodegrid: 2408
-    anode:     2533
+    # cathode:   -200
+    # anodegrid: 2408
+    # anode:     2533
+    cathode:   -500
+    anodegrid: 3100
+    anode:     3200
   3:
     cathode:   -120
     anodegrid: 4431
@@ -84,30 +90,30 @@ prm_hv_ranges:
 
 
 # Data storage
-data_storage: False
+data_storage: True
 data_storage_host: "sbndgpvm01.fnal.gov"
 data_storage_username: "sbnd"
-data_storage_path: "/exp/sbnd/data/purity_monitors"
+data_storage_path: "/exp/sbnd/data/purity_monitors/"
 
 # Lifetime analysis
 analyze: True
 analysis_config:
   1:
-    'deltat_start_c': 2700
-    'deltat_start_a': 2800
-    'trigger_sample': 2679
-    'baseline_range_c': [0,1000]
-    'baseline_range_a': [0,1000]
+    'deltat_start_c': 620
+    'deltat_start_a': 620
+    'trigger_sample': 600
+    'baseline_range_c': [0,500]
+    'baseline_range_a': [620,1000]
     'title': 'SBND PrM 1 - Internal - Long'
-    'plot_range': [1250, 2000]
+    'plot_range': [0, 1000]
   2:
-    'deltat_start_c': 2700
-    'deltat_start_a': 2800
-    'trigger_sample': 2679
-    'baseline_range_c': [0,1000]
-    'baseline_range_a': [0,1000]
+    'deltat_start_c': 620
+    'deltat_start_a': 620
+    'trigger_sample': 600
+    'baseline_range_c': [0,500]
+    'baseline_range_a': [620,1000]
     'title': 'SBND PrM 2 - Internal - Short'
-    'plot_range': [1250, 2000]
+    'plot_range': [0, 1000]
   3:
     'deltat_start_c': 450
     'deltat_start_a': 900

@@ -1,7 +1,7 @@
 '''
 Contains the main GUI elements
 '''
-#pylint: disable=protected-access,too-many-locals,too-many-statements
+#pylint: disable=protected-access,too-many-locals,too-many-statements,too-many-branches
 
 import os
 import logging
@@ -189,20 +189,22 @@ class Control(QtWidgets.QMainWindow):
             self._disabled_label.setVisible(True)
             self._disabled_label.setText('This PrM is controlled\nby PrM 1')
 
-            self._mode_toggle_label.setVisible(False)
+            self._interval_label.setVisible(False)
             self._mode_toggle.setVisible(False)
             self._take_hvoff_run.setVisible(False)
+            self._interval_spinbox.setVisible(False)
 
             self._status_led.setDisabled(True)
         else:
             self._start_stop_btn.setVisible(True)
             self._disabled_label.setVisible(False)
 
-            self._mode_toggle_label.setVisible(True)
+            self._interval_label.setVisible(True)
             self._mode_toggle.setVisible(True)
             self._take_hvoff_run.setVisible(True)
+            self._interval_spinbox.setVisible(True)
 
-            self._status_led.setDisabled(False )
+            self._status_led.setDisabled(False)
 
     def hv_out_of_range(self, status):
         '''
@@ -420,7 +422,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # control.setStyleSheet("border-color: rgb(0, 0, 0);")
         control._start_stop_btn.clicked.connect(lambda: self.start_stop_prm(prm_id=prm_id))
         control._mode_toggle.clicked.connect(lambda: self._set_mode(prm_id=prm_id))
+        control._interval_spinbox.valueChanged.connect(lambda: self._set_interval(prm_id=prm_id))
         control._take_hvoff_run.clicked.connect(lambda: self._set_hvoff_run(prm_id=prm_id))
+
 
     def set_start_button_status(self, prm_id=1, status=True):
         '''
@@ -481,6 +485,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._hv_settings.set_hv_control(self._prm_manager._hv_control)
         # self._digitizer_settings.set_digitizer_control(self._prm_manager._prm_digitizer)
         self._digitizer_settings.set_manager(self._prm_manager)
+
 
     def set_progress(self, prm_id, name, perc, **kwargs):
         '''
@@ -566,7 +571,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _set_mode(self, prm_id):
         '''
-        Tells the manager how to set the HV.
+        Tells the manager to run in automatic more or not.
 
         Args:
             prm_id (int): The purity monitor ID.
@@ -576,6 +581,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self._prm_manager.set_mode(prm_id, 'auto')
         else:
             self._prm_manager.set_mode(prm_id, 'manual')
+
+    def _set_interval(self, prm_id):
+        '''
+        Tells the manager the time intrval if running in automatic mode.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        control = self._prm_controls[prm_id]
+        self._prm_manager.set_interval(prm_id, control._interval_spinbox.value() * 60)
+
 
     def _set_hvoff_run(self, prm_id):
         '''
@@ -623,6 +639,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 control._digi_status_label.setText('Ready')
                 control._digi_status_label.setStyleSheet("color: green;")
                 self.repaint()
+
+            if control._mode_toggle.isChecked():
+                rem_time = self._prm_manager.remaining_time(control.get_id()) / 1e3 # seconds
+                minutes, seconds = divmod(rem_time, 60)
+                control._start_stop_btn.setText(f"{minutes:.0f}:{seconds:.0f}")
+
 
             data = self._prm_manager.get_data(control.get_id())
             # print('From mainwindow', data)
@@ -681,7 +703,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
-            if self._diff_checkbox.isChecked():
+            if self._diff_checkbox.isChecked() and self._show_graph[control.get_id()] \
+                and y_a is not None and y_b is not None:
                 self._graphs[control.get_id()]['diff'].setData(x_a, y_a-y_b, pen=pg.mkPen('g'))
             else:
                 self._graphs[control.get_id()]['diff'].setData([], [])
