@@ -88,8 +88,10 @@ class HVControlMPOD(HVControlBase):
 
         # cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/  -m +WIENER-CRATE-MIB -c private 192.168.0.25  sysMainSwitch.0 i 1".format()
 
-    def _get_cmd(self, ip='', name='sysMainSwitch.', ch='0'):
+    def _get_cmd(self, ip='', name='sysMainSwitch.', ch='0', extra_flags=''):
         cmd = "snmpget -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c public "
+        if extra_flags: # '-OUvq' for returning value only
+            cmd += extra_flags + ' '
         cmd += ip + ' '
         cmd += name
         cmd += ch + ' '
@@ -190,17 +192,16 @@ class HVControlMPOD(HVControlBase):
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('Float: ')[1][:-2]
         ret = float(ret)
         return ret
 
@@ -215,16 +216,13 @@ class HVControlMPOD(HVControlBase):
         '''
         if measure == 'voltage':
             cmd_name = 'outputMeasurementTerminalVoltage.u'
-            def ret_parser(ret):
-                return float(ret.split('Float: ')[1][:-2])
+            ret_type = float
         elif measure == 'current':
             cmd_name = 'outputMeasurementCurrent.u'
-            def ret_parser(ret):
-                return float(ret.split('Float: ')[1][:-2])
+            ret_type = float
         elif measure == 'temperature':
             cmd_name = 'outputMeasurementTemperature.u'
-            def ret_parser(ret):
-                return float(ret.split('INTEGER: ')[1][:-1])
+            ret_type = int
         else:
             raise HVControlException(
                 self._logger, 'measure can only be voltage, current, or temperature'
@@ -235,17 +233,17 @@ class HVControlMPOD(HVControlBase):
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret_parser(ret)
+        ret = ret_type(ret)
 
         return ret
 
@@ -262,17 +260,16 @@ class HVControlMPOD(HVControlBase):
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('INTEGER: ')[1][:-4]
         if ret == 'on':
             return True
         return False
