@@ -336,7 +336,7 @@ class PrMAnalysis:
                         + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
                         loc='left', fontsize=12)
 
-        self.set_lifetime_axis(ax, 'SBND PrM 3 - Inline - Long', container, text_pos=[0.27, 0.56])
+        self.set_lifetime_axis(ax, 'SBND PrM 3 - Inline - Long', container, text_pos=[0.015, 0.56])
 
         if savename:
             plt.savefig(savename)
