@@ -88,8 +88,10 @@ class HVControlMPOD(HVControlBase):
 
         # cmd = "snmpset -v 2c -M /usr/share/snmp/mibs/  -m +WIENER-CRATE-MIB -c private 192.168.0.25  sysMainSwitch.0 i 1".format()
 
-    def _get_cmd(self, ip='', name='sysMainSwitch.', ch='0'):
+    def _get_cmd(self, ip='', name='sysMainSwitch.', ch='0', extra_flags=''):
         cmd = "snmpget -v 2c -M /usr/share/snmp/mibs/ -m +WIENER-CRATE-MIB -c public "
+        if extra_flags: # '-OUvq' for returning value only
+            cmd += extra_flags + ' '
         cmd += ip + ' '
         cmd += name
         cmd += ch + ' '
@@ -106,8 +108,6 @@ class HVControlMPOD(HVControlBase):
                     raise HVControlException(self._logger, 'Timeout during command: ' + cmd)
 
             return proc.communicate()[0].decode("utf-8")
-
-
 
     def is_crate_on(self, ip):
         '''
@@ -181,10 +181,10 @@ class HVControlMPOD(HVControlBase):
 
     def get_hv_value(self, item, prm_id=1):
         '''
-        Returns the HV set values
+        Returns the HV set voltage values
 
         Args:
-            item: 'anode', 'anodegrid', or 'cathode',
+            item: 'anode', 'anodegrid', or 'cathode'
             prm_id: the prm id
         '''
         ip = self._prm_id_to_mpod_ip[prm_id]
@@ -192,47 +192,60 @@ class HVControlMPOD(HVControlBase):
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputVoltage.u', ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('Float: ')[1][:-2]
         ret = float(ret)
         return ret
 
-    def get_hv_sense_value(self, item, prm_id=1):
+    def get_hv_sense_value(self, item, measure='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
-        args:
-        item: 'anode', 'anodegrid', or 'cathode',
-        prm_id: the prm id
+        Args:
+            item: 'anode', 'anodegrid', or 'cathode'
+            measure: 'voltage', 'current', or 'temperature'
+            prm_id: the prm id
         '''
+        if measure == 'voltage':
+            cmd_name = 'outputMeasurementTerminalVoltage.u'
+            ret_type = float
+        elif measure == 'current':
+            cmd_name = 'outputMeasurementCurrent.u'
+            ret_type = float
+        elif measure == 'temperature':
+            cmd_name = 'outputMeasurementTemperature.u'
+            ret_type = int
+        else:
+            raise HVControlException(
+                self._logger, 'measure can only be voltage, current, or temperature'
+            )
+
         ip = self._prm_id_to_mpod_ip[prm_id]
 
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputMeasurementTerminalVoltage.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name=cmd_name, ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('Float: ')[1][:-2]
-        ret = float(ret)
-        return ret
+        ret = ret_type(ret)
 
+        return ret
 
     def get_hv_status(self, item, prm_id=1):
         '''
@@ -247,17 +260,16 @@ class HVControlMPOD(HVControlBase):
         ret = None
         if item == 'anode':
             channel = self._anode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'anodegrid':
             channel = self._anodegrid_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         elif item == 'cathode':
             channel = self._cathode_channels[prm_id]
-            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel))
+            ret = self._get_cmd(ip=ip, name='outputSwitch.u', ch=str(channel), extra_flags='-OUvq')
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        ret = ret.split('INTEGER: ')[1][:-4]
         if ret == 'on':
             return True
         return False

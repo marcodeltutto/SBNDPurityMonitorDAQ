@@ -39,9 +39,7 @@ class MockHVControl(HVControlBase):
         '''
         Returns True if the crate is ON
         '''
-
         return True
-
 
     def hv_on(self, prm_id=1):
         '''
@@ -54,7 +52,6 @@ class MockHVControl(HVControlBase):
             'anodegrid': True
         }
 
-
     def hv_off(self, prm_id=1):
         '''
         Sets the OFF
@@ -65,8 +62,6 @@ class MockHVControl(HVControlBase):
             'cathode': False,
             'anodegrid': False
         }
-
-
 
     def set_hv_value(self, item, value, prm_id=1):
         '''
@@ -80,7 +75,6 @@ class MockHVControl(HVControlBase):
         self._hvs[prm_id][item] = value
         self._logger.info('HV value set.')
 
-
     def get_hv_value(self, item, prm_id=1):
         '''
         Returns the HV set values
@@ -91,17 +85,16 @@ class MockHVControl(HVControlBase):
         '''
         return self._hvs[prm_id][item]
 
-
-    def get_hv_sense_value(self, item, prm_id=1):
+    def get_hv_sense_value(self, item, measure='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
         Args:
-            item: 'anode', 'anodegrid', or 'cathode',
+            item: 'anode', 'anodegrid', or 'cathode'
+            measure: 'voltage' only
             prm_id: the prm id
         '''
         return self._hvs[prm_id][item]
-
 
     def get_hv_status(self, item, prm_id=1):
         '''
