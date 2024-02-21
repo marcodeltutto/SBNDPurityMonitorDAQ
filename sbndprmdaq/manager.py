@@ -508,9 +508,9 @@ class PrMManager():
                 'B_nohv': data['B_nohv'],
                 'time': data['time'],
             }
-            out_dict = self.save_data(data['prm_id'])
-            if out_dict is not None:
-                self.output_to_epics(data['prm_id'], out_dict)
+            _, epics_dict = self.save_data(data['prm_id'])
+            if epics_dict is not None:
+                self.output_to_epics(data['prm_id'], epics_dict)
             self._logger.info(f'Saved data for PrM {data["prm_id"]}.')
         else:
             self._logger.info(f'Bad capture, no data to save for PrM {data["prm_id"]}.')
@@ -563,6 +563,7 @@ class PrMManager():
 
         Returns:
             out_dict (dict): Saved data.
+            epics_dict (dict): Additional data to be saved to EPICS.
         '''
         # pylint: disable=invalid-name
         self._logger.info(f'Saving data for PrM {prm_id}.')
@@ -571,17 +572,17 @@ class PrMManager():
 
         if self._data_files_path is None:
             self._logger.warning('Cannot save to file, data_files_path not set.')
-            return None
+            return None, None
         if not self._save_as_npz and not self._save_as_txt:
             self._logger.warning('Not saving to file, neither save_as_npz or save_as_txt are set')
-            return None
+            return None, None
 
-        out_dict = {}
+        out_dict, epics_dict = {}, {}
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
         if self._data[prm_id] is None:
-            return None
+            return None, None
 
         for ch in self._data[prm_id].keys():
             out_dict[f'ch_{ch}'] = self._data[prm_id][ch]
@@ -599,6 +600,23 @@ class PrMManager():
         out_dict['hv_anode'] = self._hv_control.get_hv_sense_value('anode', 'voltage', prm_id)
         out_dict['hv_anodegrid'] = self._hv_control.get_hv_sense_value('anodegrid', 'votlage', prm_id)
         out_dict['hv_cathode'] = self._hv_control.get_hv_sense_value('cathode', 'voltage', prm_id)
+
+        # Get EPICS data here to have the measurements at roughly the same time
+        epics_dict['anode'] = {
+            'voltage' : out_dict['hv_anode'],
+            'current' : self._hv_control.get_hv_sense_value('anode', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('anode', 'temperature', prm_id)
+        }
+        epics_dict['anodegrid'] = {
+            'voltage' : out_dict['hv_anodegrid'],
+            'current' : self._hv_control.get_hv_sense_value('anodegrid', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('anodegrid', 'temperature', prm_id)
+        }
+        epics_dict['cathode'] = {
+            'voltage' : out_dict['hv_cathode'],
+            'current' : self._hv_control.get_hv_sense_value('cathode', 'current', prm_id),
+            'temperature' : self._hv_control.get_hv_sense_value('cathode', 'temperature', prm_id)
+        }
 
         # out_dict['samples_per_sec'] = self._digitizers[prm_id].get_samples_per_second()
         # out_dict['pre_trigger_samples'] = self._digitizers[prm_id].get_pre_trigger_samples()
@@ -676,13 +694,13 @@ class PrMManager():
         return out_dict
 
     #pylint: disable=invalid-name
-    def output_to_epics(self, prm_id, out_dict):
+    def output_to_epics(self, prm_id, epics_dict):
         '''
         Updates EPICS with run data.
 
         Args:
             prm_id (int): The purity monitor ID.
-            out_dict (dict): Data from run.
+            epics_dict (dict): HV data from run.
         '''
         if prm_id == 1:
             prm = 'tpclong'
@@ -694,8 +712,11 @@ class PrMManager():
             raise ValueError(f'prm_id {prm_id} invalid')
 
         res = []
+
         for item in ['cathode', 'anodegrid', 'anode']:
-            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', out_dict[f'hv_{item}']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_voltage', epics_dict[item]['voltage']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', epics_dict[item]['current']))
+            res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', epics_dict[item]['temperature']))
 
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td'] * 1e-3))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau'] * 1e-3))
