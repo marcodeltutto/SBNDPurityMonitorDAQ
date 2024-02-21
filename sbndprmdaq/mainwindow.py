@@ -1,7 +1,7 @@
 '''
 Contains the main GUI elements
 '''
-#pylint: disable=protected-access,too-many-locals,too-many-statements
+#pylint: disable=protected-access,too-many-locals,too-many-statements,too-many-branches
 
 import os
 import logging

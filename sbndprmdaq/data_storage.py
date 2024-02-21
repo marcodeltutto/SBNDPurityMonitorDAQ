@@ -8,7 +8,7 @@ import time
 import paramiko
 from scp import SCPClient
 
-#pylint: disable=too-few-public-methods
+#pylint: disable=too-few-public-methods,duplicate-code
 class DataStorage():
     '''
     A class that handles storage of purity monitor data
@@ -42,9 +42,9 @@ class DataStorage():
                 time.sleep(0.1)
                 if time.time() - start > 5:
                     proc.terminate()
-                    self._logger.error('Timeout during command: ' + cmd)
-        
-        self._logger.info(f"Kerberos certificate obtained.")
+                    self._logger.error(f'Timeout during command: {cmd}')
+
+        self._logger.info("Kerberos certificate obtained.")
 
     def check_ticket(self):
         '''
@@ -61,13 +61,13 @@ class DataStorage():
             while proc.poll():
                 time.sleep(0.1)
             if time.time() - start > 5:
-                    proc.terminate()
-                    self._logger.error('Timeout during command: ' + cmd)
+                proc.terminate()
+                self._logger.error(f'Timeout during command: {cmd}')
 
             # out = proc.communicate()[0].decode("utf-8")
             err = proc.communicate()[1].decode("utf-8")
 
-            self._logger.info('err: ' + err)
+            self._logger.info(f'err: {err}')
 
             if 'No credentials cache found' in err:
                 self._logger.info('no ticket found...')

@@ -8,7 +8,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except
 
 class PrMAnalysis:
     '''
@@ -65,6 +65,8 @@ class PrMAnalysis:
 
         self._offset = None
 
+        self._err = 0
+
         if wf_c_hvoff is not None and wf_a_hvoff is not None:
             if len(wf_c_hvoff) and len (wf_a_hvoff):
                 print('Subtracting HV OFF')
@@ -109,6 +111,8 @@ class PrMAnalysis:
             self._wf_a = self._raw_wf_a
             self._wf_x = self._raw_wf_x
 
+        return 'ok'
+
     def estimate_baseline(self):
         '''
         Baseline estimation
@@ -124,6 +128,8 @@ class PrMAnalysis:
         self._baseline_a = np.mean(self._wf_a[self._baseline_range_a])
         # self._baseline_rms_a = np.std(self._wf_a[self._baseline_range_a])
         self._baseline_rms_a = np.std(self._raw_wf_a[self._baseline_range_a])
+
+        return 'ok'
 
 
     def estimate_deltat(self):
@@ -173,6 +179,8 @@ class PrMAnalysis:
         except:
             return 'deltat_cathode_failed'
 
+        return 'ok'
+
 
     def rc_correction(self, delta_t, RC=119):
         '''
@@ -220,6 +228,8 @@ class PrMAnalysis:
         self._tau = -self._td/np.log(self._qa/self._qc)
 
         print('Lifetime', self._tau, 'mus')
+
+        return 'ok'
 
 
     def sanity_check(self):
@@ -305,48 +315,62 @@ class PrMAnalysis:
             self.process_error(status)
 
     def get_lifetime(self, unit='us'):
+        '''
+        Returns the lifetime in the specified units
+        '''
         if self._tau < 0:
             return self._tau
 
         if unit == 'us':
             return self._tau
-        elif unit == 'ms':
+
+        if unit == 'ms':
             return self._tau * 1e-3
-        else:
-            print(f'Unit {unit} not supported')
-            return -999
+
+        print(f'Unit {unit} not supported')
+        return -999
 
     def get_drifttime(self, unit='us'):
+        '''
+        Returns the drifttime in the specified units
+        '''
         if self._td < 0:
             return self._td
 
         if unit == 'us':
             return self._td
-        elif unit == 'ms':
+
+        if unit == 'ms':
             return self._td * 1e-3
-        else:
-            print(f'Unit {unit} not supported')
-            return -999
+
+        print(f'Unit {unit} not supported')
+        return -999
 
     def get_qa(self, unit='mV'):
+        '''
+        Returns the Qa in the specified units
+        '''
         if self._qa < 0:
             return self._qa
 
         if unit == 'mV':
             return self._qa
-        else:
-            print(f'Unit {unit} not supported')
-            return -999
+
+        print(f'Unit {unit} not supported')
+        return -999
 
     def get_qc(self, unit='mV'):
+        '''
+        Returns the Qc in the specified units
+        '''
         if self._qc < 0:
             return self._qc
 
         if unit == 'mV':
             return self._qc
-        else:
-            print(f'Unit {unit} not supported')
-            return -999
+
+        print(f'Unit {unit} not supported')
+        return -999
 
 
     def plot_summary(self, container=None, savename=None):
