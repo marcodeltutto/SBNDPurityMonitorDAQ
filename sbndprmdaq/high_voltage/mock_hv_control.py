@@ -85,13 +85,13 @@ class MockHVControl(HVControlBase):
         '''
         return self._hvs[prm_id][item]
 
-    def get_hv_sense_value(self, item, property='voltage', prm_id=1):
+    def get_hv_sense_value(self, item, measure='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
         Args:
             item: 'anode', 'anodegrid', or 'cathode'
-            property: 'voltage' only
+            measure: 'voltage' only
             prm_id: the prm id
         '''
         return self._hvs[prm_id][item]

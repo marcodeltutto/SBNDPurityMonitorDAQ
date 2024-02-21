@@ -78,13 +78,13 @@ class HVControlBase(ABC):
         '''
 
     @abstractmethod
-    def get_hv_sense_value(self, item, property='voltage', prm_id=1):
+    def get_hv_sense_value(self, item, measure='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
         Args:
             item: 'anode', 'anodegrid', or 'cathode'
-            property: 'voltage', 'current', or 'temperature'
+            measure: 'voltage', 'current', or 'temperature'
             prm_id: the prm id
         '''
 

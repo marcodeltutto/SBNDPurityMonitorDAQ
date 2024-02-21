@@ -204,27 +204,27 @@ class HVControlMPOD(HVControlBase):
         ret = float(ret)
         return ret
 
-    def get_hv_sense_value(self, item, property='voltage', prm_id=1):
+    def get_hv_sense_value(self, item, measure='voltage', prm_id=1):
         '''
         Returns the HV sensed values
 
         Args:
             item: 'anode', 'anodegrid', or 'cathode'
-            property: 'voltage', 'current', or 'temperature'
+            measure: 'voltage', 'current', or 'temperature'
             prm_id: the prm id
         '''
-        if property == 'voltage':
+        if measure == 'voltage':
             cmd_name = 'outputMeasurementTerminalVoltage.u'
             ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
-        elif property == 'current':
+        elif measure == 'current':
             cmd_name = 'outputMeasurementCurrent.u'
             ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
-        elif property == 'temperature':
+        elif measure == 'temperature':
             cmd_name = 'outputMeasurementTemperature.u'
             ret_parser = lambda ret: float(ret.split('INTEGER: ')[1][:-1])
         else:
             raise HVControlException(
-                self._logger, 'property can only be voltage, current, or temperature'
+                self._logger, 'measure can only be voltage, current, or temperature'
             )
 
         ip = self._prm_id_to_mpod_ip[prm_id]
