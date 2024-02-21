@@ -42,6 +42,8 @@ class PrMManager():
         self._take_hvoff_run = {}
         self._mode = {}
         self._meas = {}
+        self._time_interval = {}
+        self._timer = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -55,6 +57,8 @@ class PrMManager():
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
+            self._time_interval[prm_id] = self._window._prm_controls[prm_id]._interval_spinbox.value() * 60
+            self._timer[prm_id] = QTimer()
 
         self._set_digitizer_and_hv(config)
 
@@ -72,9 +76,6 @@ class PrMManager():
                 self._window.disable_controls(bounded_id)
             self._prm_id_bounded[main_id] = bounded_id
 
-
-        # A timer used to periodically run the PrMs
-        self._timer = QTimer()
 
         self._do_store = config['data_storage']
         self._data_storage = DataStorage(config)
@@ -805,13 +806,37 @@ class PrMManager():
             self._window.set_start_button_status(prm_id, False)
             self.periodic_start_prm(prm_id)
         elif self._mode[prm_id] == 'manual':
-            self._timer.stop()
+            self._timer[prm_id].stop()
 
             # Wait until we have done running
             while self._is_running[prm_id]:
                 time.sleep(0.1)
 
             self._window.set_start_button_status(prm_id, True)
+
+    def set_interval(self, prm_id, interval):
+        '''
+        Sets the time interval to use in automatic mode.
+        Time interval cannot be less than 60 seconds, and if so,
+        it will be set to 300 seconds.
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            interval (int): The time interval in minutes.
+        '''
+        self._time_interval[prm_id] = max(interval, 300)
+        self._logger.info(f'Time interval set to {self._time_interval[prm_id]} for PrM {prm_id}.')
+
+
+    def remaining_time(self, prm_id):
+        '''
+        Returns the remaining time on the timer
+
+        Args:
+            prm_id (int): The purity monitor ID.
+        '''
+        return self._timer[prm_id].remainingTime()
+
 
     def take_hvoff_run(self, prm_id, do_take):
         '''
@@ -826,7 +851,7 @@ class PrMManager():
 
 
 
-    def periodic_start_prm(self, prm_id=1, time_interval=3600):
+    def periodic_start_prm(self, prm_id=1):
         '''
         Starts purity monitor prm_id every time_interval seconds.
         Time interval cannot be less than 60 seconds, and if so,
@@ -834,15 +859,13 @@ class PrMManager():
 
         Args:
             prm_id (int): The purity monitor ID.
-            time_interval (int): The time interaval in seconds.
         '''
-        time_interval = max(time_interval, 300)
+        time_interval = self._time_interval[prm_id]
 
         self._window.set_start_button_status(prm_id, False)
 
-        self._timer.timeout.connect(lambda: self.start_prm(prm_id))
-        self._timer.start(time_interval * 1000)
-
+        self._timer[prm_id].timeout.connect(lambda: self.start_prm(prm_id))
+        self._timer[prm_id].start(time_interval * 1000)
 
 
     def get_data(self, prm_id):
