@@ -215,13 +215,16 @@ class HVControlMPOD(HVControlBase):
         '''
         if measure == 'voltage':
             cmd_name = 'outputMeasurementTerminalVoltage.u'
-            ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
+            def ret_parser(ret):
+                return float(ret.split('Float: ')[1][:-2])
         elif measure == 'current':
             cmd_name = 'outputMeasurementCurrent.u'
-            ret_parser = lambda ret: float(ret.split('Float: ')[1][:-2])
+            def ret_parser(ret):
+                return float(ret.split('Float: ')[1][:-2])
         elif measure == 'temperature':
             cmd_name = 'outputMeasurementTemperature.u'
-            ret_parser = lambda ret: float(ret.split('INTEGER: ')[1][:-1])
+            def ret_parser(ret):
+                return float(ret.split('INTEGER: ')[1][:-2])
         else:
             raise HVControlException(
                 self._logger, 'measure can only be voltage, current, or temperature'
