@@ -58,8 +58,12 @@ class PrMManager():
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
-            self._time_interval[prm_id] = self._window._prm_controls[prm_id]._interval_spinbox.value() * 60
             self._timer[prm_id] = QTimer()
+
+            if self._window is not None:
+                self._time_interval[prm_id] = self._window._prm_controls[prm_id]._interval_spinbox.value() * 60
+            else:
+                self._time_interval[prm_id] = 60
 
         self._set_digitizer_and_hv(config)
 
