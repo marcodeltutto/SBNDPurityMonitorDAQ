@@ -13,6 +13,7 @@ settings = os.path.join(os.path.dirname(__file__), '../settings.yaml')
 
 with open(settings) as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
+    config['data_storage'] = False
 
 
 

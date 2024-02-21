@@ -83,7 +83,7 @@ class PrMManager():
 
 
         self._do_store = config['data_storage']
-        self._data_storage = DataStorage(config)
+        self._data_storage = DataStorage(config) if self._do_store else None
 
         self._do_analyze = config['analyze']
 
