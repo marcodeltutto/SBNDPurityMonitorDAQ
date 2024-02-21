@@ -270,6 +270,7 @@ class HVControlMPOD(HVControlBase):
         else:
             raise HVControlException(self._logger, 'item can only be anode, anodegrid, or cathode')
 
-        if ret == 'on':
+        if 'on' in ret:
             return True
+
         return False

@@ -63,9 +63,9 @@ prm_hv_default:
     # cathode:   -200
     # anodegrid: 2408
     # anode:     2533
-    cathode:   -500
-    anodegrid: 3100
-    anode:     3200
+    cathode:   -250
+    anodegrid: 3010
+    anode:     3170
   3:
     cathode:   -120
     anodegrid: 4431
@@ -99,19 +99,19 @@ data_storage_path: "/exp/sbnd/data/purity_monitors/"
 analyze: True
 analysis_config:
   1:
-    'deltat_start_c': 620
-    'deltat_start_a': 620
-    'trigger_sample': 600
-    'baseline_range_c': [0,500]
-    'baseline_range_a': [620,1000]
+    'deltat_start_c': 310
+    'deltat_start_a': 310
+    'trigger_sample': 300
+    'baseline_range_c': [0,250]
+    'baseline_range_a': [310,500]
     'title': 'SBND PrM 1 - Internal - Long'
     'plot_range': [0, 1000]
   2:
-    'deltat_start_c': 620
-    'deltat_start_a': 620
-    'trigger_sample': 600
-    'baseline_range_c': [0,500]
-    'baseline_range_a': [620,1000]
+    'deltat_start_c': 310
+    'deltat_start_a': 310
+    'trigger_sample': 300
+    'baseline_range_c': [0,250]
+    'baseline_range_a': [310,500]
     'title': 'SBND PrM 2 - Internal - Short'
     'plot_range': [0, 1000]
   3:
