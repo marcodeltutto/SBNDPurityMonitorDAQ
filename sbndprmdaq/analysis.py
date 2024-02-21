@@ -168,7 +168,7 @@ class PrMAnalysis:
             selected = tmp_wvf[0:max_idx]
 
             # Find start of anode wf (when is 0.05% from the baseline)
-            th = (selected[-1] - self._baseline_a) * 0.1
+            th = (selected[-1] - self._baseline_a) * 0.3
             start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
             start = self._wf_x[start_idx + self._deltat_start_a]
             end = self._wf_x[max_idx + self._deltat_start_a]
