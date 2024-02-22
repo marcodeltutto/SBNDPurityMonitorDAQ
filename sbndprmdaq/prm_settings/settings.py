@@ -260,5 +260,8 @@ class DigitizerSettings(BaseSettings):
                     print(name, value)
                     raise Exception('Not an option')
 
+    def disable(self, prm_id, do_disable=True):
+        self._prm_settings[prm_id].setDisabled(do_disable)
+
 
 
