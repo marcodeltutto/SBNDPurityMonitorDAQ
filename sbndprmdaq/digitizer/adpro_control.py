@@ -31,7 +31,7 @@ class ADProControl(DigitizerBase):
         self._ssh_forward(config)
         self._start_api(config)
 
-        self._to = 10 # timeout for requests
+        self._to = 30 # timeout for requests
 
         self._config = config
 
