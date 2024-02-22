@@ -58,6 +58,8 @@ class PrMManager():
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
+
+            # Timer for automatic runs
             self._timer[prm_id] = QTimer()
 
             if self._window is not None:
@@ -776,9 +778,11 @@ class PrMManager():
             prm_id (int): The purity monitor ID.
         '''
         self._is_running[prm_id] = True
+        print(f'start_prm {prm_id}')
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
+            print(f'Calling start thread {prm_id}')
             self.start_thread(prm_id)
         else:
             self.capture_data(prm_id)
@@ -859,7 +863,10 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        return self._timer[prm_id].remainingTime()
+        if self._timer[prm_id].isActive():
+            return self._timer[prm_id].remainingTime()
+
+        return 0
 
 
     def take_hvoff_run(self, prm_id, do_take):
@@ -884,10 +891,12 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
+        print(f'periodic_start_prm {prm_id}')
         time_interval = self._time_interval[prm_id]
 
         self._window.set_start_button_status(prm_id, False)
 
+        self._timer[prm_id] = QTimer()
         self._timer[prm_id].timeout.connect(lambda: self.start_prm(prm_id))
         self._timer[prm_id].start(time_interval * 1000)
 
