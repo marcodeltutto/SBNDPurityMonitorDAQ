@@ -780,6 +780,7 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         self._status_bar.showMessage(f'PrM ID {prm_id} controls are disabled.')
         self._prm_controls[prm_id].disable_controls()
+        self._digitizer_settings.disable(prm_id)
 
 
     def show_comment(self):

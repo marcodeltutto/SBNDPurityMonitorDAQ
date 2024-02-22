@@ -33,6 +33,8 @@ class ADProControl(DigitizerBase):
 
         self._to = 30 # timeout for requests
 
+        self.set_number_acquisitions(20)
+
         self._config = config
 
 
@@ -149,8 +151,7 @@ class ADProControl(DigitizerBase):
 
     def set_number_acquisitions(self, n_acquisitions):
 
-        pass
-        # return requests.get(self._url + f"/digitizer/set_number_acquisitions{n_acquisitions}", timeout=self._to).json()['set_number_acquisitions']
+        return requests.get(self._url + f"/digitizer/set_number_acquisitions/{n_acquisitions}", timeout=self._to).json()['set_number_acquisitions']
 
 
     def get_pre_trigger_samples(self):

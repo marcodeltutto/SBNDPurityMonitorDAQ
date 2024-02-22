@@ -295,8 +295,6 @@ class PrMManager():
 
         for prm_id in prm_ids:
 
-            self._is_running[prm_id] = True
-
             self._logger.info(f'Turning flash lamp on for PrM {prm_id}.')
             self._prm_digitizer.lamp_frequency(2, prm_id)
             self._prm_digitizer.lamp_on(prm_id)
@@ -305,8 +303,6 @@ class PrMManager():
     def _lamp_off(self, prm_ids):
 
         for prm_id in prm_ids:
-
-            self._is_running[prm_id] = False
 
             self._logger.info(f'Turning flash lamp off for PrM {prm_id}.')
             self._prm_digitizer.lamp_off(prm_id)
@@ -413,7 +409,8 @@ class PrMManager():
         Returns:
             dict: A dictionary containing the prm_ids processed, and the statuses
         '''
-
+        self._is_running[prm_id] = True
+            
         prm_ids = [prm_id]
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
@@ -490,6 +487,7 @@ class PrMManager():
         time.sleep(5)
         self._turn_hv_off(prm_ids)
 
+        self._is_running[prm_id] = False
 
         ret = {
             'prm_ids': prm_ids,
