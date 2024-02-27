@@ -406,7 +406,7 @@ class PrMManager():
             dict: A dictionary containing the prm_ids processed, and the statuses
         '''
         self._is_running[prm_id] = True
-            
+
         prm_ids = [prm_id]
         if prm_id in self._prm_id_bounded:
             prm_ids.append(self._prm_id_bounded[prm_id])
