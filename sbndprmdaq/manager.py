@@ -147,26 +147,22 @@ class PrMManager():
         return self._prm_digitizer.busy(prm_id)
 
 
-    def ats_trigger_sample(self, prm_id=1):
+    def trigger_sample(self, prm_id=1):
         '''
         returns the sample when the trigger happens.
 
         Returns:
             int: Sample number when triggered.
         '''
-        # ats310 = self._digitizers[prm_id]
-        # return ats310.get_trigger_sample()
         return self._prm_digitizer.get_trigger_sample(prm_id)
 
-    def ats_samples_per_sec(self, prm_id=1):
+    def samples_per_sec(self, prm_id=1):
         '''
         Returns the digitizer recorded samples per second
 
         Returns:
             bool: The digitizer samples per second
         '''
-        # ats310 = self._digitizers[prm_id]
-        # return ats310.get_samples_per_second()
         return self._prm_digitizer.get_samples_per_second(prm_id)
 
     def get_number_acquisitions(self, prm_id=1):
@@ -657,8 +653,10 @@ class PrMManager():
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
                     if isinstance(v, list):
-                        v = np.stack(v) # assuming list of arrays
-                        v_str = str(v.tolist()).replace(" ", "")
+                        if len(v):
+                            v = np.stack(v) # assuming list of arrays
+                            v = v.tolist()
+                        v_str = str(v).replace(" ", "")
                         f.write(k + '=' + v_str + '\n')
                     else:
                         f.write(k + '=' + str(v) + '\n')

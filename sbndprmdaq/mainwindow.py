@@ -657,12 +657,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if data is None:
                 continue
 
-            # for el in data['A']:
-            #     print('av of el in data A', np.mean(el))
-
-            # for el in data['B']:
-            #     print('av of el in data B', np.mean(el))
-
             # s_to_ms = 1e3
             s_to_us = 1e6
             v_to_mv = 1e3
@@ -674,53 +668,51 @@ class MainWindow(QtWidgets.QMainWindow):
             x_b = None
             x_b = None
 
-            if 'A' in data and data['A'] is not None:
-                # print('len(data[A])', len(data['A']))
-                # print('len(data[A][0])', len(data['A'][0]))
-                av_waveform = np.mean(data['A'], axis=0)
-                # print('len(av_waveform)', len(av_waveform))
-                # av_waveform = data['A'][0]
-                x_a = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
-                y_a = av_waveform * v_to_mv
-                # print('y_a', y_a)
-                # print('type(data[A])', type(data['A']))
-                # print('type(av_waveform)', type(av_waveform))
-                # print('av_waveform.shape', av_waveform.shape)
+            #
+            # Plot waveform from channel A
+            #
+            if 'A' in data and data['A'] is not None and len(data['A']):
 
-                trigger_x = self._prm_manager.ats_trigger_sample() / self._prm_manager.ats_samples_per_sec() * s_to_us
-                # self._graph_a.setData(x, y, pen=pg.mkPen('b'))
+                av_waveform = np.mean(data['A'], axis=0)
+
+                x_a = np.arange(len(av_waveform)) / self._prm_manager.samples_per_sec() * s_to_us
+                y_a = av_waveform * v_to_mv
 
                 if self._show_graph[control.get_id()] and not self._diff_checkbox.isChecked():
                     self._graphs[control.get_id()]['A'].setData(x_a, y_a, pen=pg.mkPen('b'))
-                    self._infinite_line_1.setValue(trigger_x)
-                    self._infinite_line_2.setValue(trigger_x + flash_time)
                 else:
                     self._graphs[control.get_id()]['A'].setData([], [])
 
-            if 'B' in data and data['B'] is not None:
+            #
+            # Plot waveform from channel A
+            #
+            if 'B' in data and data['B'] is not None and len(data['B']):
+
                 av_waveform = np.mean(data['B'], axis=0)
-                # av_waveform = data['B'][0]
-                x_b = np.arange(len(av_waveform)) / self._prm_manager.ats_samples_per_sec() * s_to_us
+
+                x_b = np.arange(len(av_waveform)) / self._prm_manager.samples_per_sec() * s_to_us
                 y_b = av_waveform * v_to_mv
-                # self._graph_b.setData(x, y, pen=pg.mkPen('r'))
+
                 if self._show_graph[control.get_id()] and not self._diff_checkbox.isChecked():
                     self._graphs[control.get_id()]['B'].setData(x_b, y_b, pen=pg.mkPen('r'))
                 else:
                     self._graphs[control.get_id()]['B'].setData([], [])
 
+            #
+            # Plot differnece of waveforms
+            #
             if self._diff_checkbox.isChecked() and self._show_graph[control.get_id()] \
                 and y_a is not None and y_b is not None:
                 self._graphs[control.get_id()]['diff'].setData(x_a, y_a-y_b, pen=pg.mkPen('g'))
             else:
                 self._graphs[control.get_id()]['diff'].setData([], [])
 
-            # if 'A' in data and data['A'] is not None and 'B' in data and data['B'] is not None:
-            #     diff = y_a - y_b
-            #     if self._show_graph[control.get_id()]:
-            #         self._graphs[control.get_id()]['diff'].setData(x_a, diff, pen=pg.mkPen('g'))
-            #     else:
-            #         self._graphs[control.get_id()]['diff'].setData([], [])
-
+            #
+            # Plot trigger time lines
+            #
+            trigger_x = self._prm_manager.trigger_sample() / self._prm_manager.samples_per_sec() * s_to_us
+            self._infinite_line_1.setValue(trigger_x)
+            self._infinite_line_2.setValue(trigger_x + flash_time)
 
 
             qa, qc, tau = self._prm_manager.get_latest_lifetime(control.get_id())
