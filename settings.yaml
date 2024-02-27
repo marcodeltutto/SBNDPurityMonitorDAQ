@@ -67,9 +67,12 @@ prm_hv_default:
     anodegrid: 3010
     anode:     3170
   3:
-    cathode:   -120
-    anodegrid: 4431
-    anode:     4352
+    # cathode:   -120
+    # anodegrid: 4431
+    # anode:     4352
+    cathode:   -50
+    anodegrid: 1846
+    anode:     1814
 
 
 # The DAQ will check if the HV is whitin these range
