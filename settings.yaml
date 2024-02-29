@@ -56,7 +56,7 @@ prm_hv_default:
     # cathode:   -120
     # anodegrid: 4431
     # anode:     4352
-    cathode:   -50
+    cathode:   -500
     anodegrid: 1846
     anode:     1814
   2:
@@ -67,9 +67,12 @@ prm_hv_default:
     anodegrid: 3010
     anode:     3170
   3:
-    cathode:   -120
-    anodegrid: 4431
-    anode:     4352
+    # cathode:   -120
+    # anodegrid: 4431
+    # anode:     4352
+    cathode:   -50
+    anodegrid: 1846
+    anode:     1814
 
 
 # The DAQ will check if the HV is whitin these range
@@ -88,6 +91,12 @@ prm_hv_ranges:
     anodegrid: [1000, 6000]
     anode:     [1000, 6000]
 
+# Checks if PMT HV is ON
+check_pmt_hv: True
+
+# Checks if PrMs are covered with LAr
+check_lar_level: True
+enforce_level: False
 
 # Data storage
 data_storage: True

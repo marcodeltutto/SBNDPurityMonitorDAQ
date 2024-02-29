@@ -89,9 +89,9 @@
    <widget class="QLabel" name="_digi_label">
     <property name="geometry">
      <rect>
-      <x>850</x>
+      <x>840</x>
       <y>10</y>
-      <width>121</width>
+      <width>61</width>
       <height>21</height>
      </rect>
     </property>
@@ -101,16 +101,16 @@
      </font>
     </property>
     <property name="text">
-     <string>Digitizer Status:</string>
+     <string>Digitizer:</string>
     </property>
    </widget>
    <widget class="QLabel" name="_digitizer_image">
     <property name="geometry">
      <rect>
-      <x>850</x>
-      <y>30</y>
-      <width>51</width>
-      <height>40</height>
+      <x>845</x>
+      <y>39</y>
+      <width>31</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
@@ -122,7 +122,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap>icons/ats310_icon.png</pixmap>
+     <pixmap>icons/water-level.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -131,8 +131,8 @@
    <widget class="QLabel" name="_digi_status_label">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>40</y>
+      <x>900</x>
+      <y>10</y>
       <width>61</width>
       <height>21</height>
      </rect>
@@ -562,6 +562,25 @@ by PrM 1</string>
     </property>
     <property name="text">
      <string>Interval [min]:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="_liquid_level_label">
+    <property name="geometry">
+     <rect>
+      <x>900</x>
+      <y>40</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>NOT Covered</string>
     </property>
    </widget>
   </widget>

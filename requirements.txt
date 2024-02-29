@@ -11,3 +11,4 @@ requests
 rich
 pyepics
 matplotlib
+psycopg2

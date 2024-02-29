@@ -64,9 +64,11 @@ class DataStorage():
                 proc.terminate()
                 self._logger.error(f'Timeout during command: {cmd}')
 
-            # out = proc.communicate()[0].decode("utf-8")
-            err = proc.communicate()[1].decode("utf-8")
+            comm = proc.communicate()
+            out = comm[0].decode("utf-8")
+            err = comm[1].decode("utf-8")
 
+            self._logger.info(f'out: {out}')
             self._logger.info(f'err: {err}')
 
             if 'No credentials cache found' in err:
@@ -86,38 +88,44 @@ class DataStorage():
             bool: True is copy was successful
         '''
 
-        if not self.check_ticket():
-            self._logger.info('Ticket expired. Regenerating.')
+        #pylint: disable=broad-exception-caught
+        try:
+            # if not self.check_ticket():
+                # self._logger.info('Ticket expired. Regenerating.')
             self.kinit()
 
-        real_filenames = []
-        self._logger.info(f"Storing these files to {self._config['data_storage_host']}:{self._config['data_storage_path']}:")
-        for filename in filenames:
-            if self._file_exists(filename):
-                self._logger.info(filename)
-                real_filenames.append(filename)
-            else:
-                self._logger.info(f"File {filename} does not exist.")
+            real_filenames = []
+            self._logger.info(f"Storing these files to {self._config['data_storage_host']}:{self._config['data_storage_path']}:")
+            for filename in filenames:
+                if self._file_exists(filename):
+                    self._logger.info(filename)
+                    real_filenames.append(filename)
+                else:
+                    self._logger.info(f"File {filename} does not exist.")
 
 
-        # Open an SSH tunnel
-        with paramiko.SSHClient() as client:
+            # Open an SSH tunnel
+            with paramiko.SSHClient() as client:
 
-            self._logger.info("Opened SSH client.")
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(self._config['data_storage_host'],
-                           username=self._config['data_storage_username'],
-                           gss_auth=True)
+                self._logger.info("Opened SSH client.")
+                client = paramiko.SSHClient()
+                client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                client.connect(self._config['data_storage_host'],
+                               username=self._config['data_storage_username'],
+                               gss_auth=True)
 
 
-            # Open an SCP client and copy the folder
-            with SCPClient(client.get_transport()) as scp:
-                self._logger.info("Opened SCP.")
-                for fname in real_filenames:
-                    scp.put(fname, recursive=True, remote_path=self._config['data_storage_path'])
+                # Open an SCP client and copy the folder
+                with SCPClient(client.get_transport()) as scp:
+                    self._logger.info("Opened SCP.")
+                    for fname in real_filenames:
+                        scp.put(fname, recursive=True, remote_path=self._config['data_storage_path'])
 
-        return True
+            return True
+
+        except Exception as err:
+            self._logger.error(f"Unexpected {err}, {type(err)}")
+            return False
 
 
     def _folder_exists(self, foldername):

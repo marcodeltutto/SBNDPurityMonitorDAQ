@@ -147,26 +147,22 @@ class PrMManager():
         return self._prm_digitizer.busy(prm_id)
 
 
-    def ats_trigger_sample(self, prm_id=1):
+    def trigger_sample(self, prm_id=1):
         '''
         returns the sample when the trigger happens.
 
         Returns:
             int: Sample number when triggered.
         '''
-        # ats310 = self._digitizers[prm_id]
-        # return ats310.get_trigger_sample()
         return self._prm_digitizer.get_trigger_sample(prm_id)
 
-    def ats_samples_per_sec(self, prm_id=1):
+    def samples_per_sec(self, prm_id=1):
         '''
         Returns the digitizer recorded samples per second
 
         Returns:
             bool: The digitizer samples per second
         '''
-        # ats310 = self._digitizers[prm_id]
-        # return ats310.get_samples_per_second()
         return self._prm_digitizer.get_samples_per_second(prm_id)
 
     def get_number_acquisitions(self, prm_id=1):
@@ -657,8 +653,10 @@ class PrMManager():
             with open(file_name, 'w', encoding='utf-8') as f:
                 for k, v in out_dict.items():
                     if isinstance(v, list):
-                        v = np.stack(v) # assuming list of arrays
-                        v_str = str(v.tolist()).replace(" ", "")
+                        if len(v):
+                            v = np.stack(v) # assuming list of arrays
+                            v = v.tolist()
+                        v_str = str(v).replace(" ", "")
                         f.write(k + '=' + v_str + '\n')
                     else:
                         f.write(k + '=' + str(v) + '\n')
@@ -666,27 +664,27 @@ class PrMManager():
         # Analyze data
         self._meas[prm_id] = None
         if self._do_analyze:
-            # try:
-            #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
-            self._logger.info(f'Analyzing data for PrM {prm_id}.')
-            ana_config = self._config['analysis_config'][prm_id]
-            self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
-                                       config=ana_config,
-                                       wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
-            self._prmana.calculate()
-            file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
-            self._prmana.plot_summary(container=out_dict, savename=file_name)
-            self._meas[prm_id] = {
-                'td': self._prmana.get_drifttime(unit='ms'),
-                'qc': self._prmana.get_qc(unit='mV'),
-                'qa': self._prmana.get_qa(unit='mV'),
-                'tau': self._prmana.get_lifetime(unit='ms')
-            }
-            saved_files.append(file_name)
-            # except Exception as err:
-            #     self._logger.warning('PrMAnalysis failed:')
-            #     self._logger.warning(type(err))
-            #     self._logger.warning(err)
+            try:
+                #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
+                self._logger.info(f'Analyzing data for PrM {prm_id}.')
+                ana_config = self._config['analysis_config'][prm_id]
+                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                                           config=ana_config,
+                                           wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
+                self._prmana.calculate()
+                file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
+                self._prmana.plot_summary(container=out_dict, savename=file_name)
+                self._meas[prm_id] = {
+                    'td': self._prmana.get_drifttime(unit='ms'),
+                    'qc': self._prmana.get_qc(unit='mV'),
+                    'qa': self._prmana.get_qa(unit='mV'),
+                    'tau': self._prmana.get_lifetime(unit='ms')
+                }
+                saved_files.append(file_name)
+            except Exception as err:
+                self._logger.warning('PrMAnalysis failed:')
+                self._logger.warning(type(err))
+                self._logger.warning(err)
 
 
         # Copy data to sbndgpvm

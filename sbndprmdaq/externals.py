@@ -2,7 +2,10 @@
 Collection of functions to check the status of other SBND systems
 '''
 
+import datetime
+
 import epics
+import psycopg2
 
 def pmt_hv_on():
     '''
@@ -17,3 +20,120 @@ def pmt_hv_on():
         satuses.append(epics.caget(pv))
 
     return any(satuses)
+
+
+
+class IgnitionAPI:
+    '''
+    Allows access to the Ignition database
+    '''
+
+    #pylint: disable=invalid-name,consider-using-f-string,bare-except
+
+    def __init__(self, ):
+
+        self._connection = psycopg2.connect(user="dcs_reader",
+                                            password="qcd56RUc",
+                                            host="ifdb09",
+                                            port="5456",
+                                            database="sbnd_online_prd")
+
+    def get_values(self, pv='te-8101a', month='02', limit=1):
+        '''
+        Returns values for a certain PV
+
+        Args:
+            pv (string): parameter value
+            month (string): the month to look into, 2 digits only, ex '02' for February
+            limit (int): limit to the number of values to be returned
+
+        Returns:
+            list: a list of sets containind 3 entries (x, pv value, datetime)
+        '''
+
+        query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
+FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
+WHERE d.tagid=s.id
+AND s.tagpath LIKE '%sbnd%'
+AND s.tagpath LIKE '%{}%'
+AND s.tagpath LIKE '%{}%'
+ORDER BY d.t_stamp DESC 
+LIMIT {}""".format(month, '', pv, limit)
+
+        cursor = self._connection.cursor()
+
+        cursor.execute(query)
+
+        dbrows = cursor.fetchall()
+
+        cursor.close()
+
+        formatted = []
+        for row in dbrows:
+            try:
+                time = datetime.datetime.fromtimestamp(row[2]/1000) # ms since epoch
+                time = time.strftime("%Y-%m-%d %H:%M:%S")
+            except:
+                time = row[2]
+            formatted.append((row[0], row[1], row[2], time))
+
+        print(formatted)
+        return formatted
+
+    def prm_covered(self, prm_id):
+        '''
+        Returns True if the PrM is covered with LAr
+
+        Args:
+            prm_id (int): the PrM ID
+        '''
+
+        if prm_id == 1:
+            pv = 'te-8106a'
+        elif prm_id == 2:
+            pv = 'te-8102a'
+        elif prm_id == 3:
+            pv = 'lt-7133a'
+        else:
+            print('PrM ID {prm_id} not supported.')
+            return False
+
+        current_time = datetime.datetime.now()
+        this_month = current_time.month
+        month_2digit = str(this_month).zfill(2)
+
+        query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
+FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
+WHERE d.tagid=s.id
+AND s.tagpath LIKE '%sbnd%'
+AND s.tagpath LIKE '%{}%'
+AND s.tagpath LIKE '%{}%'
+ORDER BY d.t_stamp DESC 
+LIMIT {}""".format(month_2digit, '', pv, 1)
+
+        cursor = self._connection.cursor()
+
+        cursor.execute(query)
+
+        dbrows = cursor.fetchall()
+
+        cursor.close()
+
+        formatted = []
+        for row in dbrows:
+            try:
+                time = datetime.datetime.fromtimestamp(row[2]/1000) # ms since epoch
+                time = time.strftime("%Y-%m-%d %H:%M:%S")
+            except:
+                time = row[2]
+            formatted.append((row[0], row[1], row[2], time))
+
+        # print(formatted)
+
+        if prm_id in [1, 2]:
+            if float(formatted[0][1]) < 88:
+                return True
+        else:
+            if float(formatted[0][1]) > 21:
+                return True
+        return False

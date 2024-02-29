@@ -8,7 +8,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements
 
 class PrMAnalysis:
     '''
@@ -19,7 +19,7 @@ class PrMAnalysis:
     _sec_to_us = 1e6
     _us_to_ms = 1e-3
 
-    def __init__(self, wf_c, wf_a, samples_per_sec=2e6, config=None, wf_c_hvoff=None, wf_a_hvoff=None):
+    def __init__(self, wf_c, wf_a, samples_per_sec=2e6, config=None, wf_c_hvoff=None, wf_a_hvoff=None, debug=True):
         '''
         Constructor.
 
@@ -67,11 +67,14 @@ class PrMAnalysis:
 
         self._err = 0
 
+        self._debug = debug
+
         if wf_c_hvoff is not None and wf_a_hvoff is not None:
             if len(wf_c_hvoff) and len (wf_a_hvoff):
-                print('Subtracting HV OFF')
+                if self._debug: print('Subtracting HV OFF')
                 self._raw_wf_c -= np.mean(wf_c_hvoff, axis=0) * self._volt_to_mv
                 self._raw_wf_a -= np.mean(wf_a_hvoff, axis=0) * self._volt_to_mv
+
 
         if config is None:
             self._deltat_start_c = 450
@@ -129,7 +132,7 @@ class PrMAnalysis:
         # self._baseline_rms_a = np.std(self._wf_a[self._baseline_range_a])
         self._baseline_rms_a = np.std(self._raw_wf_a[self._baseline_range_a])
 
-        print('Baseline estimated')
+        if self._debug: print('Baseline estimated')
         return 'ok'
 
 
@@ -141,13 +144,13 @@ class PrMAnalysis:
         # _trigger_sample += self._offset
         # _deltat_start_c -= self._offset
         # _deltat_start_a -= self._offset
-        print('estimate_deltat')
+        if self._debug: print('estimate_deltat')
 
         # Cathode
         try:
             tmp_wvf = self._wf_c[self._deltat_start_c:]
             min_idx = np.argmin(tmp_wvf)
-            print('min_idx', min_idx)
+            if self._debug: print('min_idx', min_idx)
             selected = tmp_wvf[0:min_idx]
             # print('->', selected, np.argwhere((selected-(base-base_rms))>0))
             if self._trigger_sample:
@@ -156,7 +159,7 @@ class PrMAnalysis:
                 start_idx = np.argwhere((selected-(self._baseline_c-self._baseline_rms_c))>0)[-1]
             start = self._wf_x[start_idx + self._deltat_start_c]
             end = self._wf_x[min_idx + self._deltat_start_c]
-            print('Cathode: start', start, 'end', end)
+            if self._debug: print('Cathode: start', start, 'end', end)
             self._time_start_c = start
             self._time_end_c = end
             self._deltat_c = end - start
@@ -174,14 +177,14 @@ class PrMAnalysis:
             start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
             start = self._wf_x[start_idx + self._deltat_start_a]
             end = self._wf_x[max_idx + self._deltat_start_a]
-            print('Anode: start', start, 'end', end)
+            if self._debug: print('Anode: start', start, 'end', end)
             self._time_start_a = start[0]
             self._time_end_a = end
             self._deltat_a = end - start[0]
         except:
             return 'deltat_cathode_failed'
 
-        print('estimate_deltat done')
+        if self._debug: print('estimate_deltat done')
         return 'ok'
 
 
@@ -206,7 +209,7 @@ class PrMAnalysis:
         self._max_c = np.min(self._wf_c[self._trigger_sample:])
         self._max_a = np.max(self._wf_a[self._trigger_sample:])
 
-        print('Max: C', self._max_c, ', A', self._max_a)
+        if self._debug: print('Max: C', self._max_c, ', A', self._max_a)
 
         # self._max_c += self._baseline_rms_c
         # self._max_a -= self._baseline_rms_a
@@ -214,23 +217,23 @@ class PrMAnalysis:
         rc_correction_c = self.rc_correction(self._deltat_c, RC=119)
         rc_correction_a = self.rc_correction(self._deltat_a, RC=119)
 
-        print('RC correction: C', rc_correction_c, ', A', rc_correction_a)
-        print('> Mac C', self._max_c, 'base c', self._baseline_c, 'rc', rc_correction_c)
+        if self._debug: print('RC correction: C', rc_correction_c, ', A', rc_correction_a)
+        if self._debug: print('> Mac C', self._max_c, 'base c', self._baseline_c, 'rc', rc_correction_c)
         self._qc = (self._max_c - self._baseline_c) * rc_correction_c
         self._qa = (self._max_a - self._baseline_a) * rc_correction_a
 
         self._qc = np.abs(self._qc)
-        print(type(self._max_a), type(self._baseline_a), type(rc_correction_a), type(self._qa))
+        if self._debug: print(type(self._max_a), type(self._baseline_a), type(rc_correction_a), type(self._qa))
 
-        print('Qc', self._qc, ', QA', self._qa, 'Qa/Qc', self._qa/self._qc)
+        if self._debug: print('Qc', self._qc, ', QA', self._qa, 'Qa/Qc', self._qa/self._qc)
 
         self._td = self._time_end_a - self._time_start_c
 
-        print('Drift time', self._td)
+        if self._debug: print('Drift time', self._td)
 
         self._tau = -self._td/np.log(self._qa/self._qc)
 
-        print('Lifetime', self._tau, 'mus')
+        if self._debug: print('Lifetime', self._tau, 'mus')
 
         return 'ok'
 
