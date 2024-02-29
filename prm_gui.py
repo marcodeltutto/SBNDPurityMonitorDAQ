@@ -90,6 +90,7 @@ window.show()
 #
 if args.mock:
     config['check_pmt_hv'] = False
+    config['check_lar_level'] = False
     config['data_storage'] = False
     from sbndprmdaq.mock_manager import MockPrMManager
     manager = MockPrMManager(config, window)

@@ -736,6 +736,35 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._led_pmt_hv.setDisabled(True)
 
+
+        if self._config['check_lar_level']:
+            if self._ignition_api.prm_covered(prm_id=1):
+                self._prm_controls[1]._liquid_level_label.setText('Covered')
+                self._prm_controls[1]._liquid_level_label.setStyleSheet("color: green;")
+                self.inhibit_run(False, [1, 2])
+            else:
+                self._prm_controls[1]._liquid_level_label.setText('NOT Covered')
+                self._prm_controls[1]._liquid_level_label.setStyleSheet("color: green;")
+                self.inhibit_run(True, [1, 2])
+
+            if self._ignition_api.prm_covered(prm_id=2):
+                self._prm_controls[2]._liquid_level_label.setText('Covered')
+                self._prm_controls[2]._liquid_level_label.setStyleSheet("color: green;")
+                self.inhibit_run(False, [1, 2])
+            else:
+                self._prm_controls[2]._liquid_level_label.setText('NOT Covered')
+                self._prm_controls[2]._liquid_level_label.setStyleSheet("color: green;")
+                self.inhibit_run(True, [1, 2])
+        else:
+            self._prm_controls[1]._liquid_level_label.setText('Disabled')
+            self._prm_controls[1]._liquid_level_label.setDisabled(True)
+            self._prm_controls[1]._digitizer_image.setDisabled(True)
+
+            self._prm_controls[2]._liquid_level_label.setText('Disabled')
+            self._prm_controls[2]._liquid_level_label.setDisabled(True)
+            self._prm_controls[2]._digitizer_image.setDisabled(True)
+
+
     def inhibit_run(self, do_inhibit=True, prm_ids=(1, 2)):
         '''
         Inhibits running the specified PrMs

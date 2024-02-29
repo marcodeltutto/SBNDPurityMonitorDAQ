@@ -94,6 +94,9 @@ prm_hv_ranges:
 # Checks if PMT HV is ON
 check_pmt_hv: True
 
+# Checks if PrMs are covered with LAr
+check_lar_level: True
+
 # Data storage
 data_storage: True
 data_storage_host: "sbndgpvm01.fnal.gov"
