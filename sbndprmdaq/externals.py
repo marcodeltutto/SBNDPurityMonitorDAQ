@@ -24,7 +24,7 @@ def pmt_hv_on():
 
 class IgnitionAPI:
 
-    def __init__():
+    def __init__(self, ):
 
         self._connection = psycopg2.connect(user="dcs_reader",
                                             password="qcd56RUc",
@@ -32,7 +32,7 @@ class IgnitionAPI:
                                             port="5456",
                                             database="sbnd_online_prd")
 
-    def get_values(pv='te-8101a', month='02', limit=1):
+    def get_values(self, pv='te-8101a', month='02', limit=1):
 
         query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
 FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
@@ -43,7 +43,7 @@ AND s.tagpath LIKE '%{}%'
 ORDER BY d.t_stamp DESC 
 LIMIT {}""".format(month, '', pv, limit)
 
-        cursor = connection.cursor()
+        cursor = self._connection.cursor()
 
         cursor.execute(query)
 
@@ -63,12 +63,14 @@ LIMIT {}""".format(month, '', pv, limit)
         print(formatted)
         return formatted
 
-    def prm_covered(prm_id):
+    def prm_covered(self, prm_id):
 
         if prm_id == 1:
             pv = 'te-8106a'
         elif prm_id == 2:
             pv = 'te-8102a'
+        elif prm_id == 3:
+            pv = 'lt-7133a'
         else:
             print('PrM ID {prm_id} not supported.')
             return False
@@ -86,7 +88,7 @@ AND s.tagpath LIKE '%{}%'
 ORDER BY d.t_stamp DESC 
 LIMIT {}""".format(month_2digit, '', pv, 1)
 
-        cursor = connection.cursor()
+        cursor = self._connection.cursor()
 
         cursor.execute(query)
 
@@ -103,8 +105,12 @@ LIMIT {}""".format(month_2digit, '', pv, 1)
                 time = row[2]
             formatted.append((row[0], row[1], row[2], time))
 
-        print(formatted)
+        # print(formatted)
 
-        if float(formatted[0][1]) < 88:
-            return True
+        if prm_id in [1, 2]:
+            if float(formatted[0][1]) < 88:
+                return True
+        else:
+            if float(formatted[0][1]) > 21:
+                return True
         return False
