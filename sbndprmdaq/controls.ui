@@ -89,7 +89,7 @@
    <widget class="QLabel" name="_digi_label">
     <property name="geometry">
      <rect>
-      <x>850</x>
+      <x>840</x>
       <y>10</y>
       <width>61</width>
       <height>21</height>
@@ -131,7 +131,7 @@
    <widget class="QLabel" name="_digi_status_label">
     <property name="geometry">
      <rect>
-      <x>920</x>
+      <x>900</x>
       <y>10</y>
       <width>61</width>
       <height>21</height>
