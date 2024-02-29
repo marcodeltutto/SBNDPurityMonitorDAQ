@@ -664,27 +664,27 @@ class PrMManager():
         # Analyze data
         self._meas[prm_id] = None
         if self._do_analyze:
-            # try:
-            #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
-            self._logger.info(f'Analyzing data for PrM {prm_id}.')
-            ana_config = self._config['analysis_config'][prm_id]
-            self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
-                                       config=ana_config,
-                                       wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
-            self._prmana.calculate()
-            file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
-            self._prmana.plot_summary(container=out_dict, savename=file_name)
-            self._meas[prm_id] = {
-                'td': self._prmana.get_drifttime(unit='ms'),
-                'qc': self._prmana.get_qc(unit='mV'),
-                'qa': self._prmana.get_qa(unit='mV'),
-                'tau': self._prmana.get_lifetime(unit='ms')
-            }
-            saved_files.append(file_name)
-            # except Exception as err:
-            #     self._logger.warning('PrMAnalysis failed:')
-            #     self._logger.warning(type(err))
-            #     self._logger.warning(err)
+            try:
+                #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
+                self._logger.info(f'Analyzing data for PrM {prm_id}.')
+                ana_config = self._config['analysis_config'][prm_id]
+                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                                           config=ana_config,
+                                           wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
+                self._prmana.calculate()
+                file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
+                self._prmana.plot_summary(container=out_dict, savename=file_name)
+                self._meas[prm_id] = {
+                    'td': self._prmana.get_drifttime(unit='ms'),
+                    'qc': self._prmana.get_qc(unit='mV'),
+                    'qa': self._prmana.get_qa(unit='mV'),
+                    'tau': self._prmana.get_lifetime(unit='ms')
+                }
+                saved_files.append(file_name)
+            except Exception as err:
+                self._logger.warning('PrMAnalysis failed:')
+                self._logger.warning(type(err))
+                self._logger.warning(err)
 
 
         # Copy data to sbndgpvm

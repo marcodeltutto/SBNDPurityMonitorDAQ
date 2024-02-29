@@ -56,7 +56,7 @@ prm_hv_default:
     # cathode:   -120
     # anodegrid: 4431
     # anode:     4352
-    cathode:   -50
+    cathode:   -500
     anodegrid: 1846
     anode:     1814
   2:

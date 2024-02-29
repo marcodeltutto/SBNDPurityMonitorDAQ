@@ -89,9 +89,9 @@ class DataStorage():
         '''
 
         try:
-            if not self.check_ticket():
-                self._logger.info('Ticket expired. Regenerating.')
-                self.kinit()
+            # if not self.check_ticket():
+                # self._logger.info('Ticket expired. Regenerating.')
+            self.kinit()
 
             real_filenames = []
             self._logger.info(f"Storing these files to {self._config['data_storage_host']}:{self._config['data_storage_path']}:")
