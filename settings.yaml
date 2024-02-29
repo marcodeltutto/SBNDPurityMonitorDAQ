@@ -96,6 +96,7 @@ check_pmt_hv: True
 
 # Checks if PrMs are covered with LAr
 check_lar_level: True
+enforce_level: False
 
 # Data storage
 data_storage: True

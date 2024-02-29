@@ -2,9 +2,10 @@
 Collection of functions to check the status of other SBND systems
 '''
 
+import datetime
+
 import epics
 import psycopg2
-import datetime
 
 def pmt_hv_on():
     '''
@@ -27,6 +28,8 @@ class IgnitionAPI:
     Allows access to the Ignition database
     '''
 
+    #pylint: disable=invalid-name,consider-using-f-string,bare-except
+
     def __init__(self, ):
 
         self._connection = psycopg2.connect(user="dcs_reader",
@@ -36,6 +39,17 @@ class IgnitionAPI:
                                             database="sbnd_online_prd")
 
     def get_values(self, pv='te-8101a', month='02', limit=1):
+        '''
+        Returns values for a certain PV
+
+        Args:
+            pv (string): parameter value
+            month (string): the month to look into, 2 digits only, ex '02' for February
+            limit (int): limit to the number of values to be returned
+
+        Returns:
+            list: a list of sets containind 3 entries (x, pv value, datetime)
+        '''
 
         query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
 FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
@@ -67,6 +81,12 @@ LIMIT {}""".format(month, '', pv, limit)
         return formatted
 
     def prm_covered(self, prm_id):
+        '''
+        Returns True if the PrM is covered with LAr
+
+        Args:
+            prm_id (int): the PrM ID
+        '''
 
         if prm_id == 1:
             pv = 'te-8106a'
