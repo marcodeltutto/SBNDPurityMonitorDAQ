@@ -8,7 +8,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements
 
 class PrMAnalysis:
     '''

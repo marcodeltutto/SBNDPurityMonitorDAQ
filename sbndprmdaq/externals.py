@@ -23,6 +23,9 @@ def pmt_hv_on():
 
 
 class IgnitionAPI:
+    '''
+    Allows access to the Ignition database
+    '''
 
     def __init__():
 
