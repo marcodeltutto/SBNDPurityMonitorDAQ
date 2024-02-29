@@ -89,6 +89,8 @@ window.show()
 # Construct the manager
 #
 if args.mock:
+    config['check_pmt_hv'] = False
+    config['data_storage'] = False
     from sbndprmdaq.mock_manager import MockPrMManager
     manager = MockPrMManager(config, window)
 else:

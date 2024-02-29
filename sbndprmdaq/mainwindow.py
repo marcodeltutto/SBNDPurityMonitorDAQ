@@ -400,6 +400,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._can_exit = True
 
+        self._config = config
+
     # pylint: disable=invalid-name
     def closeEvent(self, event):
         '''
@@ -724,12 +726,15 @@ class MainWindow(QtWidgets.QMainWindow):
         '''
         Checks the status of external components of SBND, e.g. the PMT HV
         '''
-        if pmt_hv_on():
-            self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
-            self.inhibit_run(True, [1, 2])
+        if self._config['check_pmt_hv']:
+            if pmt_hv_on():
+                self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_GREEN_LED))
+                self.inhibit_run(True, [1, 2])
+            else:
+                self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
+                self.inhibit_run(False, [1, 2])
         else:
-            self._led_pmt_hv.setPixmap(QtGui.QPixmap(ICON_RED_LED))
-            self.inhibit_run(False, [1, 2])
+            self._led_pmt_hv.setDisabled(True)
 
     def inhibit_run(self, do_inhibit=True, prm_ids=(1, 2)):
         '''

@@ -91,6 +91,8 @@ prm_hv_ranges:
     anodegrid: [1000, 6000]
     anode:     [1000, 6000]
 
+# Checks if PMT HV is ON
+check_pmt_hv: True
 
 # Data storage
 data_storage: True
