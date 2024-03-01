@@ -88,6 +88,7 @@ class DataStorage():
             bool: True is copy was successful
         '''
 
+        #pylint: disable=broad-exception-caught
         try:
             # if not self.check_ticket():
                 # self._logger.info('Ticket expired. Regenerating.')

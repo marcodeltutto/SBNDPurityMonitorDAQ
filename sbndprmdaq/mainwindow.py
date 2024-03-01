@@ -752,7 +752,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     self._prm_controls[prm_id]._liquid_level_label.setText('NOT Covered')
                     self._prm_controls[prm_id]._liquid_level_label.setStyleSheet("color: red;")
-                    # self.inhibit_run(True, [prm_id])
+                    if self._config['enforce_level']:
+                        self.inhibit_run(True, [prm_id])
 
         else:
             self._prm_controls[1]._liquid_level_label.setText('Disabled')

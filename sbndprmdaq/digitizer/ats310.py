@@ -597,7 +597,7 @@ if __name__ == "__main__":
 
     my_ats310 = ATS310()
     my_ats310.start_capture()
-    my_ats310.abort_acquisition()
+    # my_ats310.abort_acquisition()
     del my_ats310
     # my_ats310.start_capture()
 
