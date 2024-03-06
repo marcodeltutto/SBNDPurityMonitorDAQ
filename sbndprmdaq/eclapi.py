@@ -1,27 +1,50 @@
-
+'''
+Contains code to talk to the ECL API
+'''
 import os
 import uuid
 import hashlib
-import requests
 import base64
 import xml.etree.ElementTree as ET
+import requests
 
 class ECL:
+    '''
+    The main ECL class that handles the connection with the ECL
+    '''
+
+    #pylint: disable=invalid-name
 
     def __init__(self, url, user, password):
+        '''
+        Contructor
+
+        Args:
+            url (str): the URL
+            user (str): the username
+            password (str): the password
+        '''
 
         self._url = url
         self._password = password
         self._user = user
 
-        self._to = 10 # timeout in seconds 
+        self._to = 10 # timeout in seconds
 
 
     def generate_salt(self):
+        '''
+        Generates the salt random string
+        '''
 
         return 'salt=' + str(uuid.uuid4())
 
     def signature(self, arguments, data=''):
+        '''
+        Constructs the signature, which is made with the arguments to pass to
+        the API, the password, and the data (is POST) separated by ":". And the
+        encoded.
+        '''
 
         string = arguments
         string += ':'
@@ -37,6 +60,13 @@ class ECL:
 
 
     def search(self, category='Purity+Monitors', limit=2):
+        '''
+        Searched the last entries in a given category
+
+        Args:
+            category (str): the category to search in
+            limit (int): limit to the number of entries
+        '''
 
         url = self._url
         url += '/xml_search?'
@@ -64,11 +94,17 @@ class ECL:
         print(r.text)
 
     def get_entry(self, entry_id=2968):
+        '''
+        Gets a particular entry.
+
+        Args:
+            entry_id (int): The ID of the entry 
+        '''
 
         url = self._url
         url += '/xml_get?'
 
-        arguments = f'e={2968}&'
+        arguments = f'e={entry_id}&'
         arguments += self.generate_salt()
 
         # headers = {'content-type': 'text/xml'}
@@ -91,6 +127,13 @@ class ECL:
 
 
     def post(self, entry, do_post=False):
+        '''
+        Posts an entry to the e-log
+
+        Args:
+            entry (ECLEntry): the entry
+            do_post (bool): set this to True to submit the entry to the ECL
+        '''
 
         entry.set_author(self._user)
 
@@ -125,9 +168,17 @@ class ECL:
 
 
 class ECLEntry:
+    '''
+    A class representing a single ECL entry
+    '''
+    #pylint: disable=invalid-name,too-many-arguments
 
-    def __init__(self, category, tags=[], formname='default', text='', preformatted=False,
+    def __init__(self, category, tags=(), formname='default', text='', preformatted=False,
                 private=False, related_entry=None):
+
+        '''
+        Contructor
+        '''
 
         self._category = category
         self._tags = tags
@@ -158,37 +209,52 @@ class ECLEntry:
             ET.SubElement(self._entry, 'tag', name=tag)
 
     def set_value(self, name, value):
-        
+        '''
+        Sets a single value to the entry form
+        '''
+
         field = ET.SubElement(self._form, 'field', name=name)
         field.text = value
 
     def set_author(self, name):
+        '''
+        Sets the author
+        '''
         self._entry.attrib['author'] = name
 
     def add_attachment(self, name, filename, data=None):
-        
+        '''
+        Adds a generic file attachment 
+        '''
+
         field = ET.SubElement(self._entry, 'attachment', type='file', name=name, filename=os.path.basename(filename))
-        
+
         if data:
             field.text = base64.b64encode(data)
         else:
-            f = open(filename,'r')
-            b = f.read()
-            field.text = base64.b64encode(b)
-            f.close()
+            with open(filename, 'rb', encoding="utf-8") as file:
+                base64_bytes = base64.b64encode(file.read())
+                field.text = base64_bytes
+
 
     def add_image(self, name, filename, image=None):
-        
+        '''
+        Adds an image attachment
+        '''
+
         field = ET.SubElement(self._entry, 'attachment', type='image', name=name, filename=os.path.basename(filename))
-        
+
         if image:
             field.text = base64.b64encode(image)
         else:
-            with open(filename, 'rb') as image_file:
+            with open(filename, 'rb', encoding="utf-8") as image_file:
                 base64_bytes = base64.b64encode(image_file.read())
                 field.text = base64_bytes
-                                
+
     def show(self):
+        '''
+        Returns the entry in str format
+        '''
         return str(ET.tostring(self._entry))
 
 
@@ -202,11 +268,10 @@ if __name__ == "__main__":
     # ecl.get_entry()
     # ecl.search()
 
-    entry = ECLEntry(category='Purity Monitors', text='Example text')
-    entry.set_author('sbndprm')
+    entry_ = ECLEntry(category='Purity Monitors', text='Example text')
+    entry_.set_author('sbndprm')
     # entry.add_image(name='prm', filename='/home/nfs/sbndprm/purity_monitor_data/sbnd_prm2_run_967_data_20240306-040135_ana.png')
-    print(entry.show())
-    print(entry.show().strip())
+    print(entry_.show())
+    print(entry_.show().strip())
 
-    ecl.post(entry)
-
+    ecl.post(entry_)

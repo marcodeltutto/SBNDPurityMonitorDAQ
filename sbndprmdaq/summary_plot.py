@@ -1,3 +1,6 @@
+'''
+Contains class to make summary purity plots
+'''
 
 import logging
 import datetime
@@ -6,12 +9,24 @@ from PyQt5.QtCore import QTimer
 import matplotlib.pyplot as plt
 
 class SummaryPlot:
+    '''
+    A class that makes a plot of electron lifetime versus time, using teh measurement made
+    by the purity monitor DAQ and stored in a CSV file (dataframe).
+    '''
+    #pylint: disable=invalid-name
 
     def __init__(self, config):
+        '''
+        Contructor.
+
+        Args:
+            config (dict): the configuration
+        '''
 
         self._timer = None
 
         self._dataframe_filename = None
+        self._plot_savedir = None
 
         self._first_day = "02/20/2024"
 
@@ -30,9 +45,12 @@ class SummaryPlot:
 
 
     def start_periodic_plotting(self):
+        '''
+        Starts the timer to make periodic plots
+        '''
 
-        self._logger.info(f'Making the first summary plot.')
-        
+        self._logger.info('Making the first summary plot.')
+
         self.make_summary_plots()
 
         self._timer = QTimer()
@@ -41,18 +59,27 @@ class SummaryPlot:
 
 
     def set_dataframe_path(self, dataframe_filename):
+        '''
+        Sets the path to the CSV file containing the dataframe
+        '''
 
         self._dataframe_filename = dataframe_filename
 
     def set_plot_savedir(self, plot_savedir):
+        '''
+        Sets the path to the directory where to save the plots
+        '''
 
         self._plot_savedir = plot_savedir
 
 
     def make_summary_plots(self):
+        '''
+        Makes the plots for all PrMs
+        '''
 
         if self._dataframe_filename is None:
-            self._logger.warning(f'Dont have a dataframe filename. Plot will not be made.')
+            self._logger.warning('Dont have a dataframe filename. Plot will not be made.')
             return
 
         df = pd.read_csv(self._dataframe_filename)
@@ -70,6 +97,13 @@ class SummaryPlot:
 
 
     def _make_summary_plot(self, prm_id, df):
+        '''
+        Makes the plot for a single PrM
+
+        Args:
+            prm_id (int): The purity monitor ID
+            df (dataframe): The dataframe with the measurements
+        '''
 
         label = ''
         if prm_id == 1:
@@ -81,9 +115,9 @@ class SummaryPlot:
 
         df = df.query(f'prm_id == {prm_id}')
 
-        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
+        _, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
 
-        ax.plot(df['date'], df['lifetime'], label='PrM 2, Internal, Short', linestyle='None', marker="o", markersize=5)
+        ax.plot(df['date'], df['lifetime'], label=label, linestyle='None', marker="o", markersize=5)
 
         ax.set_ylabel(r'Lifetime [$ms$]',fontsize=16)
         ax.set_xlabel('Time',fontsize=16)
@@ -98,15 +132,24 @@ class SummaryPlot:
         plt.xticks(rotation=70)
 
         plt.tight_layout()
-        plt.savefig(self._plot_savedir + f'prm{prm_id}_lifetime_{self._first_day}_now.pdf')
+
+        if self._plot_savedir is not None:
+            plt.savefig(self._plot_savedir + f'prm{prm_id}_lifetime_{self._first_day}_now.pdf')
         # plt.show()
 
 
 
     def seconds_until_hour(self, target_hour):
+        '''
+        Returns the number of seconds until a certain hour is reached
+
+        Args:
+            target_hour (int): the hour of the day to reach (8 = 8 am, 20 = 8 pm)
+        '''
+
         now = datetime.datetime.now()
         target_time = now.replace(hour=target_hour, minute=0, second=0, microsecond=0)
-        
+
         if now.hour < target_hour:
             # If the target hour is later in the day
             delta = target_time - now
@@ -115,11 +158,6 @@ class SummaryPlot:
             tomorrow = now + datetime.timedelta(days=1)
             target_time = tomorrow.replace(hour=target_hour, minute=0, second=0, microsecond=0)
             delta = target_time - now
-        
+
         seconds = delta.total_seconds()
         return int(seconds)
-
-
-
-
-

@@ -7,7 +7,7 @@ import subprocess
 import time
 import paramiko
 from scp import SCPClient
-import pandas as pd 
+import pandas as pd
 
 #pylint: disable=too-few-public-methods,duplicate-code
 class DataStorage():
@@ -149,6 +149,14 @@ class DataStorage():
 
 
     def update_dataframe(self, measurement, prm_id):
+        '''
+        Updates the dataframe containing all the purity measurements
+
+        Args:
+            measurement (dict): the latest measturement
+            prm_id (int): the purity monitor ID
+        '''
+        #pylint: disable=invalid-name
 
         self._logger.warning('Updating dataframe.')
 
@@ -180,18 +188,18 @@ class DataStorage():
         df.to_csv(dataframe_file_name)
 
     def get_dataframe_path(self):
+        '''
+        Returns the path to the dataframe
+        '''
 
         if self._config['data_files_path'] is None:
             self._logger.warning('data_files_path is not set.')
             return None
 
         if not os.path.exists(self._config['data_files_path']):
-            self._logger.error(f'data_files_path {config["data_files_path"]} is not a real path.')
+            self._logger.error(f'data_files_path {self._config["data_files_path"]} is not a real path.')
             raise RuntimeError()
 
         dataframe_file_name = self._config['data_files_path'] + '/prm_measurements.csv'
 
         return dataframe_file_name
-
-
-
