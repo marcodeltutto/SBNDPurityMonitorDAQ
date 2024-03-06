@@ -87,7 +87,7 @@ class PrMAnalysis:
         else:
             self._deltat_start_c = config['deltat_start_c']
             self._deltat_start_a = config['deltat_start_a']
-            self._trigger_sample = config['trigger_sample'] 
+            self._trigger_sample = config['trigger_sample']
             self._baseline_range_c = config['baseline_range_c']
             self._baseline_range_a = config['baseline_range_a']
             self._plot_range = config['plot_range']

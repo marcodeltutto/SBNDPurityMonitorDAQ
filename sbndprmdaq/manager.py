@@ -12,6 +12,7 @@ from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
 from sbndprmdaq.analysis import PrMAnalysis
+from sbndprmdaq.summary_plot import SummaryPlot
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
@@ -87,6 +88,12 @@ class PrMManager():
         self._data_storage = DataStorage(config)
 
         self._do_analyze = config['analyze']
+
+        self._plotting_timer = None
+
+        self._summary_plot = SummaryPlot(config)
+        self._summary_plot.set_dataframe_path(self._data_storage.get_dataframe_path())
+        self._summary_plot.set_plot_savedir(self._data_files_path)
 
         self._comment = 'No comment'
 
@@ -697,8 +704,7 @@ class PrMManager():
 
         if self._config['populate_dataframe']:
             self._logger.info(f'Populating dataframe for PrM {prm_id}.')
-            self._data_storage.update_dataframe(self._meas[prm_id])
-
+            self._data_storage.update_dataframe(self._meas[prm_id], prm_id)
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
 

@@ -148,7 +148,7 @@ class DataStorage():
         return os.path.isfile(filename)
 
 
-    def update_dataframe(self, measurement):
+    def update_dataframe(self, measurement, prm_id):
 
         self._logger.warning('Updating dataframe.')
 
@@ -156,15 +156,10 @@ class DataStorage():
             self._logger.warning('No measurement available to save to dataframe.')
             return
 
-        if self._config['data_files_path'] is None:
-            self._logger.warning('Cannot update dataframe as data_files_path is not set.')
+        dataframe_file_name = self.get_dataframe_path()
+
+        if dataframe_file_name is None:
             return
-
-        if not os.path.exists(self._config['data_files_path']):
-            self._logger.error(f'data_files_path {config["data_files_path"]} is not a real path.')
-            raise RuntimeError()
-
-        dataframe_file_name = self._config['data_files_path'] + '/prm_measurements.csv'
 
         if not os.path.exists(dataframe_file_name):
             self._logger.info('Measurements dataframe file doesnt exist. One will be created.')
@@ -173,6 +168,7 @@ class DataStorage():
 
         df = pd.read_csv(dataframe_file_name)
 
+        measurement['prm_id'] = prm_id
         measurement['drifttime'] = measurement.pop('td')
         measurement['lifetime'] = measurement.pop('tau')
         measurement['hv_c'] = measurement.pop('v_c')
@@ -182,5 +178,20 @@ class DataStorage():
         df.append(measurement)
 
         df.to_csv(dataframe_file_name)
+
+    def get_dataframe_path(self):
+
+        if self._config['data_files_path'] is None:
+            self._logger.warning('data_files_path is not set.')
+            return None
+
+        if not os.path.exists(self._config['data_files_path']):
+            self._logger.error(f'data_files_path {config["data_files_path"]} is not a real path.')
+            raise RuntimeError()
+
+        dataframe_file_name = self._config['data_files_path'] + '/prm_measurements.csv'
+
+        return dataframe_file_name
+
 
 
