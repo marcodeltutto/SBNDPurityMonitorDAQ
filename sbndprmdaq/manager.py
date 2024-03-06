@@ -84,8 +84,7 @@ class PrMManager():
             self._prm_id_bounded[main_id] = bounded_id
 
 
-        self._do_store = config['data_storage']
-        self._data_storage = DataStorage(config) if self._do_store else None
+        self._data_storage = DataStorage(config)
 
         self._do_analyze = config['analyze']
 
@@ -675,6 +674,10 @@ class PrMManager():
                 file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
                 self._prmana.plot_summary(container=out_dict, savename=file_name)
                 self._meas[prm_id] = {
+                    'date': out_dict['date'],
+                    'v_c': out_dict['hv_cathode'],
+                    'v_ag': out_dict['hv_anodegrid'],
+                    'v_a': out_dict['hv_anode'],
                     'td': self._prmana.get_drifttime(unit='ms'),
                     'qc': self._prmana.get_qc(unit='mV'),
                     'qa': self._prmana.get_qa(unit='mV'),
@@ -688,9 +691,13 @@ class PrMManager():
 
 
         # Copy data to sbndgpvm
-        if self._do_store:
+        if self._config['data_storage']:
             self._logger.info(f'Storing data for PrM {prm_id}.')
             self._data_storage.store_files(saved_files)
+
+        if self._config['populate_dataframe']:
+            self._logger.info(f'Populating dataframe for PrM {prm_id}.')
+            self._data_storage.update_dataframe(self._meas[prm_id])
 
 
         self._logger.info(f'Data saved for PrM {prm_id}.')

@@ -7,6 +7,7 @@ import subprocess
 import time
 import paramiko
 from scp import SCPClient
+import pandas as pd 
 
 #pylint: disable=too-few-public-methods,duplicate-code
 class DataStorage():
@@ -24,7 +25,6 @@ class DataStorage():
         self._logger = logging.getLogger(__name__)
         self._config = config
 
-        self.kinit()
 
     def kinit(self):
         '''
@@ -146,3 +146,41 @@ class DataStorage():
             filename (string): The full path of the file to store
         '''
         return os.path.isfile(filename)
+
+
+    def update_dataframe(self, measurement):
+
+        self._logger.warning('Updating dataframe.')
+
+        if measurement is None:
+            self._logger.warning('No measurement available to save to dataframe.')
+            return
+
+        if self._config['data_files_path'] is None:
+            self._logger.warning('Cannot update dataframe as data_files_path is not set.')
+            return
+
+        if not os.path.exists(self._config['data_files_path']):
+            self._logger.error(f'data_files_path {config["data_files_path"]} is not a real path.')
+            raise RuntimeError()
+
+        dataframe_file_name = self._config['data_files_path'] + '/prm_measurements.csv'
+
+        if not os.path.exists(dataframe_file_name):
+            self._logger.info('Measurements dataframe file doesnt exist. One will be created.')
+        else:
+            self._logger.info('Measurements dataframe file exists. It will be updated.')
+
+        df = pd.read_csv(dataframe_file_name)
+
+        measurement['drifttime'] = measurement.pop('td')
+        measurement['lifetime'] = measurement.pop('tau')
+        measurement['hv_c'] = measurement.pop('v_c')
+        measurement['hv_ag'] = measurement.pop('v_ag')
+        measurement['hv_a'] = measurement.pop('v_a')
+
+        df.append(measurement)
+
+        df.to_csv(dataframe_file_name)
+
+
