@@ -30,7 +30,16 @@ class IgnitionAPI:
 
     #pylint: disable=invalid-name,consider-using-f-string,bare-except
 
-    def __init__(self, ):
+    def __init__(self):
+
+        self._connection = None
+
+        self.connect()
+
+    def connect(self):
+        '''
+        Establishes a connection to the Ignition database
+        '''
 
         self._connection = psycopg2.connect(user="dcs_reader",
                                             password="qcd56RUc",
@@ -50,6 +59,12 @@ class IgnitionAPI:
         Returns:
             list: a list of sets containind 3 entries (x, pv value, datetime)
         '''
+
+        if self._connection is None:
+            self.connect()
+
+        if self._connection.status() != psycopg2.extensions.STATUS_READY:
+            self.connect()
 
         query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
 FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
