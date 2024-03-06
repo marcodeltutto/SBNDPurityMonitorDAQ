@@ -237,12 +237,12 @@ class ECLEntry:
                 field.text = base64_bytes
 
 
-    def add_image(self, name, filename, image=None):
+    def add_image(self, name, filename, image=None, caption=''):
         '''
         Adds an image attachment
         '''
 
-        field = ET.SubElement(self._entry, 'attachment', type='image', name=name, filename=os.path.basename(filename))
+        field = ET.SubElement(self._entry, 'attachment', type='image', name=name, filename=os.path.basename(filename), caption=caption)
 
         if image:
             field.text = base64.b64encode(image)
@@ -263,7 +263,8 @@ if __name__ == "__main__":
 
     print('Testing')
 
-    ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password='purityND!')
+    PASSWD = ''
+    ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=PASSWD)
 
     # ecl.get_entry()
     # ecl.search()

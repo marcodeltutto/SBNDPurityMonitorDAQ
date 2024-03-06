@@ -3,10 +3,13 @@ Contains class to make summary purity plots
 '''
 
 import logging
+import time
 import datetime
 import pandas as pd
 from PyQt5.QtCore import QTimer
 import matplotlib.pyplot as plt
+
+from sbndprmdaq.eclapi import ECL, ECLEntry
 
 class SummaryPlot:
     '''
@@ -34,6 +37,7 @@ class SummaryPlot:
 
         self._logger = logging.getLogger(__name__)
 
+        self._current_plots = {}
 
         if self._config['make_summary_plots']:
 
@@ -65,6 +69,7 @@ class SummaryPlot:
 
         self._dataframe_filename = dataframe_filename
 
+
     def set_plot_savedir(self, plot_savedir):
         '''
         Sets the path to the directory where to save the plots
@@ -82,18 +87,22 @@ class SummaryPlot:
             self._logger.warning('Dont have a dataframe filename. Plot will not be made.')
             return
 
+        # Read the dataframe
         df = pd.read_csv(self._dataframe_filename)
 
+        # Convert the date string to datetime object
         df['date'] = pd.to_datetime(df['date'])
 
         # Select entries past a certain day
         first_day = datetime.datetime.strptime(self._first_day, "%m/%d/%Y")
-
         mask = df['date'] > first_day
         df = df[mask]
 
         for prm_id in self._config['prms']:
             self._make_summary_plot(prm_id, df)
+
+        if self._config['post_to_ecl']:
+            self._send_to_ecl()
 
 
     def _make_summary_plot(self, prm_id, df):
@@ -134,9 +143,40 @@ class SummaryPlot:
         plt.tight_layout()
 
         if self._plot_savedir is not None:
-            plt.savefig(self._plot_savedir + f'prm{prm_id}_lifetime_{self._first_day}_now.pdf')
+            timestr = time.strftime("%Y%m%d-%H%M%S")
+            filename = self._plot_savedir + f'prm{prm_id}_lifetime_{timestr}.pdf'
+            plt.savefig(filename)
+            self._logger.info(f'Plot saved to {filename}.')
+            self._current_plots = {prm_id: filename}
+
         # plt.show()
 
+
+    def _send_to_ecl(self):
+
+        if self._current_plots:
+
+            password = self._read_ecl_password()
+
+            ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
+
+            text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>{self._config["ecl_text"]}</font>'
+
+            entry = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
+
+            # for prm_id, filename in self._current_plots.items():
+            #     entry.add_image(name=f'lifetime_prm_id_{prm_id}', filename=filename, caption='Lifetime, PrM 2')
+
+            print(entry.show())
+
+            if self._config['post_to_ecl']:
+                ecl.post(entry)
+
+    def _read_ecl_password(self):
+
+        with open(self._config['ecl_pwd_file'], 'r', encoding="utf-8") as pwd_file:
+
+            return pwd_file.readlines()[0].strip()
 
 
     def seconds_until_hour(self, target_hour):

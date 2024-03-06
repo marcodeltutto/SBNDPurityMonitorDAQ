@@ -16,6 +16,7 @@ with open(settings) as file:
     config['data_storage'] = False
     config['check_lar_level'] = False
     config['check_pmt_hv'] = False
+    config['populate_dataframe'] = False
 
 
 

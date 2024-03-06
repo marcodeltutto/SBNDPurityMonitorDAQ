@@ -92,8 +92,9 @@ class PrMManager():
         self._plotting_timer = None
 
         self._summary_plot = SummaryPlot(config)
-        self._summary_plot.set_dataframe_path(self._data_storage.get_dataframe_path())
-        self._summary_plot.set_plot_savedir(self._data_files_path)
+        if config['populate_dataframe']:
+            self._summary_plot.set_dataframe_path(self._data_storage.get_dataframe_path())
+            self._summary_plot.set_plot_savedir(self._data_files_path)
 
         self._comment = 'No comment'
 

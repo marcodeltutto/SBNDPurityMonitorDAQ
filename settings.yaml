@@ -112,6 +112,9 @@ summary_plot:
   time_interval: 24 # hours
   start_hour: 20 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
   prms: [2]
+  post_to_ecl: True
+  ecl_text: "Lifetime measured by purity monitor 2 (internal, short)."
+  ecl_pwd_file: "/Users/mdeltutt/Work/SBND/Purity\ Monitors/.ecl_pwd.txt"
 
 # Lifetime analysis
 analyze: True
