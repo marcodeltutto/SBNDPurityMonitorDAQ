@@ -114,7 +114,7 @@ summary_plot:
   prms: [2]
   post_to_ecl: True
   ecl_text: "Lifetime measured by purity monitor 2 (internal, short)."
-  ecl_pwd_file: "/Users/mdeltutt/Work/SBND/Purity\ Monitors/.ecl_pwd.txt"
+  ecl_pwd_file: "/home/nfs/sbndprm/.ecl_pwd.txt"
 
 # Lifetime analysis
 analyze: True

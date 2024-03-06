@@ -80,6 +80,8 @@ class PrMAnalysis:
             self._deltat_start_c = 450
             self._deltat_start_a = 900
             self._trigger_sample = 512 # When the flash lamp flashes
+            self._signal_range_c = [310, 500]
+            self._signal_range_a = [600, 1000]
             self._baseline_range_c = [0,450]
             self._baseline_range_a = [2000,2400]
             self._plot_range = [0, 3500]
@@ -88,10 +90,16 @@ class PrMAnalysis:
             self._deltat_start_c = config['deltat_start_c']
             self._deltat_start_a = config['deltat_start_a']
             self._trigger_sample = config['trigger_sample']
+            self._signal_range_c = config['signal_range_c']
+            self._signal_range_a = config['signal_range_a']
             self._baseline_range_c = config['baseline_range_c']
             self._baseline_range_a = config['baseline_range_a']
             self._plot_range = config['plot_range']
             self._plot_title = config['title']
+
+            if len(self._raw_wf_c) == 6000:
+                self._signal_range_c = [i * 2 for i in self._signal_range_c]
+                self._signal_range_a = [i * 2 for i in self._signal_range_a]
 
 
     def pre_process(self, smooth=True, n=10):
@@ -148,17 +156,19 @@ class PrMAnalysis:
 
         # Cathode
         try:
-            tmp_wvf = self._wf_c[self._deltat_start_c:]
+            tmp_wvf = self._wf_c[self._signal_range_c[0]:self._signal_range_c[1]]
             min_idx = np.argmin(tmp_wvf)
+            self._max_c = np.min(tmp_wvf)
             if self._debug: print('min_idx', min_idx)
+            if self._debug: print('Cathode MIN', self._max_c)
             selected = tmp_wvf[0:min_idx]
             # print('->', selected, np.argwhere((selected-(base-base_rms))>0))
             if self._trigger_sample:
-                start_idx = self._trigger_sample - self._deltat_start_c
+                start_idx = self._trigger_sample - self._signal_range_c[0]
             else:
                 start_idx = np.argwhere((selected-(self._baseline_c-self._baseline_rms_c))>0)[-1]
-            start = self._wf_x[start_idx + self._deltat_start_c]
-            end = self._wf_x[min_idx + self._deltat_start_c]
+            start = self._wf_x[start_idx + self._signal_range_c[0]]
+            end = self._wf_x[min_idx + self._signal_range_c[0]]
             if self._debug: print('Cathode: start', start, 'end', end)
             self._time_start_c = start
             self._time_end_c = end
@@ -168,15 +178,17 @@ class PrMAnalysis:
 
         # Anode
         try:
-            tmp_wvf = self._wf_a[self._deltat_start_a:]
+            tmp_wvf = self._wf_a[self._signal_range_a[0]:self._signal_range_a[1]]
             max_idx = np.argmax(tmp_wvf)
+            self._max_a = np.max(tmp_wvf)
+            if self._debug: print('Anode MAX', self._max_a)
             selected = tmp_wvf[0:max_idx]
 
             # Find start of anode wf (when is 0.05% from the baseline)
             th = (selected[-1] - self._baseline_a) * 0.3
             start_idx = np.argwhere((selected-self._baseline_a)<th)[-1]
-            start = self._wf_x[start_idx + self._deltat_start_a]
-            end = self._wf_x[max_idx + self._deltat_start_a]
+            start = self._wf_x[start_idx + self._signal_range_a[0]]
+            end = self._wf_x[max_idx + self._signal_range_a[0]]
             if self._debug: print('Anode: start', start, 'end', end)
             self._time_start_a = start[0]
             self._time_end_a = end
@@ -206,8 +218,8 @@ class PrMAnalysis:
             start_idx (int): where to start estimation (to esclude lamp noise)
         '''
 
-        self._max_c = np.min(self._wf_c[self._trigger_sample:])
-        self._max_a = np.max(self._wf_a[self._trigger_sample:])
+        # self._max_c = np.min(self._wf_c[self._trigger_sample:])
+        # self._max_a = np.max(self._wf_a[self._trigger_sample:])
 
         if self._debug: print('Max: C', self._max_c, ', A', self._max_a)
 
@@ -243,24 +255,31 @@ class PrMAnalysis:
         Checks values are sensible
         '''
         if np.abs((self._max_a - self._baseline_a) / (self._baseline_rms_a)) < 5:
+            print('no_anode')
             return 'no_anode'
 
         if self._max_a < 0:
+            print('no_anode')
             return 'no_anode'
 
         if np.abs((self._max_c - self._baseline_c) / (self._baseline_rms_a)) < 5:
+            print('no_cathode')
             return 'no_cathode'
 
         if self._max_c > 0:
+            print('no_cathode')
             return 'no_cathode'
 
-        if self._deltat_c > 50:
+        if self._deltat_c > 100:
+            print('cathode_deltat_large')
             return 'cathode_deltat_large'
 
-        if self._deltat_a > 50:
+        if self._deltat_a > 100:
+            print('anode_deltat_large')
             return 'anode_deltat_large'
 
         if self._qa > self._qc:
+            return 'qa_lt_qc'
             return 'qa_lt_qc'
 
         return 'ok'
@@ -324,6 +343,10 @@ class PrMAnalysis:
         '''
         Returns the lifetime in the specified units
         '''
+
+        if self._tau is None:
+            return -2
+
         if self._tau < 0:
             return self._tau
 
@@ -340,6 +363,9 @@ class PrMAnalysis:
         '''
         Returns the drifttime in the specified units
         '''
+        if self._td is None:
+            return -2
+
         if self._td < 0:
             return self._td
 
@@ -356,6 +382,9 @@ class PrMAnalysis:
         '''
         Returns the Qa in the specified units
         '''
+        if self._qa is None:
+            return -2
+
         if self._qa < 0:
             return self._qa
 
@@ -369,6 +398,9 @@ class PrMAnalysis:
         '''
         Returns the Qc in the specified units
         '''
+        if self._qc is None:
+            return -2
+
         if self._qc < 0:
             return self._qc
 
