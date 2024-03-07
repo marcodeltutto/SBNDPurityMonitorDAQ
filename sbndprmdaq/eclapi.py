@@ -232,9 +232,9 @@ class ECLEntry:
         if data:
             field.text = base64.b64encode(data)
         else:
-            with open(filename, 'rb', encoding="utf-8") as file:
+            with open(filename, 'rb') as file:
                 base64_bytes = base64.b64encode(file.read())
-                field.text = base64_bytes
+                field.text = str(base64_bytes)
 
 
     def add_image(self, name, filename, image=None, caption=''):
@@ -247,15 +247,15 @@ class ECLEntry:
         if image:
             field.text = base64.b64encode(image)
         else:
-            with open(filename, 'rb', encoding="utf-8") as image_file:
+            with open(filename, 'rb') as image_file:
                 base64_bytes = base64.b64encode(image_file.read())
-                field.text = base64_bytes
+                field.text = base64_bytes.decode('UTF-8')
 
     def show(self):
         '''
         Returns the entry in str format
         '''
-        return str(ET.tostring(self._entry))
+        return ET.tostring(self._entry).decode('UTF-8')
 
 
 
@@ -263,16 +263,24 @@ if __name__ == "__main__":
 
     print('Testing')
 
-    PASSWD = ''
+    PASSWD = 'purityND!'
     ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=PASSWD)
 
     # ecl.get_entry()
     # ecl.search()
 
-    entry_ = ECLEntry(category='Purity Monitors', text='Example text')
-    entry_.set_author('sbndprm')
-    # entry.add_image(name='prm', filename='/home/nfs/sbndprm/purity_monitor_data/sbnd_prm2_run_967_data_20240306-040135_ana.png')
-    print(entry_.show())
-    print(entry_.show().strip())
+    # entry_ = ECLEntry(category='Purity Monitors', text='Example text')
+    # entry_.set_author('sbndprm')
+    # entry_.add_image(name='prm', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png')
+    # print(entry_.show())
+
+    text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>Lifetime measured by purity monitor 2 (internal, short).</font>'
+    entry_ = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
+    entry_.add_image(name=f'lifetime_prm_id_2', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png', caption='Lifetime, PrM 2')
+
+    # print(entry_.show().strip()[1:])
+
+            # if self._config['post_to_ecl']:
+            #     ecl.post(entry, do_post=True)
 
     ecl.post(entry_)
