@@ -103,6 +103,12 @@ LIMIT {}""".format(month, '', pv, limit)
             prm_id (int): the PrM ID
         '''
 
+        if self._connection is None:
+            self.connect()
+
+        if self._connection.status() != psycopg2.extensions.STATUS_READY:
+            self.connect()
+
         if prm_id == 1:
             pv = 'te-8106a'
         elif prm_id == 2:
