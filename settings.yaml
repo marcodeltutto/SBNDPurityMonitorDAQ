@@ -110,7 +110,7 @@ populate_dataframe: True
 summary_plot:
   make_summary_plots: True
   time_interval: 24 # hours
-  start_hour: 20 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
+  start_hour: 10 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
   prms: [2]
   post_to_ecl: True
   ecl_text: "Lifetime measured by purity monitor 2 (internal, short)."
@@ -123,6 +123,8 @@ analysis_config:
     'deltat_start_c': 310
     'deltat_start_a': 310
     'trigger_sample': 300
+    'signal_range_c': [320, 500]
+    'signal_range_a': [600, 1000]
     'baseline_range_c': [0,250]
     'baseline_range_a': [310,500]
     'title': 'SBND PrM 1 - Internal - Long'
@@ -131,6 +133,8 @@ analysis_config:
     'deltat_start_c': 310
     'deltat_start_a': 310
     'trigger_sample': 300
+    'signal_range_c': [320, 500]
+    'signal_range_a': [600, 1000]
     'baseline_range_c': [0,250]
     'baseline_range_a': [310,500]
     'title': 'SBND PrM 2 - Internal - Short'
@@ -139,6 +143,8 @@ analysis_config:
     'deltat_start_c': 450
     'deltat_start_a': 900
     'trigger_sample': 512
+    'signal_range_c': [320, 500]
+    'signal_range_a': [600, 1000]
     'baseline_range_c': [0,450]
     'baseline_range_a': [2000, 2400]
     'title': 'SBND PrM 3 - Inline - Long'
