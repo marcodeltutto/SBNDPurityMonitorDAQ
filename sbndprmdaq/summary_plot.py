@@ -42,7 +42,6 @@ class SummaryPlot:
         if self._config['make_summary_plots']:
 
             seconds_to_start = self.seconds_until_hour(self._config['start_hour'])
-            seconds_to_start = 5
             QTimer.singleShot(seconds_to_start * 1000, self.start_periodic_plotting)
 
             self._logger.info(f'The first summary plot will be made in {seconds_to_start/3600:.2f} hours.')
@@ -144,7 +143,7 @@ class SummaryPlot:
 
         if self._plot_savedir is not None:
             timestr = time.strftime("%Y%m%d-%H%M%S")
-            filename = self._plot_savedir + f'prm{prm_id}_lifetime_{timestr}.pdf'
+            filename = self._plot_savedir + f'prm{prm_id}_lifetime_{timestr}.png'
             plt.savefig(filename)
             self._logger.info(f'Plot saved to {filename}.')
             self._current_plots = {prm_id: filename}
@@ -160,17 +159,17 @@ class SummaryPlot:
 
             ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
-            text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>{self._config["ecl_text"]}</font>'
+            text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b> <BR> {self._config["ecl_text"]}</font>'
 
             entry = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
 
-            # for prm_id, filename in self._current_plots.items():
-            #     entry.add_image(name=f'lifetime_prm_id_{prm_id}', filename=filename, caption='Lifetime, PrM 2')
+            for prm_id, filename in self._current_plots.items():
+                entry.add_image(name=f'lifetime_prm_id_{prm_id}', filename=filename, caption='Lifetime, PrM 2')
 
             print(entry.show())
 
             if self._config['post_to_ecl']:
-                ecl.post(entry)
+                ecl.post(entry, do_post=True)
 
     def _read_ecl_password(self):
 

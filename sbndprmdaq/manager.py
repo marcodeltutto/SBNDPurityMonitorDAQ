@@ -691,6 +691,7 @@ class PrMManager():
                     'qa': self._prmana.get_qa(unit='mV'),
                     'tau': self._prmana.get_lifetime(unit='ms')
                 }
+                print('--->', self._meas[prm_id])
                 saved_files.append(file_name)
             except Exception as err:
                 self._logger.warning('PrMAnalysis failed:')
@@ -733,6 +734,7 @@ class PrMManager():
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', self._epics_data[item]['current']))
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', self._epics_data[item]['temperature']))
 
+        print('--->prm id ',prm_id, '->', self._meas[prm_id])
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))

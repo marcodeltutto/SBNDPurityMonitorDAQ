@@ -5,6 +5,7 @@ import os
 import logging
 import subprocess
 import time
+import copy
 import paramiko
 from scp import SCPClient
 import pandas as pd
@@ -167,6 +168,7 @@ class DataStorage():
         dataframe_file_name = self.get_dataframe_path()
 
         if dataframe_file_name is None:
+            self._logger.warning('No dataframe path. No measurement will be saved to the dataframe.')
             return
 
         if not os.path.exists(dataframe_file_name):
@@ -176,14 +178,15 @@ class DataStorage():
 
         df = pd.read_csv(dataframe_file_name)
 
-        measurement['prm_id'] = prm_id
-        measurement['drifttime'] = measurement.pop('td')
-        measurement['lifetime'] = measurement.pop('tau')
-        measurement['hv_c'] = measurement.pop('v_c')
-        measurement['hv_ag'] = measurement.pop('v_ag')
-        measurement['hv_a'] = measurement.pop('v_a')
+        meas = copy.copy(measurement)
+        meas['prm_id'] = prm_id
+        meas['drifttime'] = meas.pop('td')
+        meas['lifetime'] = meas.pop('tau')
+        meas['hv_c'] = meas.pop('v_c')
+        meas['hv_ag'] = meas.pop('v_ag')
+        meas['hv_a'] = meas.pop('v_a')
 
-        df.append(measurement)
+        df = df.append(meas, ignore_index=True)
 
         df.to_csv(dataframe_file_name)
 
