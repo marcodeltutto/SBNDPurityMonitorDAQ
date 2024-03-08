@@ -200,3 +200,12 @@ class SummaryPlot:
 
         seconds = delta.total_seconds()
         return int(seconds)
+
+    def remaining_time(self):
+        '''
+        Returns the remaining time on the timer to post summary plot on elog
+        '''
+        if self._timer.isActive():
+            return self._timer.remainingTime()
+
+        return None

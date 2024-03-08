@@ -726,6 +726,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
 
+            # Check summary plot timer
+            rem_time = self._prm_manager.remaining_time_to_elog() / 1e3 # seconds
+            minutes, seconds = divmod(rem_time, 60)
+            hours, minutes = divmod(rem_time, 60)
+            self._ecl_post_label.setText(f"{hours:.0f}:{minutes:.0f}:{seconds:.0f}")
+
 
     def _check_external_status(self):
         '''
