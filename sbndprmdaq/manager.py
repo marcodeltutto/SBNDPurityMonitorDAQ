@@ -896,6 +896,13 @@ class PrMManager():
         return 0
 
 
+    def remaining_time_to_elog(self):
+        '''
+        Returns the remaining time on the timer to post summary plot on elog
+        '''
+        return self._summary_plot.remaining_time()
+
+
     def take_hvoff_run(self, prm_id, do_take):
         '''
         Saves option to take run with no HV or not.

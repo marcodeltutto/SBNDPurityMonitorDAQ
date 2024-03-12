@@ -56,7 +56,8 @@ if args.mock:
     config['check_pmt_hv'] = False
     config['check_lar_level'] = False
     config['data_storage'] = False
-    # config['populate_dataframe'] = False
+    config['populate_dataframe'] = False
+    config['summary_plot']['post_to_ecl'] = False
 
 print('Config:', yaml.dump(config), sep='\n')
 
