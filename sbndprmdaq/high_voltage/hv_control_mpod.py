@@ -75,11 +75,11 @@ class HVControlMPOD(HVControlBase):
         cmd += ch + ' '
         cmd += t + ' '
         cmd += value
-        self._logger.info(f'Subprocess: {cmd}')
+        # self._logger.info(f'Subprocess: {cmd}')
 
         # Start a subprocess
         start = time.time()
-        with subprocess.Popen(cmd.split()) as proc:
+        with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE) as proc:
             while proc.poll():
                 time.sleep(0.1)
                 if time.time() - start > 5:
