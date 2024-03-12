@@ -46,6 +46,7 @@ class PrMManager():
         self._meas = {}
         self._time_interval = {}
         self._timer = {}
+        self._inhibit_run = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -55,10 +56,11 @@ class PrMManager():
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
-            self._repetitions[prm_id] = 1 if prm_id == 3 else 2
+            self._repetitions[prm_id] = 2 # 1 if prm_id == 3 else 2
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
+            self._inhibit_run[prm_id] = False
 
             # Timer for automatic runs
             self._timer[prm_id] = QTimer()
@@ -789,12 +791,15 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        self._is_running[prm_id] = True
-        print(f'start_prm {prm_id}')
+        print(f'Starting PrM {prm_id}')
+
+        if self._inhibit_run[prm_id]:
+            self._logger.info(f'Run for PrM {prm_id} is inhibited.')
+            return
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
-            print(f'Calling start thread {prm_id}')
+            print(f'Starting thread for {prm_id}')
             self.start_thread(prm_id)
         else:
             self.capture_data(prm_id)
@@ -829,6 +834,16 @@ class PrMManager():
         '''
         self._hv_control.hv_off(prm_id)
         self._hv_on = False
+
+    def inhibit_run(self, prm_id, do_inhibit=True):
+        '''
+        Inhibits a certain PrM from running
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            do_inhibit (bool): If True, it inhibits
+        '''
+        self._inhibit_run[prm_id] = do_inhibit
 
 
     def set_mode(self, prm_id, mode):

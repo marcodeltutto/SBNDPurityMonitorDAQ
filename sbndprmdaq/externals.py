@@ -63,7 +63,7 @@ class IgnitionAPI:
         if self._connection is None:
             self.connect()
 
-        if self._connection.status() != psycopg2.extensions.STATUS_READY:
+        if self._connection.status != psycopg2.extensions.STATUS_READY:
             self.connect()
 
         query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
@@ -106,7 +106,7 @@ LIMIT {}""".format(month, '', pv, limit)
         if self._connection is None:
             self.connect()
 
-        if self._connection.status() != psycopg2.extensions.STATUS_READY:
+        if self._connection.status != psycopg2.extensions.STATUS_READY:
             self.connect()
 
         if prm_id == 1:
@@ -155,6 +155,6 @@ LIMIT {}""".format(month_2digit, '', pv, 1)
             if float(formatted[0][1]) < 88:
                 return True
         else:
-            if float(formatted[0][1]) > 21:
+            if float(formatted[0][1]) > 20:
                 return True
         return False
