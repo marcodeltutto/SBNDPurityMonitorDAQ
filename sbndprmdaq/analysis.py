@@ -8,6 +8,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
+import scipy.signal; import scipy.optimize
 
 #pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements
 class PrMAnalysisBase(ABC):
@@ -18,6 +19,7 @@ class PrMAnalysisBase(ABC):
     _volt_to_mv = 1e3
     _sec_to_us = 1e6
     _us_to_ms = 1e-3
+    _RC = 119
 
     def __init__(
         self,
@@ -462,8 +464,8 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
         # self._max_c += self._baseline_rms_c
         # self._max_a -= self._baseline_rms_a
 
-        rc_correction_c = self._rc_correction(self._deltat_c, RC=119)
-        rc_correction_a = self._rc_correction(self._deltat_a, RC=119)
+        rc_correction_c = self._rc_correction(self._deltat_c, RC=self._RC)
+        rc_correction_a = self._rc_correction(self._deltat_a, RC=self._RC)
 
         if self._debug: print('RC correction: C', rc_correction_c, ', A', rc_correction_a)
         if self._debug: print('> Mac C', self._max_c, 'base c', self._baseline_c, 'rc', rc_correction_c)
@@ -581,5 +583,84 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
                 verticalalignment='bottom',
                 horizontalalignment='right',
                 bbox=props)
+
+
+class PrMAnalysisFitter(PrMAnalysisBase):
+    '''
+    A class to PrM analysis by trying to fit waveforms
+    '''
+
+    def __init__(
+        self,
+        wf_c, wf_a,
+        samples_per_sec=2e6, config={}, wf_c_hvoff=None, wf_a_hvoff=None, debug=True
+    ):
+        '''
+        Constructor.
+
+        Args:
+            wf_c (list): cathode waveforms
+            wf_a (list): anode waveforms
+            samples_per_sec (int): number of samples per seconds
+            config (dict): configuration
+            wf_c_hvoff (list): HV off cathode waveforms
+            wf_a_hvoff (list): HV on cathode waveforms
+        '''
+        super().__init__(
+            wf_c, wf_a,
+            samples_per_sec=samples_per_sec,
+            config=config,
+            wf_c_hvoff=wf_c_hvoff,
+            wf_a_hvoff=wf_a_hvoff,
+            debug=debug
+        )
+
+        self._lowpass_cutoff_freq = config.get('lowpass_cutoff_freq', 100e3)
+
+    def calculate(self):
+        '''
+        Performs all the calculation
+        '''
+        self._pre_process(self._low_pass_cut_off_freq)
+
+    def _pre_process(self, cut_off_freq):
+        '''
+        Applies a low-pass filter to the raw waveform
+
+        Args:
+            cut_off_freq (float): cut-off frequency for low-pass filter
+        '''
+        nyquist_freq = self.samples_per_sec / 2
+        crit_freq = cut_off_freq / nyquist_freq # normalise the cut-off
+        b, a = scipy.signal.butter(3, crit_freq)
+        self._wf_c = scipy.signal.filtfilt(b, a, self._raw_wf_c)
+        self._wf_a = scipy.signal.filtfilt(b, a, self._raw_wf_a)
+
+    def _fit_func(self, t, baseline, V_0, t_start, t_rise):
+        '''
+        Fit function for PrM waveforms
+        '''
+        return np.piecewise(
+            t,
+            [
+                t < t_start, # before electrons freed at cathode or before arriving at anode grid
+                (t >= t_start) & (t < t_rise), # drifting to cathode grid or anode
+                t >= t_rise # past cathode grid or collected at anode
+            ],
+            [
+                lambda t: (
+                    baseline
+                ),
+                lambda t: (
+                    V_0 * (1 - np.exp(-(t - t_start) / self._RC)) / ((t_rise - t_start) / self._RC) + # charging
+                    baseline
+                ),
+                lambda t: (
+                    (V_0 * (1 - np.exp(-(t_rise - t_start) / self._RC)) / ((t_rise - t_start) / self._RC)) *
+                    np.exp(-(t - t_rise) / self._RC) + # discharging from V_max
+                    baseline
+                )
+            ]
+        )
 
 
