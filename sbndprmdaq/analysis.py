@@ -5,21 +5,25 @@ Contains PrM analysis class
 import datetime
 import subprocess
 import numpy as np
+from abc import ABC, abstractmethod
 
 import matplotlib.pyplot as plt
 
 #pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements
-
-class PrMAnalysis:
+class PrMAnalysisBase(ABC):
     '''
-    A class to perform quick PrM analysis
+    Base class for PrM signal analysis.
     '''
 
     _volt_to_mv = 1e3
     _sec_to_us = 1e6
     _us_to_ms = 1e-3
 
-    def __init__(self, wf_c, wf_a, samples_per_sec=2e6, config=None, wf_c_hvoff=None, wf_a_hvoff=None, debug=True):
+    def __init__(
+        self,
+        wf_c, wf_a,
+        samples_per_sec=2e6, config={}, wf_c_hvoff=None, wf_a_hvoff=None, debug=True
+    ):
         '''
         Constructor.
 
@@ -30,7 +34,6 @@ class PrMAnalysis:
             config (dict): configuration
             wf_c_hvoff (list): HV off cathode waveforms
             wf_a_hvoff (list): HV on cathode waveforms
-
         '''
 
         self._raw_wf_x = np.arange(len(wf_c[0])) / samples_per_sec * self._sec_to_us # us
@@ -41,11 +44,6 @@ class PrMAnalysis:
         self._wf_a = None
         self._wf_x = None
 
-        self._baseline_c = None
-        self._baseline_rms_c = None
-        self._baseline_a = None
-        self._baseline_rms_a = None
-
         self._time_start_c = None
         self._time_end_c = None
         self._deltat_c = None
@@ -54,16 +52,11 @@ class PrMAnalysis:
         self._time_end_a = None
         self._deltat_a = None
 
-        self._max_c = None
-        self._max_a = None
-
         self._qa = None
         self._qc = None
 
         self._td = None
         self._tau = None
-
-        self._offset = None
 
         self._err = 0
 
@@ -75,34 +68,292 @@ class PrMAnalysis:
                 self._raw_wf_c -= np.mean(wf_c_hvoff, axis=0) * self._volt_to_mv
                 self._raw_wf_a -= np.mean(wf_a_hvoff, axis=0) * self._volt_to_mv
 
+        self._deltat_start_c = config.get('deltat_start_c', 450)
+        self._deltat_start_a = config.get('deltat_start_a', 900)
+        self._trigger_sample = config.get('trigger_sample', 512)
+        self._signal_range_c = config.get('signal_range_c', [310, 500])
+        self._signal_range_a = config.get('signal_range_a', [600, 1000])
+        self._baseline_range_c = config.get('baseline_range_c', [0, 450])
+        self._baseline_range_a = config.get('baseline_range_a', [2000, 2400])
+        self._plot_range = config.get('plot_range', [0, 3500])
+        self._plot_title = config.get('title', 'PrM')
 
-        if config is None:
-            self._deltat_start_c = 450
-            self._deltat_start_a = 900
-            self._trigger_sample = 512 # When the flash lamp flashes
-            self._signal_range_c = [310, 500]
-            self._signal_range_a = [600, 1000]
-            self._baseline_range_c = [0,450]
-            self._baseline_range_a = [2000,2400]
-            self._plot_range = [0, 3500]
-            self._plot_title = 'PrM'
+        # XXX can we not know the size of the readout beforehand?
+        if len(self._raw_wf_c) == 6000:
+            self._signal_range_c = [i * 2 for i in self._signal_range_c]
+            self._signal_range_a = [i * 2 for i in self._signal_range_a]
+
+    @abstractmethod
+    def calculate(self):
+        '''
+        Performs all the calculation
+        '''
+
+    @abstractmethod
+    def plot_summary(self, container=None, savename=None):
+        '''
+        Generates a summary plot
+
+        Args:
+            container (dict): data container to add info on plot
+            savename (string): full path to save file
+        '''
+
+    def get_lifetime(self, unit='us'):
+        '''
+        Returns the lifetime in the specified units
+        '''
+        if self._tau is None:
+            return -2
+
+        if self._tau < 0:
+            return self._tau
+
+        if unit == 'us':
+            return self._tau
+
+        if unit == 'ms':
+            return self._tau * 1e-3
+
+        print(f'Unit {unit} not supported')
+
+        return -999
+
+    def get_drifttime(self, unit='us'):
+        '''
+        Returns the drifttime in the specified units
+        '''
+        if self._td is None:
+            return -2
+
+        if self._td < 0:
+            return self._td
+
+        if unit == 'us':
+            return self._td
+
+        if unit == 'ms':
+            return self._td * 1e-3
+
+        print(f'Unit {unit} not supported')
+
+        return -999
+
+    def get_qa(self, unit='mV'):
+        '''
+        Returns the Qa in the specified units
+        '''
+        if self._qa is None:
+            return -2
+
+        if self._qa < 0:
+            return self._qa
+
+        if unit == 'mV':
+            return self._qa
+
+        print(f'Unit {unit} not supported')
+
+        return -999
+
+    def get_qc(self, unit='mV'):
+        '''
+        Returns the Qc in the specified units
+        '''
+        if self._qc is None:
+            return -2
+
+        if self._qc < 0:
+            return self._qc
+
+        if unit == 'mV':
+            return self._qc
+
+        print(f'Unit {unit} not supported')
+
+        return -999
+
+    def _process_error(self, status):
+        '''
+        Base on the error (if any) adds and error code to lifetime
+        '''
+        code = 0
+        if status == 'no_anode':
+            code = -10
+        elif status == 'no_cathode':
+            code = -11
+        elif status == 'cathode_deltat_large':
+            code = -12
+        elif code == 'anode_deltat_large':
+            code = -13
+        elif code == 'qa_lt_qc':
+            code = -14
         else:
-            self._deltat_start_c = config['deltat_start_c']
-            self._deltat_start_a = config['deltat_start_a']
-            self._trigger_sample = config['trigger_sample']
-            self._signal_range_c = config['signal_range_c']
-            self._signal_range_a = config['signal_range_a']
-            self._baseline_range_c = config['baseline_range_c']
-            self._baseline_range_a = config['baseline_range_a']
-            self._plot_range = config['plot_range']
-            self._plot_title = config['title']
+            code = -99
 
-            if len(self._raw_wf_c) == 6000:
-                self._signal_range_c = [i * 2 for i in self._signal_range_c]
-                self._signal_range_a = [i * 2 for i in self._signal_range_a]
+        if code != 0:
+            self._tau = code
+            self._td = -1
+            self._qa = -1
+            self._qc = -1
 
 
-    def pre_process(self, smooth=True, n=10):
+class PrMAnalysisEstimate(PrMAnalysisBase):
+    '''
+    A class to perform quick PrM analysis
+    '''
+
+    def __init__(
+        self,
+        wf_c, wf_a,
+        samples_per_sec=2e6, config={}, wf_c_hvoff=None, wf_a_hvoff=None, debug=True
+    ):
+        '''
+        Constructor.
+
+        Args:
+            wf_c (list): cathode waveforms
+            wf_a (list): anode waveforms
+            samples_per_sec (int): number of samples per seconds
+            config (dict): configuration
+            wf_c_hvoff (list): HV off cathode waveforms
+            wf_a_hvoff (list): HV on cathode waveforms
+        '''
+        super().__init__(
+            wf_c, wf_a,
+            samples_per_sec=samples_per_sec,
+            config=config,
+            wf_c_hvoff=wf_c_hvoff,
+            wf_a_hvoff=wf_a_hvoff,
+            debug=debug
+        )
+
+        self._baseline_c = None
+        self._baseline_rms_c = None
+        self._baseline_a = None
+        self._baseline_rms_a = None
+
+        self._offset = None
+
+    def calculate(self):
+        '''
+        Performs all the calculation
+        '''
+        self._err = self._pre_process(smooth=True, n=40)
+
+        if self._err != 'ok':
+            return
+
+        self._err = self._estimate_baseline()
+
+        if self._err != 'ok':
+            return
+
+        self._err = self._estimate_deltat()
+
+        if self._err != 'ok':
+            return
+
+        self._err = self._calculate_lifetime()
+
+        if self._err != 'ok':
+            return
+
+        status = self._sanity_check()
+
+        if status != 'ok':
+            self._process_error(status)
+
+    def plot_summary(self, container=None, savename=None):
+        '''
+        Generates a summary plot
+
+        Args:
+            container (dict): data container to add info on plot
+            savename (string): full path to save file
+        '''
+        if self._td is None:
+            return None, None
+
+        if self._td < 0:
+            return None, None
+
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        _colors = prop_cycle.by_key()['color']
+
+        fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(12, 8), sharex=True)
+        fig.subplots_adjust(hspace=0)
+
+        ax[0].plot(
+            self._raw_wf_x, self._raw_wf_a, label='Anode Raw', color=_colors[0], alpha=0.5
+        )
+        ax[1].plot(
+            self._raw_wf_x, self._raw_wf_c, label='Cathode Raw', color=_colors[1], alpha=0.5
+        )
+        ax[0].plot(self._wf_x, self._wf_a, label='Anode', color=_colors[0])
+        ax[1].plot(self._wf_x, self._wf_c, label='Cathode', color=_colors[1])
+
+        ax[0].axhline(
+            self._baseline_a,
+            color=_colors[0],
+            label=(
+                f'Baseline = {self._baseline_a:.1f} '
+                r'$\pm$' + f' {self._baseline_rms_a:.1f} mV'
+            ),
+            linestyle='dashed'
+        )
+        ax[1].axhline(
+            self._baseline_c,
+            color=_colors[1],
+            label=(
+                f'Baseline = {self._baseline_c:.1f} '
+                r'$\pm$' + f' {self._baseline_rms_c:.1f} mV'
+            ),
+            linestyle='dashed'
+        )
+
+        ax[0].axvline(self._time_start_c, color='grey', linestyle='dashed')
+        ax[1].axvline(self._time_start_c, color='grey', linestyle='dashed')
+        ax[0].axvline(self._time_end_a, color='grey', linestyle='dashed')
+        ax[1].axvline(self._time_end_a, color='grey', linestyle='dashed')
+
+        ax[0].axvspan(self._time_start_a, self._time_end_a, alpha=0.5, color=_colors[0])
+        ax[1].axvspan(self._time_start_c, self._time_end_c, alpha=0.5, color=_colors[1])
+
+        ax[0].axhline(
+            self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot'
+        )
+        ax[1].axhline(
+            self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot'
+        )
+
+        x_plot_range = self._time_end_a * 2
+        ax[0].set_xlim([0, x_plot_range])
+        ax[1].set_xlim([0, x_plot_range])
+
+        y_plot_range = np.abs(self._max_c) * 1.4
+        ax[0].set_ylim([-29.99,        y_plot_range])
+        ax[1].set_ylim([-y_plot_range, 29.99])
+
+        ax[0].set_title(
+            (
+                f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
+                f'\nQa/Qc: {self._qa/self._qc:.2f}'
+                f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$'
+            ),
+            loc='left',
+            fontsize=12
+        )
+
+        self.set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.56])
+
+        if savename:
+            plt.savefig(savename)
+        # plt.show()
+
+        return fig, ax
+
+    def _pre_process(self, smooth=True, n=10):
         '''
         Smooths the data if requested
 
@@ -110,7 +361,6 @@ class PrMAnalysis:
             smooth (bool): smooths the data if True
             n (int): smoothing level
         '''
-
         if smooth:
             self._wf_c = np.convolve(self._raw_wf_c, np.ones(n)/n, mode='valid')
             self._wf_a = np.convolve(self._raw_wf_a, np.ones(n)/n, mode='valid')
@@ -124,7 +374,7 @@ class PrMAnalysis:
 
         return 'ok'
 
-    def estimate_baseline(self):
+    def _estimate_baseline(self):
         '''
         Baseline estimation
 
@@ -143,16 +393,14 @@ class PrMAnalysis:
         if self._debug: print('Baseline estimated')
         return 'ok'
 
-
-    def estimate_deltat(self):
+    def _estimate_deltat(self):
         '''
         Delta t estimation
         '''
-
         # _trigger_sample += self._offset
         # _deltat_start_c -= self._offset
         # _deltat_start_a -= self._offset
-        if self._debug: print('estimate_deltat')
+        if self._debug: print('_estimate_deltat')
 
         # Cathode
         try:
@@ -196,28 +444,16 @@ class PrMAnalysis:
         except:
             return 'deltat_cathode_failed'
 
-        if self._debug: print('estimate_deltat done')
+        if self._debug: print('_estimate_deltat done')
         return 'ok'
 
-
-    def rc_correction(self, delta_t, RC=119):
-        '''
-        RC correction estimation
-
-        Args:
-            delta_t (float): rise time
-            RC (float): RC time constant
-        '''
-        return (delta_t / RC) * (1 / (1 - np.exp(-delta_t/RC)))
-
-    def calculate_lifetime(self):
+    def _calculate_lifetime(self):
         '''
         Lifetime estimation
 
         Args:
             start_idx (int): where to start estimation (to esclude lamp noise)
         '''
-
         # self._max_c = np.min(self._wf_c[self._trigger_sample:])
         # self._max_a = np.max(self._wf_a[self._trigger_sample:])
 
@@ -226,8 +462,8 @@ class PrMAnalysis:
         # self._max_c += self._baseline_rms_c
         # self._max_a -= self._baseline_rms_a
 
-        rc_correction_c = self.rc_correction(self._deltat_c, RC=119)
-        rc_correction_a = self.rc_correction(self._deltat_a, RC=119)
+        rc_correction_c = self._rc_correction(self._deltat_c, RC=119)
+        rc_correction_a = self._rc_correction(self._deltat_a, RC=119)
 
         if self._debug: print('RC correction: C', rc_correction_c, ', A', rc_correction_a)
         if self._debug: print('> Mac C', self._max_c, 'base c', self._baseline_c, 'rc', rc_correction_c)
@@ -249,8 +485,17 @@ class PrMAnalysis:
 
         return 'ok'
 
+    def _rc_correction(self, delta_t, RC=119):
+        '''
+        RC correction estimation
 
-    def sanity_check(self):
+        Args:
+            delta_t (float): rise time
+            RC (float): RC time constant
+        '''
+        return (delta_t / RC) * (1 / (1 - np.exp(-delta_t/RC)))
+
+    def _sanity_check(self):
         '''
         Checks values are sensible
         '''
@@ -280,203 +525,10 @@ class PrMAnalysis:
 
         if self._qa > self._qc:
             return 'qa_lt_qc'
-            return 'qa_lt_qc'
 
         return 'ok'
 
-    def process_error(self, status):
-        '''
-        Base on the error (if any) adds and error code to lifetime
-        '''
-        code = 0
-        if status == 'no_anode':
-            code = -10
-        elif status == 'no_cathode':
-            code = -11
-        elif status == 'cathode_deltat_large':
-            code = -12
-        elif code == 'anode_deltat_large':
-            code = -13
-        elif code == 'qa_lt_qc':
-            code = -14
-        else:
-            code = -99
-
-        if code != 0:
-            self._tau = code
-            self._td = -1
-            self._qa = -1
-            self._qc = -1
-
-
-    def calculate(self):
-        '''
-        Performs all the calculation
-        '''
-
-        self._err = self.pre_process(smooth=True, n=40)
-
-        if self._err != 'ok':
-            return
-
-        self._err = self.estimate_baseline()
-
-        if self._err != 'ok':
-            return
-
-        self._err = self.estimate_deltat()
-
-        if self._err != 'ok':
-            return
-
-        self._err = self.calculate_lifetime()
-
-        if self._err != 'ok':
-            return
-
-        status = self.sanity_check()
-
-        if status != 'ok':
-            self.process_error(status)
-
-    def get_lifetime(self, unit='us'):
-        '''
-        Returns the lifetime in the specified units
-        '''
-
-        if self._tau is None:
-            return -2
-
-        if self._tau < 0:
-            return self._tau
-
-        if unit == 'us':
-            return self._tau
-
-        if unit == 'ms':
-            return self._tau * 1e-3
-
-        print(f'Unit {unit} not supported')
-        return -999
-
-    def get_drifttime(self, unit='us'):
-        '''
-        Returns the drifttime in the specified units
-        '''
-        if self._td is None:
-            return -2
-
-        if self._td < 0:
-            return self._td
-
-        if unit == 'us':
-            return self._td
-
-        if unit == 'ms':
-            return self._td * 1e-3
-
-        print(f'Unit {unit} not supported')
-        return -999
-
-    def get_qa(self, unit='mV'):
-        '''
-        Returns the Qa in the specified units
-        '''
-        if self._qa is None:
-            return -2
-
-        if self._qa < 0:
-            return self._qa
-
-        if unit == 'mV':
-            return self._qa
-
-        print(f'Unit {unit} not supported')
-        return -999
-
-    def get_qc(self, unit='mV'):
-        '''
-        Returns the Qc in the specified units
-        '''
-        if self._qc is None:
-            return -2
-
-        if self._qc < 0:
-            return self._qc
-
-        if unit == 'mV':
-            return self._qc
-
-        print(f'Unit {unit} not supported')
-        return -999
-
-
-    def plot_summary(self, container=None, savename=None):
-        '''
-        Generates a summary plot
-
-        Args:
-            container (dict): data container to add info on plot
-            savename (string): full path to save file
-        '''
-        if self._td is None:
-            return None, None
-
-        if self._td < 0:
-            return None, None
-
-        prop_cycle = plt.rcParams['axes.prop_cycle']
-        _colors = prop_cycle.by_key()['color']
-
-        fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(12, 8), sharex=True)
-        fig.subplots_adjust(hspace=0)
-
-        ax[0].plot(self._raw_wf_x, self._raw_wf_a, label='Anode Raw', color=_colors[0], alpha=0.5,)
-        ax[1].plot(self._raw_wf_x, self._raw_wf_c, label='Cathode Raw', color=_colors[1], alpha=0.5)
-
-        ax[0].plot(self._wf_x, self._wf_a, label='Anode', color=_colors[0])
-        ax[1].plot(self._wf_x, self._wf_c, label='Cathode', color=_colors[1])
-
-
-        ax[0].axhline(self._baseline_a, color=_colors[0],
-                      label=f'Baseline = {self._baseline_a:.1f} ' + r'$\pm$' + f' {self._baseline_rms_a:.1f} mV', linestyle='dashed')
-        ax[1].axhline(self._baseline_c, color=_colors[1],
-                      label=f'Baseline = {self._baseline_c:.1f} ' + r'$\pm$' + f' {self._baseline_rms_c:.1f} mV', linestyle='dashed')
-
-
-        ax[0].axvline(self._time_start_c, color='grey', linestyle='dashed')
-        ax[1].axvline(self._time_start_c, color='grey', linestyle='dashed')
-        ax[0].axvline(self._time_end_a, color='grey', linestyle='dashed')
-        ax[1].axvline(self._time_end_a, color='grey', linestyle='dashed')
-
-        ax[0].axvspan(self._time_start_a, self._time_end_a, alpha=0.5, color=_colors[0])
-        ax[1].axvspan(self._time_start_c, self._time_end_c, alpha=0.5, color=_colors[1])
-
-        ax[0].axhline(self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot')
-        ax[1].axhline(self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot')
-
-        x_plot_range = self._time_end_a * 2
-        ax[0].set_xlim([0, x_plot_range])
-        ax[1].set_xlim([0, x_plot_range])
-
-        y_plot_range = np.abs(self._max_c) * 1.4
-        ax[0].set_ylim([-29.99,        y_plot_range])
-        ax[1].set_ylim([-y_plot_range, 29.99])
-
-        ax[0].set_title(f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
-                        + f'\nQa/Qc: {self._qa/self._qc:.2f}'
-                        + f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$',
-                        loc='left', fontsize=12)
-
-        self.set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.56])
-
-        if savename:
-            plt.savefig(savename)
-        # plt.show()
-
-        return fig, ax
-
-    def set_lifetime_axis(self, ax, title, container=None, draw_txt=True, text_pos=None):
+    def _set_lifetime_axis(self, ax, title, container=None, draw_txt=True, text_pos=None):
         '''
         Customizes the axis
         '''
@@ -496,10 +548,9 @@ class PrMAnalysis:
         ax[0].set_title(title, loc='right', fontsize=18)
 
         if draw_txt and container is not None:
-            self.draw_text_lifetime(ax[0], container, text_pos)
+            self._draw_text_lifetime(ax[0], container, text_pos)
 
-
-    def draw_text_lifetime(self, ax, container, pos=None):
+    def _draw_text_lifetime(self, ax, container, pos=None):
         '''
         Draw info text on plot
         '''
@@ -530,3 +581,5 @@ class PrMAnalysis:
                 verticalalignment='bottom',
                 horizontalalignment='right',
                 bbox=props)
+
+
