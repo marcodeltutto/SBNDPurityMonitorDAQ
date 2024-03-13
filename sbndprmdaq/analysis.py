@@ -714,12 +714,6 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         ax[0].plot(self._wf_x, self._wf_a, label='Anode', color=_colors[0])
         ax[1].plot(self._wf_x, self._wf_c, label='Cathode', color=_colors[1])
 
-        print(
-            self._wf_x,
-            self._baseline_a_pre, self._baseline_a_post,
-            self._qa,
-            self._t_start_a, self._t_rise_a
-        )
         ax[0].plot(
             self._wf_x,
             self._fit_func(
@@ -751,13 +745,6 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         ax[0].axvspan(self._t_start_a, self._t_rise_a, alpha=0.5, color=_colors[0])
         ax[1].axvspan(self._t_start_c, self._t_rise_c, alpha=0.5, color=_colors[1])
 
-        # ax[0].axhline(
-        #     self._max_a, color=_colors[0], label=f'Max = {self._max_a:.1f} mV', linestyle='dashdot'
-        # )
-        # ax[1].axhline(
-        #     self._max_c, color=_colors[1], label=f'Max = {self._max_c:.1f} mV', linestyle='dashdot'
-        # )
-
         x_plot_range = self._t_rise_a * 2
         ax[0].set_xlim([0, x_plot_range])
         ax[1].set_xlim([0, x_plot_range])
@@ -776,7 +763,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
             fontsize=12
         )
 
-        # self._set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.56])
+        self._set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.56])
 
         if savename:
             plt.savefig(savename)
@@ -1008,7 +995,8 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         '''
         Draw info text on plot
         '''
-        date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
+        date = container["date"]
+        # date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
 
         short_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
@@ -1036,4 +1024,310 @@ class PrMAnalysisFitter(PrMAnalysisBase):
                 horizontalalignment='right',
                 bbox=props)
 
+
+class PrMAnalysisFitterDiff(PrMAnalysisFitter):
+    '''
+    A class to perform PrM analysis by fitting the difference of the cathode and anode waveforms.
+    The same as PrMAnalysisFitter with the fitting functions summed
+    '''
+
+    def __init__(
+        self,
+        wf_c, wf_a,
+        samples_per_sec=2e6, config={}, wf_c_hvoff=None, wf_a_hvoff=None, debug=True
+    ):
+        '''
+        Constructor.
+
+        Args:
+            wf_c (list): cathode waveforms
+            wf_a (list): anode waveforms
+            samples_per_sec (int): number of samples per seconds
+            config (dict): configuration
+            wf_c_hvoff (list): HV off cathode waveforms
+            wf_a_hvoff (list): HV on cathode waveforms
+        '''
+        super().__init__(
+            wf_c, wf_a,
+            samples_per_sec=samples_per_sec,
+            config=config,
+            wf_c_hvoff=wf_c_hvoff,
+            wf_a_hvoff=wf_a_hvoff,
+            debug=debug
+        )
+
+        self._raw_wf_diff = self._raw_wf_c - self._raw_wf_a
+        self._wf_diff = None
+
+    def calculate(self):
+        '''
+        Performs all the calculation
+        '''
+        self._err = self._pre_process(self._lowpass_cutoff_freq)
+        if self._err != 'ok':
+            self._process_error(self._err)
+            return
+
+        self._err = self._fit_diff()
+        if self._err != 'ok':
+            self._process_error(self._err)
+            return
+
+        self._err = self._calculate_delta_ts()
+        if self._err != 'ok':
+            self._process_error(self._err)
+            return
+
+        self._err = self._calculate_lifetime()
+        if self._err != 'ok':
+            self._process_error(self._err)
+            return
+
+    def plot_summary(self, container=None, savename=None):
+        '''
+        Generates a summary plot
+
+        Args:
+            container (dict): data container to add info on plot
+            savename (string): full path to save file
+        '''
+        if self._td is None:
+            return None, None
+
+        if self._td < 0:
+            return None, None
+
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        _color = prop_cycle.by_key()['color'][0]
+
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(12, 8), sharex=True)
+        fig.subplots_adjust(hspace=0)
+
+        ax.plot(
+            self._raw_wf_x, self._raw_wf_diff, label='Cathode - Anode Raw', color=_color, alpha=0.5
+        )
+        ax.plot(self._wf_x, self._wf_diff, label='Cathode - Anode', color=_color)
+
+        ax.plot(
+            self._wf_x,
+            self._fit_func(
+                self._wf_x,
+                self._baseline_c_pre, self._baseline_c_post,
+                -self._qc,
+                self._t_start_c, self._t_rise_c,
+                self._baseline_a_pre, self._baseline_a_post,
+                self._qa,
+                self._t_start_a, self._t_rise_a
+            ),
+            label='Cathode - Anode Fit',
+            c='k'
+        )
+
+        ax.axvline(self._t_start_c, color='grey', linestyle='dashed')
+        ax.axvline(self._t_start_c, color='grey', linestyle='dashed')
+        ax.axvline(self._t_rise_a, color='grey', linestyle='dashed')
+        ax.axvline(self._t_rise_a, color='grey', linestyle='dashed')
+
+        ax.axvspan(self._t_start_a, self._t_rise_a, alpha=0.5, color=_color)
+        ax.axvspan(self._t_start_c, self._t_rise_c, alpha=0.5, color=_color)
+
+        x_plot_range = self._t_rise_a * 2
+        ax.set_xlim([0, x_plot_range])
+
+        y_plot_range = np.abs(self._qc) * 1.4
+        ax.set_ylim([-y_plot_range, 29.99])
+
+        ax.set_title(
+            (
+                f'Drift time: {self._td/1e3:.2f} ' + r'$ms$'
+                f'\nQa/Qc: {self._qa/self._qc:.2f}'
+                f'\nLifetime: {self._tau/1e3:.2f} ' + r'$ms$'
+            ),
+            loc='left',
+            fontsize=12
+        )
+
+        self._set_lifetime_axis(ax, self._plot_title, container, text_pos=[0.015, 0.76])
+
+        if savename:
+            plt.savefig(savename)
+        plt.show()
+
+        return fig, ax
+
+    def _pre_process(self, cutoff_freq):
+        '''
+        Applies a low-pass filter to the raw waveform
+
+        Args:
+            cutoff_freq (float): cut-off frequency for low-pass filter
+        '''
+        nyquist_freq = self._samples_per_sec / 2
+        crit_freq = cutoff_freq / nyquist_freq # normalise the cut-off
+        b, a = scipy.signal.butter(3, crit_freq)
+        self._wf_diff = scipy.signal.filtfilt(b, a, self._raw_wf_diff)
+        # Still useful to have these for making initial fitting guesses
+        self._wf_c = scipy.signal.filtfilt(b, a, self._raw_wf_c)
+        self._wf_a = scipy.signal.filtfilt(b, a, self._raw_wf_a)
+
+        return 'ok'
+
+    def _fit_func(
+        self,
+        t,
+        baseline_c_pre, baseline_c_post, V_0_c, t_start_c, t_rise_c,
+        baseline_a_pre, baseline_a_post, V_0_a, t_start_a, t_rise_a
+    ):
+        '''
+        Fit function for cathode - anode PrM waveforms.
+        Multiple baselines are useful since baseline can sometimes change after discharge.
+
+        Args:
+            t (float): time variable
+            baseline_c_pre (float): parameter
+            baseline_c_post (float): parameter
+            V_0_c (float): parameter
+            t_start_c (float): parameter
+            t_rise_c (float): parameter
+            baseline_a_pre (float): parameter
+            baseline_a_post (float): parameter
+            V_0_a (float): parameter
+            t_start_a (float): parameter
+            t_rise_a (float): parameter
+        '''
+        return np.piecewise(
+            t,
+            [
+                t < t_start_c, # before electrons feed
+                (t >= t_start_c) & (t < t_rise_c), # drifting to cathode grid
+                (t >= t_rise_c) & (t < t_start_a), # drifting to anode grid
+                (t >= t_start_a) & (t < t_rise_a), # drifting to anode
+                t >= t_rise_a # after electrons collected at anode
+            ],
+            [
+                lambda t: (
+                    baseline_c_pre - baseline_a_pre
+                ),
+                lambda t: (
+                    V_0_c * (1 - np.exp(-(t - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC) + # charging at cathode
+                    baseline_c_pre - baseline_a_pre
+                ),
+                lambda t: (
+                    (
+                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) + # V_max
+                        (baseline_c_pre - baseline_c_post) # Smooth baseline change
+                    ) *
+                    np.exp(-(t - t_rise_c) / self._RC) + # discharging at cathode
+                    baseline_c_post - baseline_a_pre
+                ),
+                lambda t: (
+                    (
+                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) +
+                        (baseline_c_pre - baseline_c_post)
+                    ) *
+                    np.exp(-(t - t_rise_c) / self._RC) - # discharging at cathode
+                    V_0_a * (1 - np.exp(-(t - t_start_a) / self._RC)) / ((t_rise_a - t_start_a) / self._RC) + # charging at anode
+                    baseline_c_post - baseline_a_pre
+                ),
+                lambda t: (
+                    (
+                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) +
+                        (baseline_c_pre - baseline_c_post)
+                    ) *
+                    np.exp(-(t - t_rise_c) / self._RC) - # discharging at cathode
+                    (
+                        (V_0_a * (1 - np.exp(-(t_rise_a - t_start_a) / self._RC)) / ((t_rise_a - t_start_a) / self._RC)) + # V_max
+                        (baseline_a_pre - baseline_a_post) # smooth baseline change
+                    ) *
+                    np.exp(-(t - t_rise_a) / self._RC) + # discharging at anode
+                    baseline_c_post - baseline_a_post
+                )
+            ]
+        )
+
+    def _fit_diff(self):
+        '''
+        Apply fitting function to cathode - anode waveform.
+        '''
+        anode_max_tick = np.argmax(self._wf_a)
+        p_guess = [
+            np.mean(self._wf_c[self._baseline_range_c[0]:self._baseline_range_c[1]]), # baseline_c_pre
+            np.mean(self._wf_c[self._baseline_range_c[0]:self._baseline_range_c[1]]), # baseline_c_post
+            np.min(self._wf_c), # V_0_c
+            self._wf_x[np.argmin(self._wf_c) - 100], # t_start_c
+            self._wf_x[np.argmin(self._wf_c)], # t_rise_c
+            np.mean(self._wf_a[self._baseline_range_a[0]:self._baseline_range_a[1]]), # baseline_c_pre
+            np.mean(self._wf_a[self._baseline_range_a[0]:self._baseline_range_a[1]]), # baseline_c_post
+            np.max(self._wf_a), # V_0_c
+            self._wf_x[anode_max_tick - 100], # t_start_c
+            self._wf_x[anode_max_tick] # t_rise_c
+        ]
+
+        try:
+            popt, pcov = scipy.optimize.curve_fit(
+                self._fit_func, self._wf_x, self._wf_diff,
+                p0=p_guess,
+                bounds=(
+
+                    [-np.inf, -np.inf, -np.inf, 0.0, 0.0, -np.inf, -np.inf, 0.0, 0.0, 0.0],
+                    [np.inf, np.inf, 0.0, max(self._wf_x), max(self._wf_x), np.inf, np.inf, np.inf, max(self._wf_x), max(self._wf_x)]
+                )
+            )
+        except Exception as e:
+            print(e)
+            return 'fit_failed'
+
+        (
+            self._baseline_c_pre,
+            self._baseline_c_post,
+            self._qc,
+            self._t_start_c,
+            self._t_rise_c,
+            self._baseline_a_pre,
+            self._baseline_a_post,
+            self._qa,
+            self._t_start_a,
+            self._t_rise_a
+        ) = popt
+        self._qc = -self._qc
+        (
+            _,
+            _,
+            self._qc_err,
+            self._t_start_c_err,
+            self._t_rise_c_err,
+            _,
+            _,
+            self._qa_err,
+            self._t_start_a_err,
+            self._t_rise_a_err
+        ) = np.sqrt(np.diag(pcov))
+
+        if self._debug:
+            print(np.column_stack([
+                [
+                    'baseline_c_pre', 'baseline_c_post', 'qc', 't_start_c', 't_rise_c',
+                    'baseline_a_pre', 'baseline_a_post', 'qa', 't_start_a', 't_rise_a'
+                ],
+                popt,
+                np.sqrt(np.diag(pcov))
+            ]))
+
+        return 'ok'
+
+    def _set_lifetime_axis(self, ax, title, container=None, draw_txt=True, text_pos=None):
+        '''
+        Customizes the axis
+        '''
+        ax.set_ylabel('Waveform [mV]',fontsize=18)
+        ax.set_xlabel('Time [us]',fontsize=18)
+        ax.tick_params(labelsize=15)
+        ax.grid(True)
+
+        ax.legend(fontsize=12, loc=1)
+
+        ax.set_title(title, loc='right', fontsize=18)
+
+        if draw_txt and container is not None:
+            self._draw_text_lifetime(ax, container, text_pos)
 
