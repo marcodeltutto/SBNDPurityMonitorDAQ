@@ -120,6 +120,7 @@ summary_plot:
 analyze: True
 analysis_config:
   1:
+    'ana_type': 'estimate' # 'estimate', 'fit', 'fit_difference'
     'deltat_start_c': 310
     'deltat_start_a': 310
     'trigger_sample': 300
@@ -129,7 +130,10 @@ analysis_config:
     'baseline_range_a': [310,500]
     'title': 'SBND PrM 1 - Internal - Long'
     'plot_range': [0, 1000]
+    'lowpass_cutoff_freq': 100000 # only for fit ana types
+    'anode_fit_start_offset': 500 # only for git ana types
   2:
+    'ana_type': 'estimate'
     'deltat_start_c': 310
     'deltat_start_a': 310
     'trigger_sample': 300
@@ -139,7 +143,10 @@ analysis_config:
     'baseline_range_a': [310,500]
     'title': 'SBND PrM 2 - Internal - Short'
     'plot_range': [0, 1000]
+    'lowpass_cutoff_freq': 100000
+    'anode_fit_start_offset': 500
   3:
+    'ana_type': 'estimate'
     'deltat_start_c': 450
     'deltat_start_a': 900
     'trigger_sample': 512
@@ -149,3 +156,5 @@ analysis_config:
     'baseline_range_a': [2000, 2400]
     'title': 'SBND PrM 3 - Inline - Long'
     'plot_range': [0, 3500]
+    'lowpass_cutoff_freq': 100000
+    'anode_fit_start_offset': 500
