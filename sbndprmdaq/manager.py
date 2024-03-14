@@ -81,7 +81,8 @@ class PrMManager():
         self._prm_id_bounded = {}
         for bounded_id, main_id in config['bound_prms'].items():
             if self._window is not None:
-                self._prm_id_bounded[main_id] = bounded_id
+                self._window.disable_controls(bounded_id)
+            self._prm_id_bounded[main_id] = bounded_id
 
 
         self._data_storage = DataStorage(config)
