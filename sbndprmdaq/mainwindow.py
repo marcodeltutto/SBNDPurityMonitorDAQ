@@ -657,6 +657,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 minutes, seconds = divmod(rem_time, 60)
                 control._start_stop_btn.setText(f"{minutes:.0f}:{seconds:.0f}")
 
+            # Check summary plot timer
+            rem_time = self._prm_manager.remaining_time_to_elog()
+            if rem_time is not None:
+                rem_time = rem_time / 1e3 # seconds
+                minutes, seconds = divmod(rem_time, 60)
+                hours, minutes = divmod(minutes, 60)
+                # print(f"{hours:.0f}:{minutes:.0f}:{seconds:.0f}")
+                self._ecl_post_label.setText(f"{hours:.0f}:{minutes:.0f}:{seconds:.0f}")
+
 
             data = self._prm_manager.get_data(control.get_id())
             # print('From mainwindow', data)
@@ -725,12 +734,6 @@ class MainWindow(QtWidgets.QMainWindow):
             qa, qc, tau = self._prm_manager.get_latest_lifetime(control.get_id())
 
             self._latest_data[control.get_id()].set_latest_data(qa, qc, tau, data['time'])
-
-            # Check summary plot timer
-            rem_time = self._prm_manager.remaining_time_to_elog() / 1e3 # seconds
-            minutes, seconds = divmod(rem_time, 60)
-            hours, minutes = divmod(rem_time, 60)
-            self._ecl_post_label.setText(f"{hours:.0f}:{minutes:.0f}:{seconds:.0f}")
 
 
     def _check_external_status(self):

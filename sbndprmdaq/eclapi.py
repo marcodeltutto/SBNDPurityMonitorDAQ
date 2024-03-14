@@ -83,15 +83,17 @@ class ECL:
             'X-Signature': self.signature(arguments)
         }
 
-        print(headers)
+        # print(headers)
 
-        print(url + arguments)
+        # print(url + arguments)
 
         r = requests.get(url + arguments, headers=headers, timeout=self._to)
 
-        print(r.url)
+        # print('URL:', r.url)
 
-        print(r.text)
+        # print('TEXT:', r.text)
+
+        return r.text
 
     def get_entry(self, entry_id=2968):
         '''
@@ -263,24 +265,39 @@ if __name__ == "__main__":
 
     print('Testing')
 
-    PASSWD = 'purityND!'
+    with open("/home/nfs/sbndprm/.ecl_pwd.txt", 'r', encoding="utf-8") as pwd_file:
+        PASSWD = pwd_file.readlines()[0].strip()
+
     ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=PASSWD)
 
     # ecl.get_entry()
-    # ecl.search()
 
-    # entry_ = ECLEntry(category='Purity Monitors', text='Example text')
-    # entry_.set_author('sbndprm')
-    # entry_.add_image(name='prm', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png')
-    # print(entry_.show())
+    text = ecl.search(limit=20)
+    print('Entry date:', text.split('timestamp="')[1].split('"')[0])
 
-    text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>Lifetime measured by purity monitor 2 (internal, short).</font>'
-    entry_ = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
-    entry_.add_image(name=f'lifetime_prm_id_2', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png', caption='Lifetime, PrM 2')
+    xml = ET.fromstring(text)
+    print(xml.findall('./entry')[0].attrib['timestamp'])
+    print(xml.findall('./entry')[1].attrib['timestamp'])
+
+
+    entries = xml.findall('./entry')
+
+    import datetime
+
+    for entry in entries:
+        text = entry.find('./text').text
+        if 'Purity Monitors Automated Plots' not in text:
+            continue
+        timestr = entry.attrib['timestamp']
+        time = datetime.datetime.strptime(timestr, "%m/%d/%Y %H:%M:%S")
+        print('Time:', time)
+
+
+
+    # text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>Lifetime measured by purity monitor 2 (internal, short).</font>'
+    # entry_ = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
+    # entry_.add_image(name=f'lifetime_prm_id_2', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png', caption='Lifetime, PrM 2')
 
     # print(entry_.show().strip()[1:])
 
-            # if self._config['post_to_ecl']:
-            #     ecl.post(entry, do_post=True)
-
-    ecl.post(entry_)
+    # ecl.post(entry_)
