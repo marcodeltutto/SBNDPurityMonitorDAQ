@@ -84,12 +84,12 @@ class PrMAnalysisBase(ABC):
             new_cathode = []
             new_anode = []
 
-            for i in range(len(wf_c)):
-                if all(wf_c[i][600:] * self._volt_to_mv < 20) and all(wf_c[i][600:] * self._volt_to_mv > -20):
-                    new_cathode.append(wf_c[i])
+            for i, cathode, anode in enumerate(zip(wf_c, wf_a)):
+                if all(cathode[600:] * self._volt_to_mv < 20) and all(cathode[600:] * self._volt_to_mv > -20):
+                    new_cathode.append(cathode)
 
-                if all(wf_a[i][600:] * self._volt_to_mv < 20) and all(wf_a[i][600:] * self._volt_to_mv > -20):
-                    new_anode.append(wf_a[i])
+                if all(anode[600:] * self._volt_to_mv < 20) and all(anode[600:] * self._volt_to_mv > -20):
+                    new_anode.append(anode)
 
             if self._debug:  print(f'Using only {len(new_cathode)} of the {len(wf_c)} cathode waveforms.')
             if self._debug:  print(f'Using only {len(new_anode)} of the {len(wf_a)} anode waveforms.')
