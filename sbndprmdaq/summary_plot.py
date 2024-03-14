@@ -5,11 +5,14 @@ Contains class to make summary purity plots
 import logging
 import time
 import datetime
+import xml.etree.ElementTree as ET
+
 import pandas as pd
 from PyQt5.QtCore import QTimer
 import matplotlib.pyplot as plt
 
 from sbndprmdaq.eclapi import ECL, ECLEntry
+
 
 class SummaryPlot:
     '''
@@ -27,6 +30,7 @@ class SummaryPlot:
         '''
 
         self._timer = None
+        # self._timer_single = None
 
         self._dataframe_filename = None
         self._plot_savedir = None
@@ -39,10 +43,18 @@ class SummaryPlot:
 
         self._current_plots = {}
 
+        self._n_runs = {}
+
         if self._config['make_summary_plots']:
 
             seconds_to_start = self.seconds_until_hour(self._config['start_hour'])
-            QTimer.singleShot(seconds_to_start * 1000, self.start_periodic_plotting)
+            # seconds_to_start = 20
+            # self._timer_single = QTimer.singleShot(seconds_to_start * 1000, self.start_periodic_plotting)
+
+            self._timer = QTimer()
+            self._timer.setSingleShot(True)
+            self._timer.timeout.connect(self.start_periodic_plotting)
+            self._timer.start(seconds_to_start * 1000)
 
             self._logger.info(f'The first summary plot will be made in {seconds_to_start/3600:.2f} hours.')
 
@@ -99,9 +111,10 @@ class SummaryPlot:
 
         for prm_id in self._config['prms']:
             self._make_summary_plot(prm_id, df)
+            
+        self._number_of_runs(df, prm_ids=[1, 2, 3])
 
-        if self._config['post_to_ecl']:
-            self._send_to_ecl()
+        self._send_to_ecl()
 
 
     def _make_summary_plot(self, prm_id, df):
@@ -123,6 +136,14 @@ class SummaryPlot:
 
         df = df.query(f'prm_id == {prm_id}')
 
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+
+        self._current_plots[prm_id] = []
+
+        #
+        # Lifetime Plot
+        #
+
         _, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
 
         ax.plot(df['date'], df['lifetime'], label=label, linestyle='None', marker="o", markersize=5)
@@ -137,18 +158,91 @@ class SummaryPlot:
 
         ax.set_ylim([0.050, 0.220])
 
-        plt.xticks(rotation=70)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
         plt.tight_layout()
 
         if self._plot_savedir is not None:
-            timestr = time.strftime("%Y%m%d-%H%M%S")
             filename = self._plot_savedir + f'prm{prm_id}_lifetime_{timestr}.png'
             plt.savefig(filename)
             self._logger.info(f'Plot saved to {filename}.')
-            self._current_plots = {prm_id: filename}
+            self._current_plots[prm_id].append(filename)
+
+        #
+        # Qa and Qc Plot
+        #
+
+        fig, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
+
+        ax[0].plot(df['date'], df['qc'], label=label, linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
+        ax[1].plot(df['date'], df['qa'], label=label, linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
+
+        for a in ax:
+            a.set_xlabel('Time',fontsize=16)
+            a.tick_params(labelsize=12)
+            a.grid(True)
+            a.set_title('Preliminary', loc='right', color='gray')
+            a.legend(fontsize=12, loc=3)
+            plt.setp(a.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        ax[0].set_ylabel(r'$Q_C$ [$mV$]',fontsize=16)
+        ax[0].set_ylim([15, 30])
+
+        ax[1].set_ylabel(r'$Q_A$ [$mV$]',fontsize=16)
+        ax[1].set_ylim([0, 10])
+
+
+        if self._plot_savedir is not None:
+            filename = self._plot_savedir + f'prm{prm_id}_qc_qa_{timestr}.png'
+            plt.savefig(filename)
+            self._logger.info(f'Plot saved to {filename}.')
+            self._current_plots[prm_id].append(filename)
 
         # plt.show()
+
+
+    def _number_of_runs(self, df, prm_ids=[1, 2, 3]):
+
+        password = self._read_ecl_password()
+
+        ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
+
+        # Retrieve the last 20 entries
+        text = ecl.search(limit=20)
+
+        # Convert to XML
+        xml = ET.fromstring(text)
+
+        # Find the entry element in the XML tree
+        entries = xml.findall('./entry')
+
+        lasttime = None
+
+        # Loop over entries (they are in decreasing order in time)
+        for entry in entries:
+            text = entry.find('./text').text
+            
+            if 'Purity Monitors Automated Plots' in text:
+            
+                timestr = entry.attrib['timestamp']
+                lasttime = datetime.datetime.strptime(timestr, "%m/%d/%Y %H:%M:%S")
+                break
+
+        if lasttime is None:
+            return
+
+        self._logger.info(f'Found previous eLog automated entry from {lasttime}')
+
+        for prm_id in prm_ids:
+
+            df_sel = df.query(f'prm_id == {prm_id}')
+
+            mask = df_sel['date'] > lasttime
+           
+            self._n_runs[prm_id] = len(df_sel[mask])
+            
+            self._logger.info(f'Number of runs for PrM {prm_id} since last automated eLog entry {self._n_runs[prm_id]}')
+
 
 
     def _send_to_ecl(self):
@@ -160,11 +254,26 @@ class SummaryPlot:
             ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
             text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b> <BR> {self._config["ecl_text"]}</font>'
+            
+            text = '<font face="arial"> '
+            text += '<b>Purity Monitors Automated Plots</b> '
+            text += '<BR> '
+            text += f'{self._config["ecl_text"]} '
+            text += '<BR> '
+            text += 'Number of runs since last automated entry: '
+            text += '<BR> '
+            text += f'- PrM 1 (internal, long): {self._n_runs[1]}'
+            text += '<BR> '
+            text += f'- PrM 2 (internal, short): {self._n_runs[2]}'
+            text += '<BR> '
+            text += f'- PrM 3 (inline, long): {self._n_runs[3]}'
+            text += '</font>'
 
             entry = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
 
-            for prm_id, filename in self._current_plots.items():
-                entry.add_image(name=f'lifetime_prm_id_{prm_id}', filename=filename, caption='Lifetime, PrM 2')
+            for prm_id, filenames in self._current_plots.items():
+                for filename in filenames:
+                    entry.add_image(name=f'prmid_{prm_id}', filename=filename)
 
             print(entry.show())
 
@@ -205,6 +314,9 @@ class SummaryPlot:
         '''
         Returns the remaining time on the timer to post summary plot on elog
         '''
+        if self._timer is None:
+            return None
+
         if self._timer.isActive():
             return self._timer.remainingTime()
 
