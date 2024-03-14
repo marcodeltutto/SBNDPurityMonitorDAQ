@@ -274,9 +274,11 @@ if __name__ == "__main__":
     # entry_.add_image(name='prm', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png')
     # print(entry_.show())
 
-    text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>Lifetime measured by purity monitor 2 (internal, short).</font>'
-    entry_ = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
-    entry_.add_image(name=f'lifetime_prm_id_2', filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png', caption='Lifetime, PrM 2')
+    text_ = f'<font face="arial"> <b>Purity Monitors Automated Plots</b><BR>Lifetime measured by purity monitor 2 (internal, short).</font>'
+    entry_ = ECLEntry(category='Purity Monitors', text=text_, preformatted=True)
+    entry_.add_image(name=f'lifetime_prm_id_2',
+                     filename='/home/nfs/sbndprm/purity_monitor_data/prm2_lifetime_20240306-145959.png',
+                     caption='Lifetime, PrM 2')
 
     # print(entry_.show().strip()[1:])
 
