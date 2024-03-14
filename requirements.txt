@@ -12,4 +12,4 @@ rich
 pyepics
 matplotlib
 psycopg2
-scipy==1.12.0
+scipy
