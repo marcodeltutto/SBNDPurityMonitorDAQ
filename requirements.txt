@@ -12,3 +12,5 @@ rich
 pyepics
 matplotlib
 psycopg2
+scipy
+pandas

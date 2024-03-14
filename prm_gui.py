@@ -31,7 +31,7 @@ parser.add_argument('--logfile',
                     help='File name where logs will be saved.')
 
 args = parser.parse_args()
-
+print(args)
 
 #
 # Start the logger
@@ -48,12 +48,20 @@ settings = os.path.join(os.path.dirname(__file__), 'settings.yaml')
 
 with open(settings, encoding="utf-8") as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
+
 if args.datafiles:
     config["data_files_path"] = args.datafiles
+
+if args.mock:
+    config['check_pmt_hv'] = False
+    config['check_lar_level'] = False
+    config['data_storage'] = False
+    config['populate_dataframe'] = False
+    config['summary_plot']['post_to_ecl'] = False
+
 print('Config:', yaml.dump(config), sep='\n')
 
 # logger.info(yaml.dump(config))
-
 
 #
 # Check Hertbeat
@@ -89,9 +97,6 @@ window.show()
 # Construct the manager
 #
 if args.mock:
-    config['check_pmt_hv'] = False
-    config['check_lar_level'] = False
-    config['data_storage'] = False
     from sbndprmdaq.mock_manager import MockPrMManager
     manager = MockPrMManager(config, window)
 else:

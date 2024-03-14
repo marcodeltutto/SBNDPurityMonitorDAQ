@@ -11,7 +11,8 @@ import epics
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
-from sbndprmdaq.analysis import PrMAnalysis
+from sbndprmdaq.analysis import PrMAnalysisEstimate, PrMAnalysisFitter, PrMAnalysisFitterDiff
+from sbndprmdaq.summary_plot import SummaryPlot
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
 from sbndprmdaq.high_voltage.hv_control_mpod import HVControlMPOD
@@ -45,6 +46,7 @@ class PrMManager():
         self._meas = {}
         self._time_interval = {}
         self._timer = {}
+        self._inhibit_run = {}
 
         self._data_files_path = config['data_files_path']
         self._save_as_npz = config['save_as_npz']
@@ -54,10 +56,11 @@ class PrMManager():
             self._data[prm_id] = None
             self._is_running[prm_id] = False
             self._run_numbers[prm_id] = None
-            self._repetitions[prm_id] = 1 if prm_id == 3 else 2
+            self._repetitions[prm_id] = 2 # 1 if prm_id == 3 else 2
             self._take_hvoff_run[prm_id] = True
             self._mode[prm_id] = 'manual'
             self._meas[prm_id] = None
+            self._inhibit_run[prm_id] = False
 
             # Timer for automatic runs
             self._timer[prm_id] = QTimer()
@@ -84,10 +87,16 @@ class PrMManager():
             self._prm_id_bounded[main_id] = bounded_id
 
 
-        self._do_store = config['data_storage']
-        self._data_storage = DataStorage(config) if self._do_store else None
+        self._data_storage = DataStorage(config)
 
         self._do_analyze = config['analyze']
+
+        self._plotting_timer = None
+
+        self._summary_plot = SummaryPlot(config)
+        if config['populate_dataframe']:
+            self._summary_plot.set_dataframe_path(self._data_storage.get_dataframe_path())
+            self._summary_plot.set_plot_savedir(self._data_files_path)
 
         self._comment = 'No comment'
 
@@ -668,18 +677,31 @@ class PrMManager():
                 #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
                 self._logger.info(f'Analyzing data for PrM {prm_id}.')
                 ana_config = self._config['analysis_config'][prm_id]
-                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                if ana_config['ana_type'] == 'estimate':
+                    ana_cls = PrMAnalysisEstimate
+                elif ana_config['ana_type'] == 'fit':
+                    ana_cls = PrMAnalysisFitter
+                elif ana_config['ana_type'] == 'fit_difference':
+                    ana_cls = PrMAnalysisFitterDiff
+                else:
+                    raise ValueError(f'Invalid ana_type {ana_config["ana_type"]}')
+                self._prmana = ana_cls(out_dict['ch_A'], out_dict['ch_B'],
                                            config=ana_config,
                                            wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
                 self._prmana.calculate()
                 file_name = os.path.join(self._data_files_path, run_name + '_ana.png')
                 self._prmana.plot_summary(container=out_dict, savename=file_name)
                 self._meas[prm_id] = {
+                    'date': out_dict['date'],
+                    'v_c': out_dict['hv_cathode'],
+                    'v_ag': out_dict['hv_anodegrid'],
+                    'v_a': out_dict['hv_anode'],
                     'td': self._prmana.get_drifttime(unit='ms'),
                     'qc': self._prmana.get_qc(unit='mV'),
                     'qa': self._prmana.get_qa(unit='mV'),
                     'tau': self._prmana.get_lifetime(unit='ms')
                 }
+                print('--->', self._meas[prm_id])
                 saved_files.append(file_name)
             except Exception as err:
                 self._logger.warning('PrMAnalysis failed:')
@@ -688,10 +710,13 @@ class PrMManager():
 
 
         # Copy data to sbndgpvm
-        if self._do_store:
+        if self._config['data_storage']:
             self._logger.info(f'Storing data for PrM {prm_id}.')
             self._data_storage.store_files(saved_files)
 
+        if self._config['populate_dataframe']:
+            self._logger.info(f'Populating dataframe for PrM {prm_id}.')
+            self._data_storage.update_dataframe(self._meas[prm_id], prm_id)
 
         self._logger.info(f'Data saved for PrM {prm_id}.')
 
@@ -719,6 +744,7 @@ class PrMManager():
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_current', self._epics_data[item]['current']))
             res.append(epics.caput(f'sbnd_prm_{prm}_hv/{item}_temperature', self._epics_data[item]['temperature']))
 
+        print('--->prm id ',prm_id, '->', self._meas[prm_id])
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/drift_time', self._meas[prm_id]['td']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/lifetime', self._meas[prm_id]['tau']))
         res.append(epics.caput(f'sbnd_prm_{prm}_signal/QA', self._meas[prm_id]['qa']))
@@ -749,23 +775,6 @@ class PrMManager():
         return self._is_running[prm_id]
 
 
-    # def start_prm(self, prm_id=1):
-    #     '''
-    #     Starts prm_id and also all the other PrMs
-    #     bounded to it.
-
-    #     Args:
-    #         prm_id (int): The purity monitor ID.
-    #     '''
-    #     prm_ids = [prm_id]
-
-    #     if prm_id in self._prm_id_bounded:
-    #         prm_ids.append(self._prm_id_bounded[prm_id])
-
-    #     for pm_id in prm_ids:
-    #         self.start_single_prm(pm_id)
-
-
     def start_prm(self, prm_id=1):
         '''
         Starts the thread for running prm_id.
@@ -773,12 +782,15 @@ class PrMManager():
         Args:
             prm_id (int): The purity monitor ID.
         '''
-        self._is_running[prm_id] = True
-        print(f'start_prm {prm_id}')
+        print(f'Starting PrM {prm_id}')
+
+        if self._inhibit_run[prm_id]:
+            self._logger.info(f'Run for PrM {prm_id} is inhibited.')
+            return
 
         if self._window is not None:
             # Start a thread where we let the digitizer run
-            print(f'Calling start thread {prm_id}')
+            print(f'Starting thread for {prm_id}')
             self.start_thread(prm_id)
         else:
             self.capture_data(prm_id)
@@ -813,6 +825,16 @@ class PrMManager():
         '''
         self._hv_control.hv_off(prm_id)
         self._hv_on = False
+
+    def inhibit_run(self, prm_id, do_inhibit=True):
+        '''
+        Inhibits a certain PrM from running
+
+        Args:
+            prm_id (int): The purity monitor ID.
+            do_inhibit (bool): If True, it inhibits
+        '''
+        self._inhibit_run[prm_id] = do_inhibit
 
 
     def set_mode(self, prm_id, mode):
@@ -863,6 +885,13 @@ class PrMManager():
             return self._timer[prm_id].remainingTime()
 
         return 0
+
+
+    def remaining_time_to_elog(self):
+        '''
+        Returns the remaining time on the timer to post summary plot on elog
+        '''
+        return self._summary_plot.remaining_time()
 
 
     def take_hvoff_run(self, prm_id, do_take):

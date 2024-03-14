@@ -6,10 +6,11 @@ import datetime
 
 import epics
 import psycopg2
+import numpy as np
 
-def pmt_hv_on():
+def pmt_hv_pw_on():
     '''
-    Returns False if ALL PMT HV channels are off
+    Returns False if ALL PMT channels are off
     '''
     #pylint: disable=line-too-long,invalid-name
 
@@ -22,6 +23,24 @@ def pmt_hv_on():
     return any(satuses)
 
 
+def pmt_hv_on():
+    '''
+    Returns False if ALL PMT HV are below 10 volts
+    '''
+    #pylint: disable=line-too-long,invalid-name
+
+    pvs = ['sbnd_pmt_hv_00_000/VMon', 'sbnd_pmt_hv_00_001/VMon', 'sbnd_pmt_hv_00_002/VMon', 'sbnd_pmt_hv_00_003/VMon', 'sbnd_pmt_hv_00_004/VMon', 'sbnd_pmt_hv_00_005/VMon', 'sbnd_pmt_hv_00_006/VMon', 'sbnd_pmt_hv_00_007/VMon', 'sbnd_pmt_hv_00_008/VMon', 'sbnd_pmt_hv_00_009/VMon', 'sbnd_pmt_hv_00_010/VMon', 'sbnd_pmt_hv_00_011/VMon', 'sbnd_pmt_hv_00_012/VMon', 'sbnd_pmt_hv_00_013/VMon', 'sbnd_pmt_hv_00_014/VMon', 'sbnd_pmt_hv_00_015/VMon', 'sbnd_pmt_hv_00_016/VMon', 'sbnd_pmt_hv_00_017/VMon', 'sbnd_pmt_hv_00_018/VMon', 'sbnd_pmt_hv_00_019/VMon', 'sbnd_pmt_hv_00_020/VMon', 'sbnd_pmt_hv_00_021/VMon', 'sbnd_pmt_hv_00_022/VMon', 'sbnd_pmt_hv_00_023/VMon', 'sbnd_pmt_hv_00_024/VMon', 'sbnd_pmt_hv_00_025/VMon', 'sbnd_pmt_hv_00_026/VMon', 'sbnd_pmt_hv_00_027/VMon', 'sbnd_pmt_hv_00_028/VMon', 'sbnd_pmt_hv_00_029/VMon', 'sbnd_pmt_hv_00_030/VMon', 'sbnd_pmt_hv_00_031/VMon', 'sbnd_pmt_hv_00_032/VMon', 'sbnd_pmt_hv_00_033/VMon', 'sbnd_pmt_hv_00_034/VMon', 'sbnd_pmt_hv_00_035/VMon', 'sbnd_pmt_hv_00_036/VMon', 'sbnd_pmt_hv_00_037/VMon', 'sbnd_pmt_hv_00_038/VMon', 'sbnd_pmt_hv_00_039/VMon', 'sbnd_pmt_hv_00_040/VMon', 'sbnd_pmt_hv_00_041/VMon', 'sbnd_pmt_hv_00_042/VMon', 'sbnd_pmt_hv_00_043/VMon', 'sbnd_pmt_hv_00_044/VMon', 'sbnd_pmt_hv_00_045/VMon', 'sbnd_pmt_hv_00_046/VMon', 'sbnd_pmt_hv_00_047/VMon', 'sbnd_pmt_hv_02_000/VMon', 'sbnd_pmt_hv_02_001/VMon', 'sbnd_pmt_hv_02_002/VMon', 'sbnd_pmt_hv_02_003/VMon', 'sbnd_pmt_hv_02_004/VMon', 'sbnd_pmt_hv_02_005/VMon', 'sbnd_pmt_hv_02_006/VMon', 'sbnd_pmt_hv_02_007/VMon', 'sbnd_pmt_hv_02_008/VMon', 'sbnd_pmt_hv_02_009/VMon', 'sbnd_pmt_hv_02_010/VMon', 'sbnd_pmt_hv_02_011/VMon', 'sbnd_pmt_hv_02_012/VMon', 'sbnd_pmt_hv_02_013/VMon', 'sbnd_pmt_hv_02_014/VMon', 'sbnd_pmt_hv_02_015/VMon', 'sbnd_pmt_hv_02_016/VMon', 'sbnd_pmt_hv_02_017/VMon', 'sbnd_pmt_hv_02_018/VMon', 'sbnd_pmt_hv_02_019/VMon', 'sbnd_pmt_hv_02_020/VMon', 'sbnd_pmt_hv_02_021/VMon', 'sbnd_pmt_hv_02_022/VMon', 'sbnd_pmt_hv_02_023/VMon', 'sbnd_pmt_hv_02_024/VMon', 'sbnd_pmt_hv_02_025/VMon', 'sbnd_pmt_hv_02_026/VMon', 'sbnd_pmt_hv_02_027/VMon', 'sbnd_pmt_hv_02_028/VMon', 'sbnd_pmt_hv_02_029/VMon', 'sbnd_pmt_hv_02_030/VMon', 'sbnd_pmt_hv_02_031/VMon', 'sbnd_pmt_hv_02_032/VMon', 'sbnd_pmt_hv_02_033/VMon', 'sbnd_pmt_hv_02_034/VMon', 'sbnd_pmt_hv_02_035/VMon', 'sbnd_pmt_hv_02_036/VMon', 'sbnd_pmt_hv_02_037/VMon', 'sbnd_pmt_hv_02_038/VMon', 'sbnd_pmt_hv_02_039/VMon', 'sbnd_pmt_hv_02_040/VMon', 'sbnd_pmt_hv_02_041/VMon', 'sbnd_pmt_hv_02_042/VMon', 'sbnd_pmt_hv_02_043/VMon', 'sbnd_pmt_hv_02_044/VMon', 'sbnd_pmt_hv_02_045/VMon', 'sbnd_pmt_hv_02_046/VMon', 'sbnd_pmt_hv_02_047/VMon', 'sbnd_pmt_hv_04_000/VMon', 'sbnd_pmt_hv_04_001/VMon', 'sbnd_pmt_hv_04_002/VMon', 'sbnd_pmt_hv_04_003/VMon', 'sbnd_pmt_hv_04_004/VMon', 'sbnd_pmt_hv_04_005/VMon', 'sbnd_pmt_hv_04_006/VMon', 'sbnd_pmt_hv_04_007/VMon', 'sbnd_pmt_hv_04_008/VMon', 'sbnd_pmt_hv_04_009/VMon', 'sbnd_pmt_hv_04_010/VMon', 'sbnd_pmt_hv_04_011/VMon', 'sbnd_pmt_hv_04_012/VMon', 'sbnd_pmt_hv_04_013/VMon', 'sbnd_pmt_hv_04_014/VMon', 'sbnd_pmt_hv_04_015/VMon', 'sbnd_pmt_hv_04_016/VMon', 'sbnd_pmt_hv_04_017/VMon', 'sbnd_pmt_hv_04_018/VMon', 'sbnd_pmt_hv_04_019/VMon', 'sbnd_pmt_hv_04_020/VMon', 'sbnd_pmt_hv_04_021/VMon', 'sbnd_pmt_hv_04_022/VMon', 'sbnd_pmt_hv_04_023/VMon', 'sbnd_pmt_hv_04_024/VMon', 'sbnd_pmt_hv_04_025/VMon', 'sbnd_pmt_hv_04_026/VMon', 'sbnd_pmt_hv_04_027/VMon', 'sbnd_pmt_hv_04_028/VMon', 'sbnd_pmt_hv_04_029/VMon', 'sbnd_pmt_hv_04_030/VMon', 'sbnd_pmt_hv_04_031/VMon', 'sbnd_pmt_hv_04_032/VMon', 'sbnd_pmt_hv_04_033/VMon', 'sbnd_pmt_hv_04_034/VMon', 'sbnd_pmt_hv_04_035/VMon', 'sbnd_pmt_hv_04_036/VMon', 'sbnd_pmt_hv_04_037/VMon', 'sbnd_pmt_hv_04_038/VMon', 'sbnd_pmt_hv_04_039/VMon', 'sbnd_pmt_hv_04_040/VMon', 'sbnd_pmt_hv_04_041/VMon', 'sbnd_pmt_hv_04_042/VMon', 'sbnd_pmt_hv_04_043/VMon', 'sbnd_pmt_hv_04_044/VMon', 'sbnd_pmt_hv_04_045/VMon', 'sbnd_pmt_hv_04_046/VMon', 'sbnd_pmt_hv_04_047/VMon']
+
+    voltages = []
+    for pv in pvs:
+        voltages.append(epics.caget(pv))
+
+    voltages = np.array(voltages)
+
+    # All should be below 10 volts
+    return any(voltages > 10)
+
+
 
 class IgnitionAPI:
     '''
@@ -30,7 +49,16 @@ class IgnitionAPI:
 
     #pylint: disable=invalid-name,consider-using-f-string,bare-except
 
-    def __init__(self, ):
+    def __init__(self):
+
+        self._connection = None
+
+        self.connect()
+
+    def connect(self):
+        '''
+        Establishes a connection to the Ignition database
+        '''
 
         self._connection = psycopg2.connect(user="dcs_reader",
                                             password="qcd56RUc",
@@ -50,6 +78,12 @@ class IgnitionAPI:
         Returns:
             list: a list of sets containind 3 entries (x, pv value, datetime)
         '''
+
+        if self._connection is None:
+            self.connect()
+
+        if self._connection.status != psycopg2.extensions.STATUS_READY:
+            self.connect()
 
         query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
 FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
@@ -87,6 +121,12 @@ LIMIT {}""".format(month, '', pv, limit)
         Args:
             prm_id (int): the PrM ID
         '''
+
+        if self._connection is None:
+            self.connect()
+
+        if self._connection.status != psycopg2.extensions.STATUS_READY:
+            self.connect()
 
         if prm_id == 1:
             pv = 'te-8106a'
@@ -134,6 +174,6 @@ LIMIT {}""".format(month_2digit, '', pv, 1)
             if float(formatted[0][1]) < 88:
                 return True
         else:
-            if float(formatted[0][1]) > 21:
+            if float(formatted[0][1]) > 20:
                 return True
         return False

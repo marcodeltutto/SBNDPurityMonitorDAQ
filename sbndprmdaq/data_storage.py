@@ -5,8 +5,10 @@ import os
 import logging
 import subprocess
 import time
+import copy
 import paramiko
 from scp import SCPClient
+import pandas as pd
 
 #pylint: disable=too-few-public-methods,duplicate-code
 class DataStorage():
@@ -24,7 +26,6 @@ class DataStorage():
         self._logger = logging.getLogger(__name__)
         self._config = config
 
-        self.kinit()
 
     def kinit(self):
         '''
@@ -146,3 +147,62 @@ class DataStorage():
             filename (string): The full path of the file to store
         '''
         return os.path.isfile(filename)
+
+
+    def update_dataframe(self, measurement, prm_id):
+        '''
+        Updates the dataframe containing all the purity measurements
+
+        Args:
+            measurement (dict): the latest measturement
+            prm_id (int): the purity monitor ID
+        '''
+        #pylint: disable=invalid-name
+
+        self._logger.warning('Updating dataframe.')
+
+        if measurement is None:
+            self._logger.warning('No measurement available to save to dataframe.')
+            return
+
+        dataframe_file_name = self.get_dataframe_path()
+
+        if dataframe_file_name is None:
+            self._logger.warning('No dataframe path. No measurement will be saved to the dataframe.')
+            return
+
+        if not os.path.exists(dataframe_file_name):
+            self._logger.info('Measurements dataframe file doesnt exist. One will be created.')
+        else:
+            self._logger.info('Measurements dataframe file exists. It will be updated.')
+
+        df = pd.read_csv(dataframe_file_name)
+
+        meas = copy.copy(measurement)
+        meas['prm_id'] = prm_id
+        meas['drifttime'] = meas.pop('td')
+        meas['lifetime'] = meas.pop('tau')
+        meas['hv_c'] = meas.pop('v_c')
+        meas['hv_ag'] = meas.pop('v_ag')
+        meas['hv_a'] = meas.pop('v_a')
+
+        df = df.append(meas, ignore_index=True)
+
+        df.to_csv(dataframe_file_name)
+
+    def get_dataframe_path(self):
+        '''
+        Returns the path to the dataframe
+        '''
+
+        if self._config['data_files_path'] is None:
+            self._logger.warning('data_files_path is not set.')
+            return None
+
+        if not os.path.exists(self._config['data_files_path']):
+            self._logger.error(f'data_files_path {self._config["data_files_path"]} is not a real path.')
+            raise RuntimeError()
+
+        dataframe_file_name = self._config['data_files_path'] + '/prm_measurements.csv'
+
+        return dataframe_file_name
