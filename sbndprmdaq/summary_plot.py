@@ -111,8 +111,8 @@ class SummaryPlot:
 
         for prm_id in self._config['prms']:
             self._make_summary_plot(prm_id, df)
-            
-        self._number_of_runs(df, prm_ids=[1, 2, 3])
+
+        self._number_of_runs(df, prm_ids=(1, 2, 3))
 
         self._send_to_ecl()
 
@@ -172,7 +172,7 @@ class SummaryPlot:
         # Qa and Qc Plot
         #
 
-        fig, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
+        _, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
 
         ax[0].plot(df['date'], df['qc'], label=label, linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
         ax[1].plot(df['date'], df['qa'], label=label, linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
@@ -201,7 +201,7 @@ class SummaryPlot:
         # plt.show()
 
 
-    def _number_of_runs(self, df, prm_ids=[1, 2, 3]):
+    def _number_of_runs(self, df, prm_ids=(1, 2, 3)):
 
         password = self._read_ecl_password()
 
@@ -221,9 +221,9 @@ class SummaryPlot:
         # Loop over entries (they are in decreasing order in time)
         for entry in entries:
             text = entry.find('./text').text
-            
+
             if 'Purity Monitors Automated Plots' in text:
-            
+
                 timestr = entry.attrib['timestamp']
                 lasttime = datetime.datetime.strptime(timestr, "%m/%d/%Y %H:%M:%S")
                 break
@@ -238,9 +238,9 @@ class SummaryPlot:
             df_sel = df.query(f'prm_id == {prm_id}')
 
             mask = df_sel['date'] > lasttime
-           
+
             self._n_runs[prm_id] = len(df_sel[mask])
-            
+
             self._logger.info(f'Number of runs for PrM {prm_id} since last automated eLog entry {self._n_runs[prm_id]}')
 
 
@@ -254,7 +254,7 @@ class SummaryPlot:
             ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
             text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b> <BR> {self._config["ecl_text"]}</font>'
-            
+
             text = '<font face="arial"> '
             text += '<b>Purity Monitors Automated Plots</b> '
             text += '<BR> '

@@ -272,10 +272,10 @@ if __name__ == "__main__":
 
     # ecl.get_entry()
 
-    text = ecl.search(limit=20)
-    print('Entry date:', text.split('timestamp="')[1].split('"')[0])
+    text_ = ecl.search(limit=20)
+    print('Entry date:', text_.split('timestamp="')[1].split('"')[0])
 
-    xml = ET.fromstring(text)
+    xml = ET.fromstring(text_)
     print(xml.findall('./entry')[0].attrib['timestamp'])
     print(xml.findall('./entry')[1].attrib['timestamp'])
 
@@ -284,11 +284,11 @@ if __name__ == "__main__":
 
     import datetime
 
-    for entry in entries:
-        text = entry.find('./text').text
-        if 'Purity Monitors Automated Plots' not in text:
+    for entry_ in entries:
+        text_ = entry_.find('./text').text
+        if 'Purity Monitors Automated Plots' not in text_:
             continue
-        timestr = entry.attrib['timestamp']
+        timestr = entry_.attrib['timestamp']
         time = datetime.datetime.strptime(timestr, "%m/%d/%Y %H:%M:%S")
         print('Time:', time)
 
