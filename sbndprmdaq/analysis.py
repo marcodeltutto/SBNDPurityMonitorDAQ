@@ -25,7 +25,11 @@ class PrMAnalysisBase(ABC):
     def __init__(
         self,
         wf_c, wf_a,
-        samples_per_sec=2e6, config={}, wf_c_hvoff=None, wf_a_hvoff=None, debug=True
+        samples_per_sec=2e6, config={},
+        wf_c_hvoff=None,
+        wf_a_hvoff=None,
+        remove_breakdown=False,
+        debug=True
     ):
         '''
         Constructor.
@@ -72,6 +76,26 @@ class PrMAnalysisBase(ABC):
         self._baseline_range_a = config.get('baseline_range_a', [2000, 2400])
         self._plot_range = config.get('plot_range', [0, 3500])
         self._plot_title = config.get('title', 'PrM')
+
+        if remove_breakdown:
+
+            if self._debug: print('Removing waveforms that may suffer from breakdown')
+
+            new_cathode = []
+            new_anode = []
+
+            for i in range(len(wf_c)):
+                if all(wf_c[i][600:] * self._volt_to_mv < 20) and all(wf_c[i][600:] * self._volt_to_mv > -20):
+                    new_cathode.append(wf_c[i])
+
+                if all(wf_a[i][600:] * self._volt_to_mv < 20) and all(wf_a[i][600:] * self._volt_to_mv > -20):
+                    new_anode.append(wf_a[i])
+
+            if self._debug:  print(f'Using only {len(new_cathode)} of the {len(wf_c)} cathode waveforms.')
+            if self._debug:  print(f'Using only {len(new_anode)} of the {len(wf_a)} anode waveforms.')
+
+            self._raw_wf_c = np.mean(np.array(new_cathode), axis=0)
+            self._raw_wf_a = np.mean(np.array(new_anode), axis=0)
 
         if len(self._raw_wf_c) == 6000:
             self._signal_range_c = [i * 2 for i in self._signal_range_c]
