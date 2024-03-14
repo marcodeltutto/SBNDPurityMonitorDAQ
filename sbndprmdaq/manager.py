@@ -11,7 +11,7 @@ import epics
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
-from sbndprmdaq.analysis import PrMAnalysis
+from sbndprmdaq.analysis import PrMAnalysisEstimate, PrMAnalysisFitter, PrMAnalysisFitterDiff
 from sbndprmdaq.summary_plot import SummaryPlot
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
@@ -677,7 +677,15 @@ class PrMManager():
                 #pylint: disable=protected-access,attribute-defined-outside-init,broad-exception-caught
                 self._logger.info(f'Analyzing data for PrM {prm_id}.')
                 ana_config = self._config['analysis_config'][prm_id]
-                self._prmana = PrMAnalysis(out_dict['ch_A'], out_dict['ch_B'],
+                if ana_config['ana_type'] == 'estimate':
+                    ana_cls = PrMAnalysisEstimate
+                elif ana_config['ana_type'] == 'fit':
+                    ana_cls = PrMAnalysisFitter
+                elif ana_config['ana_type'] == 'fit_difference':
+                    ana_cls = PrMAnalysisFitterDiff
+                else:
+                    raise ValueError(f'Invalid ana_type {ana_config["ana_type"]}')
+                self._prmana = ana_cls(out_dict['ch_A'], out_dict['ch_B'],
                                            config=ana_config,
                                            wf_c_hvoff=out_dict['ch_A_nohv'], wf_a_hvoff=out_dict['ch_B_nohv'])
                 self._prmana.calculate()
