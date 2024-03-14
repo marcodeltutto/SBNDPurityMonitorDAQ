@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.signal; import scipy.optimize
+import scipy.signal
+import scipy.optimize
 
-#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements,dangerous-default-value,too-many-lines,broad-exception-caught,arguments-differ
 class PrMAnalysisBase(ABC):
     '''
     Base class for PrM signal analysis.
@@ -237,6 +238,9 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
         self._time_start_a = None
         self._time_end_a = None
         self._deltat_a = None
+
+        self._max_c = None
+        self._max_a = None
 
         self._offset = None
 
@@ -1330,4 +1334,3 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
 
         if draw_txt and container is not None:
             self._draw_text_lifetime(ax, container, text_pos)
-
