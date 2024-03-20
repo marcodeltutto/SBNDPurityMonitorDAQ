@@ -134,7 +134,8 @@ analysis_config:
     'title': 'SBND PrM 1 - Internal - Long'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000 # only for fit ana types
-    'anode_fit_start_offset': 500 # only for git ana types
+    'anode_fit_start_offset': 500 # only for fit ana types
+    'lifetime_factor_fit_iterations': 1 # only for fit ana types
   2:
     'ana_type': 'estimate'
     'deltat_start_c': 310
@@ -148,6 +149,7 @@ analysis_config:
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000
     'anode_fit_start_offset': 500
+    'lifetime_factor_fit_iterations': 1 # only for fit ana types
   3:
     'ana_type': 'estimate'
     'deltat_start_c': 450
@@ -161,3 +163,4 @@ analysis_config:
     'plot_range': [0, 3500]
     'lowpass_cutoff_freq': 100000
     'anode_fit_start_offset': 500
+    'lifetime_factor_fit_iterations': 1
