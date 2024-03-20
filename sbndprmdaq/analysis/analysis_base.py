@@ -2,8 +2,6 @@
 Contains PrM analysis base class
 '''
 
-import datetime
-import subprocess
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -215,4 +213,3 @@ class PrMAnalysisBase(ABC):
             self._td = -1
             self._qa = -1
             self._qc = -1
-

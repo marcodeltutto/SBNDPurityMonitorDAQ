@@ -13,7 +13,7 @@ import scipy.optimize
 
 from .analysis_base import PrMAnalysisBase
 
-#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements,dangerous-default-value,too-many-lines,broad-exception-caught,arguments-differ
+#pylint: disable=invalid-name,too-many-instance-attributes,too-many-arguments,consider-using-f-string,invalid-unary-operand-type,too-many-return-statements,bare-except,multiple-statements,dangerous-default-value,too-many-lines,broad-exception-caught,arguments-differ,line-too-long,duplicate-code
 class PrMAnalysisFitter(PrMAnalysisBase):
     '''
     A class to perform PrM analysis by fitting waveforms, See arXiv:2005.08187 for details.

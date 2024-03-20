@@ -405,4 +405,3 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
                 verticalalignment='bottom',
                 horizontalalignment='right',
                 bbox=props)
-
