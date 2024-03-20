@@ -4,6 +4,7 @@ Contains PrM analysis fitter classes
 
 import datetime
 import subprocess
+import functools
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +18,6 @@ class PrMAnalysisFitter(PrMAnalysisBase):
     '''
     A class to perform PrM analysis by fitting waveforms, See arXiv:2005.08187 for details.
     '''
-
     def __init__(
         self,
         wf_c, wf_a,
@@ -78,8 +78,11 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         self._td_err = None
         self._tau_err = None
 
+        self._fit_tau = np.inf # turn off lifetime effect in intial waveform fit
+
         self._lowpass_cutoff_freq = config.get('lowpass_cutoff_freq', 100e3)
         self._a_fit_start_offset = config.get('anode_fit_start_offset', 500)
+        self._fit_iterations = config.get('lifetime_factor_fit_iterations', 10)
 
     def calculate(self):
         '''
@@ -90,25 +93,31 @@ class PrMAnalysisFitter(PrMAnalysisBase):
             self._process_error(self._err)
             return
 
-        self._err = self._fit_cathode()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+        # Perform fit iteratively, updating the lifetime parameter each time.
+        # This way we account for effect of lifetime during drift between anode/cathode and grids.
+        for i in range(self._fit_iterations):
+            self._err = self._fit_cathode()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
 
-        self._err = self._fit_anode()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+            self._err = self._fit_anode()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
 
-        self._err = self._calculate_delta_ts()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+            self._err = self._calculate_delta_ts()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
 
-        self._err = self._calculate_lifetime()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+            self._err = self._calculate_lifetime()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
+
+            if i + 1 != self._fit_iterations:
+                self._fit_tau = self._tau
 
     def plot_summary(self, container=None, savename=None):
         '''
@@ -142,6 +151,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         ax[0].plot(
             self._wf_x,
             self._fit_func(
+                self._fit_tau,
                 self._wf_x,
                 self._baseline_a_pre, self._baseline_a_post,
                 self._qa,
@@ -153,6 +163,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         ax[1].plot(
             self._wf_x,
             self._fit_func(
+                self._fit_tau,
                 self._wf_x,
                 self._baseline_c_pre, self._baseline_c_post,
                 -self._qc,
@@ -211,18 +222,20 @@ class PrMAnalysisFitter(PrMAnalysisBase):
 
         return 'ok'
 
-    def _fit_func(self, t, baseline_pre, baseline_post, V_0, t_start, t_rise):
+    def _fit_func(self, tau, t, baseline_pre, baseline_post, V_0, t_start, t_rise):
         '''
         Fit function for PrM waveforms. Applied to cathode and anode signal separately.
         Two baselines are useful since baseline can sometimes change after discharge.
+        tau should be fixed with functools.partial before fitting.
 
         Args:
+            tau (float): fixed parameter, lifetime
             t (float): time variable
-            baseline_pre (float): parameter
-            baseline_post (float): parameter
-            V_0 (float): parameter
-            t_start (float): parameter
-            t_rise (float): parameter
+            baseline_pre (float): fit parameter
+            baseline_post (float): fit parameter
+            V_0 (float): fit parameter
+            t_start (float): fit parameter
+            t_rise (float): fit parameter
         '''
         return np.piecewise(
             t,
@@ -236,12 +249,12 @@ class PrMAnalysisFitter(PrMAnalysisBase):
                     baseline_pre
                 ),
                 lambda t: (
-                    V_0 * (1 - np.exp(-(t - t_start) / self._RC)) / ((t_rise - t_start) / self._RC) + # charging
+                    V_0 * (np.exp(-(t - t_start) / self._RC) - np.exp(-(t - t_start) / tau)) / ((t_rise - t_start) / (tau**(-1) -  self._RC**(-1))**(-1)) + # charging
                     baseline_pre
                 ),
                 lambda t: (
                     (
-                        (V_0 * (1 - np.exp(-(t_rise - t_start) / self._RC)) / ((t_rise - t_start) / self._RC)) + # V max
+                        (V_0 * (np.exp(-(t_rise - t_start) / self._RC) - np.exp(-(t_rise - t_start) / tau)) / ((t_rise - t_start) / (tau**(-1) -  self._RC**(-1))**(-1))) +  # V max
                         (baseline_pre - baseline_post) # smoothly go to new baseline
                     ) *
                     np.exp(-(t - t_rise) / self._RC) + # discharging from V max
@@ -254,6 +267,8 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         '''
         Apply fitting function to cathode.
         '''
+        fit_func = functools.partial(self._fit_func, self._fit_tau)
+
         cathode_p_guess = [
             np.mean(self._wf_c[self._baseline_range_c[0]:self._baseline_range_c[1]]), # baseline_pre
             np.mean(self._wf_c[self._baseline_range_c[0]:self._baseline_range_c[1]]), # baseline_post
@@ -264,7 +279,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
 
         try:
             popt_cathode, pcov_cathode = scipy.optimize.curve_fit(
-                self._fit_func, self._wf_x, self._wf_c,
+                fit_func, self._wf_x, self._wf_c,
                 p0=cathode_p_guess,
                 bounds=(
                     [-np.inf, -np.inf, -np.inf, 0.0, 0.0],
@@ -296,6 +311,8 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         '''
         Apply fitting function to anode.
         '''
+        fit_func = functools.partial(self._fit_func, self._fit_tau)
+
         anode_max_tick = np.argmax(self._wf_a)
         anode_p_guess = [
             np.mean(self._wf_a[self._baseline_range_a[0]:self._baseline_range_a[1]]), # baseline
@@ -307,7 +324,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
 
         try:
             popt_anode, pcov_anode = scipy.optimize.curve_fit(
-                self._fit_func,
+                fit_func,
                 self._wf_x[anode_max_tick - self._a_fit_start_offset:],
                 self._wf_a[anode_max_tick - self._a_fit_start_offset:],
                 p0=anode_p_guess,
@@ -421,7 +438,7 @@ class PrMAnalysisFitter(PrMAnalysisBase):
         Draw info text on plot
         '''
         date = container["date"]
-        # date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
+        date = datetime.datetime.strptime(str(container['date']), '%Y%m%d-%H%M%S')
 
         short_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
@@ -455,7 +472,6 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
     A class to perform PrM analysis by fitting the difference of the cathode and anode waveforms.
     The same as PrMAnalysisFitter with the fitting functions summed
     '''
-
     def __init__(
         self,
         wf_c, wf_a,
@@ -493,20 +509,26 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
             self._process_error(self._err)
             return
 
-        self._err = self._fit_diff()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+        # Perform fit iteratively, updating the lifetime parameter each time.
+        # This way we account for effect of lifetime during drift between anode/cathode and grids.
+        for i in range(self._fit_iterations):
+            self._err = self._fit_diff()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
 
-        self._err = self._calculate_delta_ts()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+            self._err = self._calculate_delta_ts()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
 
-        self._err = self._calculate_lifetime()
-        if self._err != 'ok':
-            self._process_error(self._err)
-            return
+            self._err = self._calculate_lifetime()
+            if self._err != 'ok':
+                self._process_error(self._err)
+                return
+
+            if i + 1 != self._fit_iterations:
+                self._fit_tau = self._tau
 
     def plot_summary(self, container=None, savename=None):
         '''
@@ -536,6 +558,7 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
         ax.plot(
             self._wf_x,
             self._fit_func(
+                self._fit_tau,
                 self._wf_x,
                 self._baseline_c_pre, self._baseline_c_post,
                 -self._qc,
@@ -599,6 +622,7 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
 
     def _fit_func(
         self,
+        tau,
         t,
         baseline_c_pre, baseline_c_post, V_0_c, t_start_c, t_rise_c,
         baseline_a_pre, baseline_a_post, V_0_a, t_start_a, t_rise_a
@@ -608,6 +632,7 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
         Multiple baselines are useful since baseline can sometimes change after discharge.
 
         Args:
+            tau (float): fixed parameter, lifetime
             t (float): time variable
             baseline_c_pre (float): parameter
             baseline_c_post (float): parameter
@@ -634,12 +659,12 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
                     baseline_c_pre - baseline_a_pre
                 ),
                 lambda t: (
-                    V_0_c * (1 - np.exp(-(t - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC) + # charging at cathode
+                    V_0_c * (np.exp(-(t - t_start_c) / self._RC) - np.exp(-(t - t_start_c) / tau)) / ((t_rise_c - t_start_c) / (tau**(-1) -  self._RC**(-1))**(-1)) + # charging at cathode
                     baseline_c_pre - baseline_a_pre
                 ),
                 lambda t: (
                     (
-                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) + # V_max
+                        (V_0_c * (np.exp(-(t_rise_c - t_start_c) / self._RC) - np.exp(-(t_rise_c - t_start_c) / tau)) / ((t_rise_c - t_start_c) / (tau**(-1) -  self._RC**(-1))**(-1))) + # V_max
                         (baseline_c_pre - baseline_c_post) # Smooth baseline change
                     ) *
                     np.exp(-(t - t_rise_c) / self._RC) + # discharging at cathode
@@ -647,21 +672,21 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
                 ),
                 lambda t: (
                     (
-                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) +
+                        (V_0_c * (np.exp(-(t_rise_c - t_start_c) / self._RC) - np.exp(-(t_rise_c - t_start_c) / tau)) / ((t_rise_c - t_start_c) / (tau**(-1) -  self._RC**(-1))**(-1))) +
                         (baseline_c_pre - baseline_c_post)
                     ) *
                     np.exp(-(t - t_rise_c) / self._RC) - # discharging at cathode
-                    V_0_a * (1 - np.exp(-(t - t_start_a) / self._RC)) / ((t_rise_a - t_start_a) / self._RC) + # charging at anode
+                    V_0_a * (np.exp(-(t - t_start_a) / self._RC) - np.exp(-(t - t_start_a) / tau)) / ((t_rise_a - t_start_a) / (tau**(-1) -  self._RC**(-1))**(-1)) + # charging at anode
                     baseline_c_post - baseline_a_pre
                 ),
                 lambda t: (
                     (
-                        (V_0_c * (1 - np.exp(-(t_rise_c - t_start_c) / self._RC)) / ((t_rise_c - t_start_c) / self._RC)) +
+                        (V_0_c * (np.exp(-(t_rise_c - t_start_c) / self._RC) - np.exp(-(t_rise_c - t_start_c) / tau)) / ((t_rise_c - t_start_c) / (tau**(-1) -  self._RC**(-1))**(-1))) +
                         (baseline_c_pre - baseline_c_post)
                     ) *
                     np.exp(-(t - t_rise_c) / self._RC) - # discharging at cathode
                     (
-                        (V_0_a * (1 - np.exp(-(t_rise_a - t_start_a) / self._RC)) / ((t_rise_a - t_start_a) / self._RC)) + # V_max
+                        V_0_a * (np.exp(-(t_rise_a - t_start_a) / self._RC) - np.exp(-(t_rise_a - t_start_a) / tau)) / ((t_rise_a - t_start_a) / (tau**(-1) -  self._RC**(-1))**(-1)) + # V_max
                         (baseline_a_pre - baseline_a_post) # smooth baseline change
                     ) *
                     np.exp(-(t - t_rise_a) / self._RC) + # discharging at anode
@@ -674,6 +699,8 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
         '''
         Apply fitting function to cathode - anode waveform.
         '''
+        fit_func = functools.partial(self._fit_func, self._fit_tau)
+
         anode_max_tick = np.argmax(self._wf_a)
         p_guess = [
             np.mean(self._wf_c[self._baseline_range_c[0]:self._baseline_range_c[1]]), # baseline_c_pre
@@ -690,7 +717,7 @@ class PrMAnalysisFitterDiff(PrMAnalysisFitter):
 
         try:
             popt, pcov = scipy.optimize.curve_fit(
-                self._fit_func, self._wf_x, self._wf_diff,
+                fit_func, self._wf_x, self._wf_diff,
                 p0=p_guess,
                 bounds=(
 
