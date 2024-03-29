@@ -19,7 +19,7 @@ class SummaryPlot:
     A class that makes a plot of electron lifetime versus time, using teh measurement made
     by the purity monitor DAQ and stored in a CSV file (dataframe).
     '''
-    #pylint: disable=invalid-name
+    #pylint: disable=invalid-name,too-many-locals
 
     def __init__(self, config):
         '''
@@ -109,7 +109,7 @@ class SummaryPlot:
         df['date'] = pd.to_datetime(df['date'])
 
         self._make_summary_plot(df)
-            
+
         self._number_of_runs(df, prm_ids=[1, 2, 3])
 
         self._send_to_ecl()
@@ -129,6 +129,16 @@ class SummaryPlot:
             3: 'PrM 3, Inline, Long',
         }
 
+        linestyles = [
+            'solid',
+            'dashed',
+            'dashdot',
+            'dotted',
+            (0, (1, 10)),
+            (5, (10, 3)),
+            (10, (5, 10)),
+        ]
+
         dfs = {}
 
         for prm_id in self._config['prms']:
@@ -145,7 +155,7 @@ class SummaryPlot:
         self._current_plots = {}
 
         events = {
-            datetime.datetime(2024, 3, 25, 15, 00): 'Lowered HV on PrM 2', 
+            datetime.datetime(2024, 3, 25, 15, 00): 'Lowered HV on PrM 2',
         }
 
         #
@@ -158,7 +168,7 @@ class SummaryPlot:
             ax.plot(dfs[prm_id]['date'], dfs[prm_id]['lifetime'], label=labels[prm_id], linestyle='None', marker="o", markersize=3)
 
         for i, (day, label) in enumerate(events.items()):
-            ax.axvline(day, color='gray', label=label) #, linestyle=linestyles[i])
+            ax.axvline(day, color='gray', label=label, linestyle=linestyles[i])
 
         ax.set_ylabel(r'Lifetime [$ms$]',fontsize=16)
         ax.set_xlabel('Time',fontsize=16)
@@ -183,16 +193,13 @@ class SummaryPlot:
         #
         # Qa and Qc Plot
         #
-
-<<<<<<< HEAD
         for prm_id in self._config['prms']:
-            fig, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
-=======
-        _, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
->>>>>>> a4b55f752c49c889910c4623a9735e66cea9c754
+            _, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
 
-            ax[0].plot(dfs[prm_id]['date'], dfs[prm_id]['qc'], label=labels[prm_id], linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
-            ax[1].plot(dfs[prm_id]['date'], dfs[prm_id]['qa'], label=labels[prm_id], linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
+            ax[0].plot(dfs[prm_id]['date'], dfs[prm_id]['qc'], label=labels[prm_id],
+                       linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
+            ax[1].plot(dfs[prm_id]['date'], dfs[prm_id]['qa'], label=labels[prm_id],
+                       linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
 
             for i, (day, label) in enumerate(events.items()):
                 if prm_id == 2:

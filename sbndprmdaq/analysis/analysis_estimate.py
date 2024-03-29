@@ -436,6 +436,8 @@ class PrMAnalysisEstimateDiff(PrMAnalysisBase):
             debug=debug
         )
 
+        self._wf_diff = None
+
         self._baseline_c = None
         self._baseline_rms_c = None
         self._baseline_a = None
@@ -793,4 +795,3 @@ class PrMAnalysisEstimateDiff(PrMAnalysisBase):
                 verticalalignment='bottom',
                 horizontalalignment='right',
                 bbox=props)
-
