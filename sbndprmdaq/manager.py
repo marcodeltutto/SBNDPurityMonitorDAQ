@@ -11,8 +11,7 @@ import epics
 from PyQt5.QtCore import QThreadPool, QTimer
 
 from sbndprmdaq.data_storage import DataStorage
-from sbndprmdaq.analysis.analysis_estimate import PrMAnalysisEstimate
-from sbndprmdaq.analysis.analysis_fit import PrMAnalysisFitter, PrMAnalysisFitterDiff
+from sbndprmdaq.analysis import PrMAnalysisEstimate, PrMAnalysisFitter, PrMAnalysisFitterDiff
 from sbndprmdaq.summary_plot import SummaryPlot
 from sbndprmdaq.threading_utils import Worker
 from sbndprmdaq.digitizer.prm_digitizer import PrMDigitizer
