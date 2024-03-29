@@ -775,23 +775,6 @@ class PrMManager():
         return self._is_running[prm_id]
 
 
-    # def start_prm(self, prm_id=1):
-    #     '''
-    #     Starts prm_id and also all the other PrMs
-    #     bounded to it.
-
-    #     Args:
-    #         prm_id (int): The purity monitor ID.
-    #     '''
-    #     prm_ids = [prm_id]
-
-    #     if prm_id in self._prm_id_bounded:
-    #         prm_ids.append(self._prm_id_bounded[prm_id])
-
-    #     for pm_id in prm_ids:
-    #         self.start_single_prm(pm_id)
-
-
     def start_prm(self, prm_id=1):
         '''
         Starts the thread for running prm_id.
