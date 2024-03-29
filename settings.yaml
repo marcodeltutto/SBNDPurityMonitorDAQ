@@ -53,19 +53,19 @@ mpod_prm3_anodegrid_ch: 301
 # Default HV values
 prm_hv_default:
   1:
-    # cathode:   -120
-    # anodegrid: 4431
-    # anode:     4352
-    cathode:   -500
-    anodegrid: 4000
-    anode:     4100
+    cathode:   -120
+    anodegrid: 4432
+    anode:     4360
+    # cathode:   -500
+    # anodegrid: 4000
+    # anode:     4100
   2:
-    # cathode:   -200
-    # anodegrid: 2408
-    # anode:     2533
-    cathode:   -250
-    anodegrid: 3010
-    anode:     3170
+    # cathode:   -250
+    # anodegrid: 3010
+    # anode:     3170
+    cathode:   -150
+    anodegrid: 1807
+    anode:     1900
   3:
     # cathode:   -120
     # anodegrid: 4431
@@ -73,9 +73,12 @@ prm_hv_default:
     # cathode:   -100
     # anodegrid: 3693
     # anode:     3630
+    # cathode:   -50
+    # anodegrid: 1846
+    # anode:     1814
     cathode:   -50
-    anodegrid: 1846
-    anode:     1814
+    anodegrid: 0
+    anode:     0
 
 
 # The DAQ will check if the HV is whitin these range
@@ -114,9 +117,9 @@ summary_plot:
   make_summary_plots: True
   time_interval: 24 # hours
   start_hour: 10 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
-  prms: [2]
+  prms: [1, 2]
   post_to_ecl: True
-  ecl_text: "Lifetime measured by purity monitor 2 (internal, short)."
+  ecl_text: "Measurements by internal purity monitors 1 and 2."
   ecl_pwd_file: "/home/nfs/sbndprm/.ecl_pwd.txt"
 
 # Lifetime analysis
@@ -128,9 +131,9 @@ analysis_config:
     'deltat_start_a': 310
     'trigger_sample': 300
     'signal_range_c': [320, 500]
-    'signal_range_a': [600, 1000]
+    'signal_range_a': [2300, 2500]
     'baseline_range_c': [0,250]
-    'baseline_range_a': [310,500]
+    'baseline_range_a': [2000,2200]
     'title': 'SBND PrM 1 - Internal - Long'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000 # only for fit ana types
@@ -142,9 +145,9 @@ analysis_config:
     'deltat_start_a': 310
     'trigger_sample': 300
     'signal_range_c': [320, 500]
-    'signal_range_a': [600, 1000]
+    'signal_range_a': [1000, 1500]
     'baseline_range_c': [0,250]
-    'baseline_range_a': [310,500]
+    'baseline_range_a': [310,900]
     'title': 'SBND PrM 2 - Internal - Short'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000

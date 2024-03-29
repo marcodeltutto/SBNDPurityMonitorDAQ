@@ -19,7 +19,7 @@ class SummaryPlot:
     A class that makes a plot of electron lifetime versus time, using teh measurement made
     by the purity monitor DAQ and stored in a CSV file (dataframe).
     '''
-    #pylint: disable=invalid-name
+    #pylint: disable=invalid-name,too-many-locals
 
     def __init__(self, config):
         '''
@@ -35,7 +35,11 @@ class SummaryPlot:
         self._dataframe_filename = None
         self._plot_savedir = None
 
-        self._first_day = "02/20/2024"
+        self._first_day = {
+            1: "03/24/2024",
+            2: "02/20/2024",
+            3: "02/20/2024",
+        }
 
         self._config = config['summary_plot']
 
@@ -104,41 +108,55 @@ class SummaryPlot:
         # Convert the date string to datetime object
         df['date'] = pd.to_datetime(df['date'])
 
-        # Select entries past a certain day
-        first_day = datetime.datetime.strptime(self._first_day, "%m/%d/%Y")
-        mask = df['date'] > first_day
-        df = df[mask]
+        self._make_summary_plot(df)
 
-        for prm_id in self._config['prms']:
-            self._make_summary_plot(prm_id, df)
-
-        self._number_of_runs(df, prm_ids=(1, 2, 3))
+        self._number_of_runs(df, prm_ids=[1, 2, 3])
 
         self._send_to_ecl()
 
 
-    def _make_summary_plot(self, prm_id, df):
+    def _make_summary_plot(self, df):
         '''
         Makes the plot for a single PrM
 
         Args:
-            prm_id (int): The purity monitor ID
             df (dataframe): The dataframe with the measurements
         '''
 
-        label = ''
-        if prm_id == 1:
-            label = 'PrM 1, Internal, Long'
-        elif prm_id == 2:
-            label = 'PrM 2, Internal, Short'
-        elif prm_id == 3:
-            label = 'PrM 3, Inline, Long'
+        labels = {
+            1: 'PrM 1, Internal, Long',
+            2: 'PrM 2, Internal, Short',
+            3: 'PrM 3, Inline, Long',
+        }
 
-        df = df.query(f'prm_id == {prm_id}')
+        linestyles = [
+            'solid',
+            'dashed',
+            'dashdot',
+            'dotted',
+            (0, (1, 10)),
+            (5, (10, 3)),
+            (10, (5, 10)),
+        ]
+
+        dfs = {}
+
+        for prm_id in self._config['prms']:
+
+            # Select entries past a certain day
+            first_day = datetime.datetime.strptime(self._first_day[prm_id], "%m/%d/%Y")
+            mask = df['date'] > first_day
+            df_s = df[mask]
+
+            dfs[prm_id] = df_s.query(f'prm_id == {prm_id}')
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
-        self._current_plots[prm_id] = []
+        self._current_plots = {}
+
+        events = {
+            datetime.datetime(2024, 3, 25, 15, 00): 'Lowered HV on PrM 2',
+        }
 
         #
         # Lifetime Plot
@@ -146,7 +164,11 @@ class SummaryPlot:
 
         _, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
 
-        ax.plot(df['date'], df['lifetime'], label=label, linestyle='None', marker="o", markersize=5)
+        for prm_id in self._config['prms']:
+            ax.plot(dfs[prm_id]['date'], dfs[prm_id]['lifetime'], label=labels[prm_id], linestyle='None', marker="o", markersize=3)
+
+        for i, (day, label) in enumerate(events.items()):
+            ax.axvline(day, color='gray', label=label, linestyle=linestyles[i])
 
         ax.set_ylabel(r'Lifetime [$ms$]',fontsize=16)
         ax.set_xlabel('Time',fontsize=16)
@@ -154,49 +176,58 @@ class SummaryPlot:
         ax.grid(True)
 
         ax.set_title('Preliminary', loc='right', color='gray')
-        ax.legend(fontsize=12, loc=3)
+        ax.legend(fontsize=12, loc=2)
 
-        ax.set_ylim([0.050, 0.220])
+        ax.set_ylim([0.050, 3.0])
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
         plt.tight_layout()
 
         if self._plot_savedir is not None:
-            filename = self._plot_savedir + f'prm{prm_id}_lifetime_{timestr}.png'
+            filename = self._plot_savedir + f'prm1_2_lifetime_{timestr}.png'
             plt.savefig(filename)
             self._logger.info(f'Plot saved to {filename}.')
-            self._current_plots[prm_id].append(filename)
+            self._current_plots['prm_lifetime'] = filename
 
         #
         # Qa and Qc Plot
         #
+        for prm_id in self._config['prms']:
+            _, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
 
-        _, ax = plt.subplots(ncols=2, nrows=1, figsize=(20, 8))
+            ax[0].plot(dfs[prm_id]['date'], dfs[prm_id]['qc'], label=labels[prm_id],
+                       linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
+            ax[1].plot(dfs[prm_id]['date'], dfs[prm_id]['qa'], label=labels[prm_id],
+                       linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
 
-        ax[0].plot(df['date'], df['qc'], label=label, linestyle='None', marker="o", markersize=5, color='blue', alpha=0.5)
-        ax[1].plot(df['date'], df['qa'], label=label, linestyle='None', marker="o", markersize=5, color='red', alpha=0.5)
+            for i, (day, label) in enumerate(events.items()):
+                if prm_id == 2:
+                    ax[0].axvline(day, color='gray', label=label) #, linestyle=linestyles[i])
+                    ax[1].axvline(day, color='gray', label=label) #, linestyle=linestyles[i])
 
-        for a in ax:
-            a.set_xlabel('Time',fontsize=16)
-            a.tick_params(labelsize=12)
-            a.grid(True)
-            a.set_title('Preliminary', loc='right', color='gray')
-            a.legend(fontsize=12, loc=3)
-            plt.setp(a.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+            for a in ax:
+                a.set_xlabel('Time',fontsize=16)
+                a.tick_params(labelsize=12)
+                a.grid(True)
+                a.set_title('Preliminary', loc='right', color='gray')
+                a.legend(fontsize=12, loc=3)
+                plt.setp(a.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
-        ax[0].set_ylabel(r'$Q_C$ [$mV$]',fontsize=16)
-        ax[0].set_ylim([15, 30])
+            ax[0].set_ylabel(r'$Q_C$ [$mV$]',fontsize=16)
+            ax[0].set_ylim([5, 33])
 
-        ax[1].set_ylabel(r'$Q_A$ [$mV$]',fontsize=16)
-        ax[1].set_ylim([0, 10])
+            ax[1].set_ylabel(r'$Q_A$ [$mV$]',fontsize=16)
+            ax[1].set_ylim([0, 30])
 
 
-        if self._plot_savedir is not None:
-            filename = self._plot_savedir + f'prm{prm_id}_qc_qa_{timestr}.png'
-            plt.savefig(filename)
-            self._logger.info(f'Plot saved to {filename}.')
-            self._current_plots[prm_id].append(filename)
+            plt.tight_layout()
+
+            if self._plot_savedir is not None:
+                filename = self._plot_savedir + f'prm{prm_id}_qc_qa_{timestr}.png'
+                plt.savefig(filename)
+                self._logger.info(f'Plot saved to {filename}.')
+                self._current_plots[f'prm{prm_id}_qcqa'] = filename
 
         # plt.show()
 
@@ -271,9 +302,8 @@ class SummaryPlot:
 
             entry = ECLEntry(category='Purity Monitors', text=text, preformatted=True)
 
-            for prm_id, filenames in self._current_plots.items():
-                for filename in filenames:
-                    entry.add_image(name=f'prmid_{prm_id}', filename=filename)
+            for name, filename in self._current_plots.items():
+                entry.add_image(name=name, filename=filename)
 
             print(entry.show())
 
