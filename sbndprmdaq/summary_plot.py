@@ -57,7 +57,7 @@ class SummaryPlot:
         if self._config['make_summary_plots']:
 
             seconds_to_start = self.seconds_until_hour(self._config['start_hour'])
-            seconds_to_start = 20
+            # seconds_to_start = 20
             # self._timer_single = QTimer.singleShot(seconds_to_start * 1000, self.start_periodic_plotting)
 
             self._timer = QTimer()
@@ -284,6 +284,9 @@ class SummaryPlot:
             ax.grid(True)
             ax.set_title('Preliminary', loc='right', color='gray')
 
+            today = datetime.date.today()
+            ax.axvline(today, color='red', label='Today', linestyle='solid')
+
             if prm_id == 1:
                 for i, tau in enumerate([0.50, 1, 3, 6, 9]):
                     ax.axhline(qaqc(1.1, tau),
@@ -295,6 +298,12 @@ class SummaryPlot:
                 num = mpl.dates.date2num(d)
                 xmin, xmax = ax.get_xlim()
                 frac = (num - xmin) / (xmax - xmin)
+
+                d = datetime.datetime(2024, 5, 26, 8, 50)
+                num = mpl.dates.date2num(d)
+                xmin, xmax = ax.get_xlim()
+                frac2 = (num - xmin) / (xmax - xmin)
+    
                 for i, tau in enumerate([0.10, 1, 3, 6, 9]):
                     ax.axhline(qaqc(0.25, tau),
                                xmin=0,
@@ -303,6 +312,11 @@ class SummaryPlot:
                 
                     ax.axhline(qaqc(0.39, tau),
                                xmin=frac,
+                               xmax=frac2,
+                               color='black', linestyle=linestyles[i])
+
+                    ax.axhline(qaqc(0.25, tau),
+                               xmin=frac2,
                                xmax=1,
                                color='black', linestyle=linestyles[i])
 
