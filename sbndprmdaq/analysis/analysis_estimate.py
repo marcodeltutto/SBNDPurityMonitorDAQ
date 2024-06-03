@@ -324,8 +324,8 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
         Checks values are sensible
         '''
         if np.abs((self._max_a - self._baseline_a) / (self._baseline_rms_a)) < 5:
-            print('no_anode')
-            return 'no_anode'
+            print('no_anode, anode too small, ignoring')
+            # return 'no_anode'
 
         if self._max_a < 0:
             print('no_anode')
