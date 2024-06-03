@@ -33,6 +33,7 @@ def pmt_hv_on():
 
     voltages = []
     for pv in pvs:
+        # print(pv, epics.caget(pv))
         voltages.append(epics.caget(pv))
 
     voltages = np.array(voltages)

@@ -34,7 +34,7 @@ save_as_txt: true
 
 arduino_address: '/dev/arduino'
 arduino_pin: 7
-disable_arduino: False
+disable_arduino: True
 
 prm_id_to_mpod_ip:
   1: "10.226.35.154"
@@ -60,12 +60,12 @@ prm_hv_default:
     # anodegrid: 4000
     # anode:     4100
   2:
-    # cathode:   -250
-    # anodegrid: 3010
-    # anode:     3170
-    cathode:   -150
-    anodegrid: 1807
-    anode:     1900
+    cathode:   -250
+    anodegrid: 3010
+    anode:     3170
+    # cathode:   -150
+    # anodegrid: 1807
+    # anode:     1900
   3:
     # cathode:   -120
     # anodegrid: 4431
@@ -145,9 +145,9 @@ analysis_config:
     'deltat_start_a': 310
     'trigger_sample': 300
     'signal_range_c': [320, 500]
-    'signal_range_a': [1000, 1500]
+    'signal_range_a': [600, 1000]
     'baseline_range_c': [0,250]
-    'baseline_range_a': [310,900]
+    'baseline_range_a': [310,500]
     'title': 'SBND PrM 2 - Internal - Short'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000

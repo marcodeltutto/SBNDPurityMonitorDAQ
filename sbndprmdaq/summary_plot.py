@@ -6,10 +6,15 @@ import logging
 import time
 import datetime
 import xml.etree.ElementTree as ET
+import requests
+
+from PyQt5.QtCore import QTimer
 
 import pandas as pd
-from PyQt5.QtCore import QTimer
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+from labellines import labelLine, labelLines
+import numpy as np
 
 from sbndprmdaq.eclapi import ECL, ECLEntry
 
@@ -52,7 +57,7 @@ class SummaryPlot:
         if self._config['make_summary_plots']:
 
             seconds_to_start = self.seconds_until_hour(self._config['start_hour'])
-            # seconds_to_start = 20
+            seconds_to_start = 20
             # self._timer_single = QTimer.singleShot(seconds_to_start * 1000, self.start_periodic_plotting)
 
             self._timer = QTimer()
@@ -105,8 +110,19 @@ class SummaryPlot:
         # Read the dataframe
         df = pd.read_csv(self._dataframe_filename)
 
+        # Add Qa/Qc ratio
+        df['qaqc'] = df['qa']/df['qc']
+
         # Convert the date string to datetime object
         df['date'] = pd.to_datetime(df['date'])
+
+        # Add a datetime index
+        df['datetime'] = pd.to_datetime(df['date'])
+        df = df.set_index('datetime')
+
+        # Drop old column
+        df = df.drop(['Unnamed: 0'], axis=1)
+
 
         self._make_summary_plot(df)
 
@@ -148,7 +164,7 @@ class SummaryPlot:
             mask = df['date'] > first_day
             df_s = df[mask]
 
-            dfs[prm_id] = df_s.query(f'prm_id == {prm_id}')
+            dfs[prm_id] = df_s.query(f'prm_id == {prm_id} and qaqc > 0 and qaqc < 1')
 
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
@@ -156,6 +172,7 @@ class SummaryPlot:
 
         events = {
             datetime.datetime(2024, 3, 25, 15, 00): 'Lowered HV on PrM 2',
+            datetime.datetime(2024, 5, 26, 8, 50): 'Increased HV on PrM 2',
         }
 
         #
@@ -178,7 +195,7 @@ class SummaryPlot:
         ax.set_title('Preliminary', loc='right', color='gray')
         ax.legend(fontsize=12, loc=2)
 
-        ax.set_ylim([0.050, 3.0])
+        ax.set_ylim([0.050, 8.0])
 
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
@@ -229,6 +246,84 @@ class SummaryPlot:
                 self._logger.info(f'Plot saved to {filename}.')
                 self._current_plots[f'prm{prm_id}_qcqa'] = filename
 
+        #
+        # Qa/Qc Plot
+        #
+
+        for prm_id in self._config['prms']:
+
+            df_daily_mean = dfs[prm_id].resample('D').mean()
+            df_daily_std = dfs[prm_id].resample('D').std()
+
+            df_daily_mean['date'] = df_daily_mean.index
+            df_daily_std['date'] = df_daily_std.index
+
+            print(df_daily_mean)
+
+            _, ax = plt.subplots(ncols=1, nrows=1, figsize=(10, 8))
+
+            def qaqc(t, tau):
+                return np.exp(-t/tau)
+
+            date = np.array(dfs[prm_id]['date'])
+            qa = np.array(dfs[prm_id]['qa'])
+            qc = np.array(dfs[prm_id]['qc'])
+
+            mask = (qa != -1) & (qc != -1)
+                
+            ax.plot(date[mask], qa[mask]/qc[mask], label=labels[prm_id],
+                    linestyle='None', marker="o", markersize=5, color='green', alpha=0.5, zorder=1)
+
+            ax.errorbar(df_daily_mean['date'], df_daily_mean['qaqc'], yerr=df_daily_std['qaqc'],
+                        label=labels[prm_id] + ' Daily Average', linestyle='None', marker="o", markersize=5, color='black', alpha=1, zorder=2)
+
+
+            ax.set_ylabel(r'$Q_A/Q_C$',fontsize=16)
+            ax.set_xlabel('Time',fontsize=16)
+            ax.tick_params(labelsize=12)
+            ax.grid(True)
+            ax.set_title('Preliminary', loc='right', color='gray')
+
+            if prm_id == 1:
+                for i, tau in enumerate([0.50, 1, 3, 6, 9]):
+                    ax.axhline(qaqc(1.1, tau),
+                               xmin=0,
+                               xmax=1,
+                               color='black', label=f'{tau:.2f} ms', linestyle=linestyles[i])
+            else:
+                d = datetime.datetime(2024, 3, 25, 15, 00)
+                num = mpl.dates.date2num(d)
+                xmin, xmax = ax.get_xlim()
+                frac = (num - xmin) / (xmax - xmin)
+                for i, tau in enumerate([0.10, 1, 3, 6, 9]):
+                    ax.axhline(qaqc(0.25, tau),
+                               xmin=0,
+                               xmax=frac,
+                               color='black', label=f'{tau:.2f} ms', linestyle=linestyles[i])
+                
+                    ax.axhline(qaqc(0.39, tau),
+                               xmin=frac,
+                               xmax=1,
+                               color='black', linestyle=linestyles[i])
+
+            ax.set_title('Preliminary', loc='right', color='gray')
+
+            # labelLines(ax.get_lines())# , zorder=2.5)#, xvals=xvals)
+            ax.legend(fontsize=12, loc=2)
+            # for l in ax.get_lines():
+            #     print('LINE:', l)
+            ax.set_ylim([0, 1.1])
+
+            plt.xticks(rotation=45, ha="right", rotation_mode="anchor")
+
+            plt.tight_layout()
+            if self._plot_savedir is not None:
+                filename = self._plot_savedir + f'prm{prm_id}_qa_over_qc_{timestr}.png'
+                plt.savefig(filename)
+                self._logger.info(f'Plot saved to {filename}.')
+                self._current_plots[f'prm{prm_id}_qa_over_qc'] = filename
+
+
         # plt.show()
 
 
@@ -236,6 +331,7 @@ class SummaryPlot:
 
         password = self._read_ecl_password()
 
+        # https://dbweb0.fnal.gov/ECL/sbnd
         ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
         # Retrieve the last 20 entries
@@ -308,7 +404,14 @@ class SummaryPlot:
             print(entry.show())
 
             if self._config['post_to_ecl']:
-                ecl.post(entry, do_post=True)
+
+                try:
+                    ecl.post(entry, do_post=True)
+                except:
+                    self._logger.info('Post timeout. Trying one more time in 5 secs')
+                    time.sleep(5)
+                    ecl.post(entry, do_post=True)
+
 
     def _read_ecl_password(self):
 
