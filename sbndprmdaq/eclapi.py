@@ -29,7 +29,7 @@ class ECL:
         self._password = password
         self._user = user
 
-        self._to = 10 # timeout in seconds
+        self._to = 60 # timeout in seconds
 
 
     def generate_salt(self):
