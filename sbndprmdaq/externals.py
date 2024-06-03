@@ -178,3 +178,67 @@ LIMIT {}""".format(month_2digit, '', pv, 1)
             if float(formatted[0][1]) > 20:
                 return True
         return False
+
+    def plc_on(self, prm_id):
+        '''
+        Returns True if the PrM PLC is ON (PrMs can operate)
+
+        Args:
+            prm_id (int): the PrM ID
+        '''
+
+        if self._connection is None:
+            self.connect()
+
+        if self._connection.status != psycopg2.extensions.STATUS_READY:
+            self.connect()
+
+        if prm_id == 3:
+            # Inline can always operate
+            return True
+        else:
+            pv = 'prm'
+
+
+        current_time = datetime.datetime.now()
+        this_month = current_time.month
+        month_2digit = str(this_month).zfill(2)
+
+        query = """SELECT d.tagid, COALESCE((d.intvalue::numeric)::text, (trunc(d.floatvalue::numeric,3))::text), d.t_stamp
+FROM cryo_prd.sqlt_data_1_2024_{} d, cryo_prd.sqlth_te s
+WHERE d.tagid=s.id
+AND s.tagpath LIKE '%sbnd%'
+AND s.tagpath LIKE '%{}%'
+AND s.tagpath LIKE '%{}%'
+ORDER BY d.t_stamp DESC 
+LIMIT {}""".format(month_2digit, '', pv, 1)
+
+        cursor = self._connection.cursor()
+
+        cursor.execute(query)
+
+        dbrows = cursor.fetchall()
+
+        cursor.close()
+
+        formatted = []
+        for row in dbrows:
+            try:
+                time = datetime.datetime.fromtimestamp(row[2]/1000) # ms since epoch
+                time = time.strftime("%Y-%m-%d %H:%M:%S")
+            except:
+                time = row[2]
+            formatted.append((row[0], row[1], row[2], time))
+
+
+        return int(formatted[0][1])
+
+
+
+if __name__ == "__main__":
+
+    api = IgnitionAPI()
+
+    print(api.plc_on(prm_id=1))
+
+

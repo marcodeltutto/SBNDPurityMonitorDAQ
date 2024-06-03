@@ -774,6 +774,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self._prm_controls[2]._liquid_level_label.setDisabled(True)
             self._prm_controls[2]._digitizer_image.setDisabled(True)
 
+        if self._config['check_plc']:
+            for prm_id in [1, 2, 3]:
+                if not self._ignition_api.plc_on(prm_id=prm_id):
+                    self.inhibit_run(True, [prm_id])
+                else:
+                    self.inhibit_run(False, [prm_id])
+
+
 
     def inhibit_run(self, do_inhibit=True, prm_ids=(1, 2)):
         '''

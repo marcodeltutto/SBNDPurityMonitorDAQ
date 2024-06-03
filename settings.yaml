@@ -104,6 +104,9 @@ check_pmt_hv: True
 check_lar_level: True
 enforce_level: False
 
+# Checks if the PLC is ON
+check_plc: True
+
 # Data storage
 data_storage: True
 data_storage_host: "sbndgpvm01.fnal.gov"
