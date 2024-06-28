@@ -327,17 +327,17 @@ class PrMAnalysisEstimate(PrMAnalysisBase):
             print('no_anode, anode too small, ignoring')
             # return 'no_anode'
 
-        if self._max_a < 0:
+        if self._max_a - self._baseline_a < 0:
             print('no_anode')
-            return 'no_anode'
+            return 'anode is negative'
 
         if np.abs((self._max_c - self._baseline_c) / (self._baseline_rms_a)) < 5:
-            print('no_cathode')
+            print('no_cathode, cathode too small')
             return 'no_cathode'
 
-        if self._max_c > 0:
+        if self._max_c - self._baseline_c > 0:
             print('no_cathode')
-            return 'no_cathode'
+            return 'cathode is positive'
 
         if self._deltat_c > 100:
             print('cathode_deltat_large')
