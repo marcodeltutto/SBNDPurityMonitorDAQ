@@ -371,7 +371,11 @@ class SummaryPlot:
 
         # Loop over entries (they are in decreasing order in time)
         for entry in entries:
-            text = entry.find('./text').text
+
+            text = entry.find('./text')
+            if text is None:
+                continue
+            text = text.text
 
             if 'Purity Monitors Automated Plots' in text:
 
