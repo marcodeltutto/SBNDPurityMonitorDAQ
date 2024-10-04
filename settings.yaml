@@ -53,12 +53,15 @@ mpod_prm3_anodegrid_ch: 301
 # Default HV values
 prm_hv_default:
   1:
-    cathode:   -120
-    anodegrid: 4432
-    anode:     4360
+    # cathode:   -120
+    # anodegrid: 4432
+    # anode:     4360
     # cathode:   -500
     # anodegrid: 4000
     # anode:     4100
+    cathode:   -80
+    anodegrid: 2954
+    anode:     2902
   2:
     cathode:   -250
     anodegrid: 3010
@@ -132,11 +135,11 @@ analysis_config:
     'ana_type': 'estimate' # 'estimate', 'fit', 'fit_difference'
     'deltat_start_c': 310
     'deltat_start_a': 310
-    'trigger_sample': 300
-    'signal_range_c': [320, 500]
-    'signal_range_a': [2300, 2500]
-    'baseline_range_c': [0,250]
-    'baseline_range_a': [2000,2200]
+    'trigger_sample': 480
+    'signal_range_c': [480, 800]
+    'signal_range_a': [3500, 3900]
+    'baseline_range_c': [0, 460]
+    'baseline_range_a': [3000, 3900]
     'title': 'SBND PrM 1 - Internal - Long'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000 # only for fit ana types
@@ -146,11 +149,11 @@ analysis_config:
     'ana_type': 'estimate'
     'deltat_start_c': 310
     'deltat_start_a': 310
-    'trigger_sample': 300
-    'signal_range_c': [320, 500]
-    'signal_range_a': [600, 1000]
-    'baseline_range_c': [0,250]
-    'baseline_range_a': [310,500]
+    'trigger_sample': 480
+    'signal_range_c': [480, 800]
+    'signal_range_a': [900, 1100]
+    'baseline_range_c': [0, 460]
+    'baseline_range_a': [600,900]
     'title': 'SBND PrM 2 - Internal - Short'
     'plot_range': [0, 1000]
     'lowpass_cutoff_freq': 100000
