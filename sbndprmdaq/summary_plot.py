@@ -288,11 +288,21 @@ class SummaryPlot:
             ax.axvline(today, color='red', label='Today', linestyle='solid')
 
             if prm_id == 1:
+                d = datetime.datetime(2024, 6, 28, 17, 00)
+                num = mpl.dates.date2num(d)
+                xmin, xmax = ax.get_xlim()
+                frac = (num - xmin) / (xmax - xmin)
+
                 for i, tau in enumerate([0.50, 1, 3, 6, 9]):
                     ax.axhline(qaqc(1.1, tau),
                                xmin=0,
-                               xmax=1,
+                               xmax=frac,
                                color='black', label=f'{tau:.2f} ms', linestyle=linestyles[i])
+
+                    ax.axhline(qaqc(1.6, tau),
+                               xmin=frac,
+                               xmax=1,
+                               color='black', linestyle=linestyles[i])
             else:
                 d = datetime.datetime(2024, 3, 25, 15, 00)
                 num = mpl.dates.date2num(d)
