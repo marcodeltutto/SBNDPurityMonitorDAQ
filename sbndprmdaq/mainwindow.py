@@ -776,10 +776,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self._config['check_plc']:
             for prm_id in [1, 2, 3]:
-                if not self._ignition_api.plc_on(prm_id=prm_id):
-                    self.inhibit_run(True, [prm_id])
-                else:
-                    self.inhibit_run(False, [prm_id])
+                if self._ignition_api is not None:
+                    if not self._ignition_api.plc_on(prm_id=prm_id):
+                        self.inhibit_run(True, [prm_id])
+                    else:
+                        self.inhibit_run(False, [prm_id])
 
 
 

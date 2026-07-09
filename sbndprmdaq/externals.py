@@ -63,8 +63,8 @@ class IgnitionAPI:
 
         self._connection = psycopg2.connect(user="dcs_reader",
                                             password="qcd56RUc",
-                                            host="ifdb09",
-                                            port="5456",
+                                            host="ifdbdaqrep01", #"sbnd-db", #"ifdb09",
+                                            port="5456", #"5434",
                                             database="sbnd_online_prd")
 
     def get_values(self, pv='te-8101a', month='02', limit=1):

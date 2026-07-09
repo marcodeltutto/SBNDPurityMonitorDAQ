@@ -11,6 +11,7 @@ requests
 rich
 pyepics
 matplotlib
+matplotlib-label-lines
 psycopg2
 scipy
 pandas

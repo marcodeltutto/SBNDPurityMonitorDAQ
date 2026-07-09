@@ -356,7 +356,7 @@ class SummaryPlot:
         password = self._read_ecl_password()
 
         # https://dbweb0.fnal.gov/ECL/sbnd
-        ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
+        ecl = ECL(url='https://dbweb1.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
         # Retrieve the last 20 entries
         text = ecl.search(limit=20)
@@ -402,11 +402,15 @@ class SummaryPlot:
 
     def _send_to_ecl(self):
 
+        if self._n_runs[1] == 0 and self._n_runs[2] == 0 and self._n_runs[3] == 0:
+            print('No new runs since last elog entry, will not post to the elog.')
+            return
+
         if self._current_plots:
 
             password = self._read_ecl_password()
 
-            ecl = ECL(url='https://dbweb9.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
+            ecl = ECL(url='https://dbweb1.fnal.gov:8443/ECL/sbnd/E', user='sbndprm', password=password)
 
             text=f'<font face="arial"> <b>Purity Monitors Automated Plots</b> <BR> {self._config["ecl_text"]}</font>'
 

@@ -104,7 +104,7 @@ prm_hv_ranges:
 check_pmt_hv: True
 
 # Checks if PrMs are covered with LAr
-check_lar_level: True
+check_lar_level: False
 enforce_level: False
 
 # Checks if the PLC is ON
@@ -121,8 +121,8 @@ populate_dataframe: True
 
 summary_plot:
   make_summary_plots: True
-  time_interval: 24 # hours
-  start_hour: 10 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
+  time_interval: 6 # hours
+  start_hour: 11 # start hour of the day (eg. 8 = 8 am, 20 = 8 pm)
   prms: [1, 2]
   post_to_ecl: True
   ecl_text: "Measurements by internal purity monitors 1 and 2."
