@@ -159,7 +159,7 @@ class DataStorage():
         '''
         #pylint: disable=invalid-name
 
-        self._logger.warning('Updating dataframe.')
+        self._logger.info('Updating dataframe.')
 
         if measurement is None:
             self._logger.warning('No measurement available to save to dataframe.')
@@ -188,7 +188,7 @@ class DataStorage():
 
         df = df.append(meas, ignore_index=True)
 
-        df.to_csv(dataframe_file_name)
+        df.to_csv(dataframe_file_name, index=False)
 
     def get_dataframe_path(self):
         '''
