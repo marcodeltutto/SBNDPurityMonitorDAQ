@@ -4,7 +4,7 @@ argparse
 pyyaml
 qdarkstyle
 pyfirmata
-paramiko[gssapi]
+paramiko<3.0
 sshtunnel
 scp
 requests
@@ -12,6 +12,7 @@ rich
 pyepics
 matplotlib
 matplotlib-label-lines
-psycopg2
+psycopg2-binary
 scipy
 pandas
+requests 
